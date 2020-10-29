@@ -13,4 +13,17 @@
     <OutputPath>N:\game_development\Flighter\Build\</OutputPath>
   </PropertyGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="cp $(TargetPath) N:\game_development\unity_projects\flighter_setup\Assets\Libs\" />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>deps\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>deps\UnityEngine.UI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
