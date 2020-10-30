@@ -147,5 +147,19 @@ namespace Flighter
 
             Element.Init(rectTransform);
         }
+
+        public string print(int indent = 0)
+        {
+            string r = "";
+            for (int i = 0; i < indent; ++i)
+                r += "-";
+
+            r += Element.Name + "\n";
+
+            foreach (var c in children)
+                r += c.print(indent + 1);
+
+            return r;
+        }
     }
 }

@@ -50,7 +50,7 @@ namespace Flighter
         public void Update()
         {
             if (!IsInitialized)
-                throw new Exception("Element must be initialized before calling update.");
+                throw new ElementUninitializedException("Element must be initialized before calling update.");
 
             _Update();
         }
@@ -62,6 +62,9 @@ namespace Flighter
         /// </summary>
         public void Clear()
         {
+            // If not initialized, then there should be nothing to clear.
+            if (!IsInitialized) return;
+
             _Clear();
 
             IsInitialized = false;
@@ -77,5 +80,14 @@ namespace Flighter
         protected abstract void _Init();
         protected abstract void _Update();
         protected abstract void _Clear();
+    }
+
+    public class ElementUninitializedException : Exception
+    {
+        public ElementUninitializedException() 
+            : base() { }
+
+        public ElementUninitializedException(string message)
+            : base(message) { }
     }
 }
