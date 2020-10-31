@@ -8,11 +8,6 @@ namespace Flighter
     {
         public override string Name => "Root";
 
-        protected override void _Clear()
-        {
-            throw new NotImplementedException();
-        }
-
         protected override void _Init() { }
 
         protected override void _Update() { }

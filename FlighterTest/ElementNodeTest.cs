@@ -25,7 +25,7 @@ namespace FlighterTest
 
             Assert.AreEqual(
                 "Root\n-TestElement\n--TestElement\n--TestElement\n-TestElement\n--TestElement\n--TestElement\n", 
-                root.print());
+                root.Print());
         }
     }
 }

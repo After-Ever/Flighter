@@ -9,9 +9,12 @@ namespace Flighter
     /// </summary>
     public abstract class Element
     {
+        WidgetNode WidgetNode;
+        public Widget Widget => WidgetNode?.Widget;
+
         ~Element()
         {
-            Clear();
+            TearDown();
         }
 
         /// <summary>
@@ -40,6 +43,11 @@ namespace Flighter
 
             IsInitialized = true;
         }
+
+        public void UpdateWidgetNode(WidgetNode newWidgetNode)
+        {
+            WidgetNode = newWidgetNode;
+        }
         
         /// <summary>
         /// Update the display of the element.
@@ -55,22 +63,14 @@ namespace Flighter
             _Update();
         }
 
-        /// <summary>
-        /// Destroy anything used to display the element.
-        /// Must recall <see cref="Init(RectTransform)"/> to display the element.
-        /// Safe to call from any state.
-        /// </summary>
-        public void Clear()
+        public void TearDown()
         {
-            // If not initialized, then there should be nothing to clear.
             if (!IsInitialized) return;
 
-            _Clear();
-
-            IsInitialized = false;
-            // TODO: Should we just destroy the gameobject, and call it a day?
-            //       (Have to make sure the kids are safe...).
+            UnityEngine.Object.Destroy(RectTransform.gameObject);
             RectTransform = null;
+            IsInitialized = false;
+            WidgetNode = null;
         }
 
         public virtual string Name => "Element";
@@ -79,7 +79,6 @@ namespace Flighter
 
         protected abstract void _Init();
         protected abstract void _Update();
-        protected abstract void _Clear();
     }
 
     public class ElementUninitializedException : Exception

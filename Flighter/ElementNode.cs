@@ -82,22 +82,22 @@ namespace Flighter
         }
 
         /// <summary>
-        /// Remove this node, leaving it's children orphans.
+        /// Remove this from its parent.
+        /// </summary>
+        public void Emancipate()
+        {
+            parent?.RemoveChild(this);
+        }
+
+        /// <summary>
+        /// Remove this node, and any children.
         /// </summary>
         public void Prune()
         {
-            foreach(var c in children)
-            {
-                c.parent = null;
-                c.Element.RectTransform.SetParent(null, false);
-                c.SetDirty();
-                // At this point, the removed children should be garbage
-                // collected, unless they are referenced elsewhere.
-            }
-
+            // TODO: What about children?
             parent?.RemoveChild(this);
 
-            Element.Clear();
+            Element.TearDown();
         }
 
         void SetClean()
@@ -122,14 +122,15 @@ namespace Flighter
 
         /// <summary>
         /// Remove a node from this node's children.
-        /// The removed node is left as is; not pruned.
         /// </summary>
         /// <param name="node">The node to remove.</param>
         void RemoveChild(ElementNode node)
         {
             if (!children.Remove(node))
                 throw new Exception("Can't remove none child node");
-            
+
+            node.Element.RectTransform.SetParent(null);
+
             if (HasDirtyChild 
                 && children.Find((n) => n.IsDirty) == null)
                 HasDirtyChild = false;
@@ -148,7 +149,7 @@ namespace Flighter
             Element.Init(rectTransform);
         }
 
-        public string print(int indent = 0)
+        public string Print(int indent = 0)
         {
             string r = "";
             for (int i = 0; i < indent; ++i)
@@ -157,7 +158,7 @@ namespace Flighter
             r += Element.Name + "\n";
 
             foreach (var c in children)
-                r += c.print(indent + 1);
+                r += c.Print(indent + 1);
 
             return r;
         }
