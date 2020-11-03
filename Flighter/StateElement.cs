@@ -8,19 +8,35 @@ namespace Flighter
     {
         public override string Name => "State";
 
+        public readonly State State; 
+
         public StateElement(State state)
         {
-            throw new NotImplementedException();
+            State = state;
         }
 
-        protected override void _Init()
+        public void StateSet()
         {
-            throw new NotImplementedException();
+            setDirty?.Invoke();
         }
+
+        // Nothing to do on init...
+        protected override void _Init() { }
 
         protected override void _Update()
         {
-            throw new NotImplementedException();
+            // Called when the state should be rebuilt.
+
+            // First we let State carry out updates.
+            State.Updated();
+
+            // Then rebuild its widget.
+            var context = WidgetNode.BuildContext;
+            var widget = State.Build(context);
+
+            WidgetNode.ReplaceChildren(new List<(Widget, BuildContext)> {
+                (widget, context)
+            });
         }
     }
 }

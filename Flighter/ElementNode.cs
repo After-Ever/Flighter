@@ -12,6 +12,7 @@ namespace Flighter
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
 
+        // TODO: Describe how these dirty variables are used.
         bool isDirty = true;
         public bool IsDirty
         {
@@ -23,6 +24,8 @@ namespace Flighter
         {
             this.Element = element;
             this.parent = parent;
+
+            Element.SetDirtyCallback(() => SetDirty());
         }
 
         public void Update()
@@ -55,6 +58,9 @@ namespace Flighter
 
         public ElementNode AddChild(Element element)
         {
+            if (element.IsInitialized)
+                throw new Exception("Cannot add an initialized element!");
+
             var node = new ElementNode(element, this);
             children.Add(node);
 
@@ -70,6 +76,12 @@ namespace Flighter
 
             children.Add(node);
             node.parent = this;
+
+            var rect = node.Element?.RectTransform 
+                ?? throw new Exception("Cannot connect a node with an uninitialized element.");
+
+            rect.SetParent(Element.RectTransform, false);
+
             SetChildDirty();
         }
 
@@ -87,6 +99,8 @@ namespace Flighter
         public void Emancipate()
         {
             parent?.RemoveChild(this);
+            parent = null;
+            SetDirty();
         }
 
         /// <summary>
@@ -95,7 +109,7 @@ namespace Flighter
         public void Prune()
         {
             // TODO: What about children?
-            parent?.RemoveChild(this);
+            Emancipate();
 
             Element.TearDown();
         }
@@ -130,6 +144,7 @@ namespace Flighter
                 throw new Exception("Can't remove none child node");
 
             node.Element.RectTransform.SetParent(null);
+            node.SetDirty();
 
             if (HasDirtyChild 
                 && children.Find((n) => n.IsDirty) == null)

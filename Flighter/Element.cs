@@ -9,8 +9,14 @@ namespace Flighter
     /// </summary>
     public abstract class Element
     {
-        WidgetNode WidgetNode;
+        protected WidgetNode WidgetNode;
         public Widget Widget => WidgetNode?.Widget;
+
+        /// <summary>
+        /// To be called when the element would like an update. Should
+        /// not be called manually... Probably...
+        /// </summary>
+        protected Action setDirty;
 
         ~Element()
         {
@@ -71,6 +77,11 @@ namespace Flighter
             RectTransform = null;
             IsInitialized = false;
             WidgetNode = null;
+        }
+
+        public void SetDirtyCallback(Action setDirty)
+        {
+            this.setDirty = setDirty;
         }
 
         public virtual string Name => "Element";

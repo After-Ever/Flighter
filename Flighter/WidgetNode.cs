@@ -25,9 +25,9 @@ namespace Flighter
         List<WidgetNode> children = new List<WidgetNode>();
 
         Queue<WidgetNode> inheritedChildren;
+        bool isConstructing = true;
 
-        bool hasConstructed = false;
-
+        // TODO: Describe all this...
         public WidgetNode(
             Widget widget, 
             BuildContext buildContext, 
@@ -48,8 +48,8 @@ namespace Flighter
                 if (inheritedElementNode != null)
                     throw new Exception("StatelessWidget cannot inherit an element node!");
 
-                var child = slw.Build(buildContext);
-                var childNode = Add(child, buildContext);
+                var child = slw.Build(BuildContext);
+                var childNode = Add(child, BuildContext);
 
                 BuildResult = childNode.BuildResult;
             }
@@ -58,16 +58,18 @@ namespace Flighter
                 if (inheritedElementNode != null)
                 {
                     ConnectInheritedElementNode(inheritedElementNode);
-                    // TODO: Need to have inherited state re build...
-                    //       Look into the above method, and see where
-                    //       it could tell the state element to do its thing.
-                    // TODO: Consider the clean/dirty state of the added elements after an update.
-                    //       It need be certain that everything is clean afterwards.
                 }
                 else
                 {
                     var state = sfw.CreateState();
+                    // Must connect the element before building the rest of the tree.
                     ConnectElement(new StateElement(state));
+
+                    // Manually do the first build. The rest will be handled with state updates.
+                    var child = state.Build(BuildContext);
+                    var childNode = Add(child, BuildContext);
+
+                    BuildResult = childNode.BuildResult;
                 }
 
                 BuildResult = children[0].BuildResult;
@@ -98,7 +100,7 @@ namespace Flighter
             }
 
             inheritedChildren = null;
-            hasConstructed = true;
+            isConstructing = false;
         }
 
         /// <summary>
@@ -111,8 +113,8 @@ namespace Flighter
         /// <returns></returns>
         public WidgetNode Add(Widget widget, BuildContext context)
         {
-            if (hasConstructed)
-                throw new Exception("Cannot add children after the node has been constructed!");
+            if (!isConstructing)
+                throw new Exception("Cannot add children unless the node is being constructed.");
 
             ElementNode childElementNode = null;
             Queue<WidgetNode> orphans = null;
@@ -122,7 +124,12 @@ namespace Flighter
                 var c = inheritedChildren.Dequeue();
                 // The context and widget are the same, so no need to add the new widget.
                 if (context == c.BuildContext && widget.IsSame(c.Widget))
+                {
+                    children.Add(c);
+                    c.parent = this;
                     return c;
+                }
+
                 if (widget.CanReplace(c.Widget))
                 {
                     childElementNode = c.DisconnectElementNode();
@@ -146,11 +153,30 @@ namespace Flighter
         }
 
         /// <summary>
+        /// Use <paramref name="newKids"/> to replace the current set of children,
+        /// if there are any. The same replacement rules will apply as when inheriting
+        /// children.
+        /// Old children will be pruned if not re-adopted.
+        /// </summary>
+        /// <param name="newKids"></param>
+        public void ReplaceChildren(List<(Widget,BuildContext)> newKids)
+        {
+            isConstructing = true;
+
+            inheritedChildren = new Queue<WidgetNode>(children);
+            children.Clear();
+
+            newKids.ForEach((c) => Add(c.Item1,c.Item2));
+
+            isConstructing = false;
+        }
+
+        /// <summary>
         /// Disconnect this tree from the element tree.
         /// If this node is itself connected, then that connection is broken.
         /// Otherwise, this is called on it's children.
         /// </summary>
-        /// <returns>The disconnected nodes.</returns>
+        /// <returns>The disconnected node, if there is one. Null otherwise.</returns>
         ElementNode DisconnectElementNode()
         {
             if (elementNode != null)
