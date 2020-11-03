@@ -76,12 +76,13 @@ namespace Flighter
 
             children.Add(node);
             node.parent = this;
-
-            var rect = node.Element?.RectTransform 
-                ?? throw new Exception("Cannot connect a node with an uninitialized element.");
-
-            rect.SetParent(Element.RectTransform, false);
-
+            
+            if (node.Element.IsInitialized)
+            {
+                var rect = node.Element.RectTransform;
+                rect.SetParent(Element.RectTransform, false);
+            }
+            
             SetChildDirty();
         }
 
@@ -143,7 +144,7 @@ namespace Flighter
             if (!children.Remove(node))
                 throw new Exception("Can't remove none child node");
 
-            node.Element.RectTransform.SetParent(null);
+            node.Element.RectTransform?.SetParent(null);
             node.SetDirty();
 
             if (HasDirtyChild 
@@ -154,8 +155,8 @@ namespace Flighter
         protected virtual void InitElement()
         {
             if (Element.IsInitialized) return;
-            if (parent == null)
-                throw new Exception("Cannot initialize an element with no parent.");
+            if (parent == null || !parent.Element.IsInitialized)
+                throw new Exception("Cannot initialize an element without an initialized parent.");
 
             var newObj = new GameObject(Element.Name);
             var rectTransform = newObj.GetComponent<RectTransform>();

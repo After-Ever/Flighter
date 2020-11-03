@@ -18,11 +18,6 @@ namespace Flighter
         /// </summary>
         protected Action setDirty;
 
-        ~Element()
-        {
-            TearDown();
-        }
-
         /// <summary>
         /// Whether the Element has been initialized.
         /// </summary>
@@ -32,6 +27,9 @@ namespace Flighter
         /// The RectTransform which represents this Element.
         /// Should not be modified outside the element, save for changing
         /// family hierarchy.
+        /// 
+        /// This will be null before <see cref="Init(RectTransform)"/> is called,
+        /// and after <see cref="TearDown"/> is called.
         /// </summary>
         public RectTransform RectTransform { get; private set; }
 
@@ -72,7 +70,7 @@ namespace Flighter
         public void TearDown()
         {
             if (!IsInitialized) return;
-
+            
             UnityEngine.Object.Destroy(RectTransform.gameObject);
             RectTransform = null;
             IsInitialized = false;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Flighter
 {
@@ -20,7 +19,6 @@ namespace Flighter
 
         ElementNode elementNode;
 
-        readonly WidgetTree tree;
         WidgetNode parent;
         List<WidgetNode> children = new List<WidgetNode>();
 
@@ -31,14 +29,12 @@ namespace Flighter
         public WidgetNode(
             Widget widget, 
             BuildContext buildContext, 
-            WidgetTree tree,
             WidgetNode parent, 
-            ElementNode inheritedElementNode, 
+            ElementNode inheritedElementNode = null, 
             Queue<WidgetNode> inheritedChildren = null)
         {
             this.Widget = widget ?? throw new ArgumentNullException("WidgetNode's widget must not be null.");
-            this.BuildContext = buildContext;
-            this.tree = tree ?? throw new ArgumentNullException("WidgetNode must be created with a tree.");
+            this.BuildContext = buildContext ?? throw new ArgumentNullException("WidgetNode's buildContext must not be null.");
             this.parent = parent;
 
             this.inheritedChildren = inheritedChildren;
@@ -92,14 +88,8 @@ namespace Flighter
             }
 
             // Remove any inherited children which have not been used.
-            // (This is a very sad bit of code...)
-            foreach(var c in this.inheritedChildren)
-            {
-                // Goodnight sweet prince...
-                c.Prune();
-            }
+            PruneInheritedChildren();
 
-            inheritedChildren = null;
             isConstructing = false;
         }
 
@@ -119,31 +109,36 @@ namespace Flighter
             ElementNode childElementNode = null;
             Queue<WidgetNode> orphans = null;
 
-            try
+            if (inheritedChildren != null)
             {
-                var c = inheritedChildren.Dequeue();
-                // The context and widget are the same, so no need to add the new widget.
-                if (context == c.BuildContext && widget.IsSame(c.Widget))
+                try
                 {
-                    children.Add(c);
-                    c.parent = this;
-                    return c;
+                    var c = inheritedChildren.Dequeue();
+                    // The context and widget are the same, so no need to add the new widget.
+                    if (context == c.BuildContext && widget.IsSame(c.Widget))
+                    {
+                        children.Add(c);
+                        c.parent = this;
+                        return c;
+                        // TODO: need to connect to element tree?
+                    }
+                    
+                    if (widget.CanReplace(c.Widget))
+                    {
+                        childElementNode = c.DisconnectElementNode();
+                        orphans = c.PruneAndAdopt();
+                    }
+                    else
+                    {
+                        c.Prune();
+                    }
                 }
-
-                if (widget.CanReplace(c.Widget))
-                {
-                    childElementNode = c.DisconnectElementNode();
-                    orphans = c.PruneAndAdopt();
-                }
-
-                c.Prune();
+                catch (InvalidOperationException) { }
             }
-            catch (InvalidOperationException) { }
 
             WidgetNode child = new WidgetNode(
                                         widget,
                                         context,
-                                        tree,
                                         this,
                                         childElementNode,
                                         orphans);
@@ -163,10 +158,9 @@ namespace Flighter
         {
             isConstructing = true;
 
-            inheritedChildren = new Queue<WidgetNode>(children);
-            children.Clear();
-
+            inheritedChildren = EmancipateChildren();
             newKids.ForEach((c) => Add(c.Item1,c.Item2));
+            PruneInheritedChildren();
 
             isConstructing = false;
         }
@@ -195,7 +189,8 @@ namespace Flighter
         {
             var nearestAncestor = NearestAncestorElementNode();
             elementNode = node;
-            nearestAncestor.ConnectNode(elementNode);
+            // If there is no nearestAncestor, that's fine! We will be the root.
+            nearestAncestor?.ConnectNode(elementNode);
             elementNode.Element.UpdateWidgetNode(this);
         }
 
@@ -207,12 +202,12 @@ namespace Flighter
         {
             element.UpdateWidgetNode(this);
             var nearestNode = NearestAncestorElementNode();
-            elementNode = nearestNode.AddChild(element);
+            elementNode = nearestNode?.AddChild(element) ?? throw new Exception("No ancestor connected to an element tree!");
         }
 
         /// <summary>
         /// Remove this node and all children.
-        /// This will deconstruct any attached elements as well.
+        /// This will Prune any attached elements as well.
         /// </summary>
         void Prune()
         {
@@ -242,19 +237,39 @@ namespace Flighter
         /// <returns></returns>
         Queue<WidgetNode> PruneAndAdopt()
         {
-            // Take out all the children.
-            Queue<WidgetNode> emancipatedChildren = new Queue<WidgetNode>();
-            while(children.Count > 0)
-            {
-                var c = children[0];
-                c.Emancipate();
-                emancipatedChildren.Enqueue(c);
-            }
+            var emancipatedChildren = EmancipateChildren();
 
             // Then prune.
             Prune();
 
             return emancipatedChildren;
+        }
+
+        Queue<WidgetNode> EmancipateChildren()
+        {
+            // Take out all the children.
+            Queue<WidgetNode> emancipatedChildren = new Queue<WidgetNode>(children);
+            foreach (var c in emancipatedChildren)
+            {
+                c.Emancipate();
+            }
+
+            return emancipatedChildren;
+        }
+
+        void PruneInheritedChildren()
+        {
+            while (inheritedChildren != null)
+            {
+                try
+                {
+                    inheritedChildren.Dequeue().Prune();
+                }
+                catch (InvalidOperationException)
+                {
+                    inheritedChildren = null;
+                }
+            }
         }
 
         /// <summary>

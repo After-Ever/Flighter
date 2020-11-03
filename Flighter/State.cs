@@ -8,10 +8,15 @@ namespace Flighter
     {
         public abstract Widget Build(BuildContext context);
 
-        readonly StateElement stateElement;
+        StateElement stateElement;
         readonly Queue<Action> updates = new Queue<Action>();
 
         bool isDirty = false;
+
+        public void SetStateElement(StateElement stateElement)
+        {
+            this.stateElement = stateElement;
+        }
 
         public void Updated()
         {
@@ -35,10 +40,10 @@ namespace Flighter
             if (action != null)
                 updates.Enqueue(action);
 
-            if (!isDirty)
+            if (!isDirty && stateElement != null)
             {
                 isDirty = true;
-                stateElement.StateSet();
+                stateElement?.StateSet();
             }
         }
     }
