@@ -8,11 +8,6 @@ namespace Flighter
     {
         public override string Name => "Root";
 
-        protected override void _Clear()
-        {
-            throw new NotImplementedException();
-        }
-
         protected override void _Init() { }
 
         protected override void _Update() { }
@@ -34,6 +29,8 @@ namespace Flighter
             this.parent = parent;
         }
 
+        // Overriding lets us avoid not having a parent,
+        // by manually passing the rectTransform.
         protected override void InitElement()
         {
             Element.Init(parent);

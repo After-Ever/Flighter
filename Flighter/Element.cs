@@ -9,10 +9,14 @@ namespace Flighter
     /// </summary>
     public abstract class Element
     {
-        ~Element()
-        {
-            Clear();
-        }
+        protected WidgetNode WidgetNode;
+        public Widget Widget => WidgetNode?.Widget;
+
+        /// <summary>
+        /// To be called when the element would like an update. Should
+        /// not be called manually... Probably...
+        /// </summary>
+        protected Action setDirty;
 
         /// <summary>
         /// Whether the Element has been initialized.
@@ -23,6 +27,9 @@ namespace Flighter
         /// The RectTransform which represents this Element.
         /// Should not be modified outside the element, save for changing
         /// family hierarchy.
+        /// 
+        /// This will be null before <see cref="Init(RectTransform)"/> is called,
+        /// and after <see cref="TearDown"/> is called.
         /// </summary>
         public RectTransform RectTransform { get; private set; }
 
@@ -40,6 +47,11 @@ namespace Flighter
 
             IsInitialized = true;
         }
+
+        public void UpdateWidgetNode(WidgetNode newWidgetNode)
+        {
+            WidgetNode = newWidgetNode;
+        }
         
         /// <summary>
         /// Update the display of the element.
@@ -55,22 +67,20 @@ namespace Flighter
             _Update();
         }
 
-        /// <summary>
-        /// Destroy anything used to display the element.
-        /// Must recall <see cref="Init(RectTransform)"/> to display the element.
-        /// Safe to call from any state.
-        /// </summary>
-        public void Clear()
+        public void TearDown()
         {
-            // If not initialized, then there should be nothing to clear.
             if (!IsInitialized) return;
-
-            _Clear();
-
-            IsInitialized = false;
-            // TODO: Should we just destroy the gameobject, and call it a day?
-            //       (Have to make sure the kids are safe...).
+#if !TEST
+            UnityEngine.Object.Destroy(RectTransform.gameObject);
+#endif
             RectTransform = null;
+            IsInitialized = false;
+            WidgetNode = null;
+        }
+
+        public void SetDirtyCallback(Action setDirty)
+        {
+            this.setDirty = setDirty;
         }
 
         public virtual string Name => "Element";
@@ -79,7 +89,6 @@ namespace Flighter
 
         protected abstract void _Init();
         protected abstract void _Update();
-        protected abstract void _Clear();
     }
 
     public class ElementUninitializedException : Exception

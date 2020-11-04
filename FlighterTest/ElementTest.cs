@@ -11,8 +11,7 @@ namespace FlighterTest
         public bool ClearCalled { get; private set; } = false;
 
         public override string Name => "TestElement";
-
-        protected override void _Clear() { ClearCalled = true; }
+        
         protected override void _Init() { InitCalled = true; }
         protected override void _Update() { UpdateCalled = true; }
     }
@@ -55,22 +54,6 @@ namespace FlighterTest
             testElement.Update();
 
             Assert.IsTrue(testElement.UpdateCalled);
-        }
-
-        [TestMethod]
-        public void CallsClear()
-        {
-            var testElement = new TestElement();
-
-            testElement.Clear();
-
-            //Shouldn't call internal clear if element uninitialized.
-            Assert.IsFalse(testElement.ClearCalled);
-
-            testElement.Init(null);
-            testElement.Clear();
-
-            Assert.IsTrue(testElement.ClearCalled);
         }
     }
 }
