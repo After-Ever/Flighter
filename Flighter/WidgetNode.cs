@@ -15,7 +15,7 @@ namespace Flighter
         /// <summary>
         /// The result of building this node.
         /// </summary>
-        public BuildResult BuildResult { get; private set; }
+        public readonly BuildResult BuildResult;
 
         ElementNode elementNode;
 

@@ -39,16 +39,6 @@ namespace FlighterTest
             this.right = right;
         }
 
-        public override bool CanReplace(Widget other)
-        {
-            return base.CanReplace(other);
-        }
-
-        public override bool IsSame(Widget other)
-        {
-            return base.IsSame(other);
-        }
-
         public override BuildResult Layout(BuildContext context, WidgetNode node)
         {
             BuildResult l = new BuildResult(0,0), r = new BuildResult(0,0);
@@ -66,37 +56,24 @@ namespace FlighterTest
 
     public class TestStatelessWidget : StatelessWidget
     {
+        readonly Widget child;
+
+        public TestStatelessWidget(Widget child = null)
+        {
+            this.child = child;
+        }
+
         public override Widget Build(BuildContext context)
         {
-            return new TestDisplayWidget();
-        }
-
-        public override bool CanReplace(Widget other)
-        {
-            return base.CanReplace(other);
-        }
-
-        public override bool IsSame(Widget other)
-        {
-            return base.IsSame(other);
+            return child ?? new TestDisplayWidget();
         }
     }
 
     public class TestStatefulWidget : StatefullWidget
     {
-        public override bool CanReplace(Widget other)
-        {
-            return base.CanReplace(other);
-        }
-
         public override State CreateState()
         {
             return new TestState();
-        }
-
-        public override bool IsSame(Widget other)
-        {
-            return base.IsSame(other);
         }
     }
 

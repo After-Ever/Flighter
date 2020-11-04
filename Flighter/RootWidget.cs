@@ -8,7 +8,7 @@ namespace Flighter
 {
     public class RootWidget : DisplayWidget
     {
-        static public WidgetNode MakeRootWidgetNode(
+        static public (WidgetNode, ElementNode) MakeRootWidgetNode(
             Widget child,
             BuildContext initialBuildContext,
             RectTransform baseTransform)
@@ -16,7 +16,9 @@ namespace Flighter
             var rootWidget = new RootWidget(child);
             var rootElementNode = new RootElementNode(baseTransform);
 
-            return new WidgetNode(rootWidget, initialBuildContext, null, rootElementNode);
+            var widgetNode = new WidgetNode(rootWidget, initialBuildContext, null, rootElementNode);
+
+            return (widgetNode, rootElementNode);
         }
 
         readonly Widget child;

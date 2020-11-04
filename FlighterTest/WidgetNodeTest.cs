@@ -9,7 +9,11 @@ namespace FlighterTest
     public class WidgetNodeTest
     {
         WidgetNode makeSimpleRoot()
-            => RootWidget.MakeRootWidgetNode(new TestDisplayWidget(), new BuildContext(), null);
+            => RootWidget.MakeRootWidgetNode(
+                new TestDisplayWidget(), 
+                new BuildContext(), 
+                null)
+                    .Item1;
 
         [TestMethod]
         /// <summary>
@@ -18,6 +22,31 @@ namespace FlighterTest
         public void SimpleTest()
         {
             makeSimpleRoot();
+        }
+
+        [TestMethod]
+        public void ComplexTest()
+        {
+            // Make a big messy widget.
+            Widget w = new TestLayoutWidget(
+                left: new TestStatelessWidget(
+                    child: new TestDisplayWidget()),
+                right: new TestLayoutWidget(
+                    left: new TestLayoutWidget(
+                        left: new TestDisplayWidget(),
+                        right: new TestStatelessWidget(
+                            child: new TestDisplayWidget())),
+                    right: new TestDisplayWidget()));
+            
+            (var root, var elementNode) = RootWidget.MakeRootWidgetNode(
+                w,
+                new BuildContext(),
+                null);
+
+            // Update the element tree.
+            elementNode.Update();
+
+            Assert.IsFalse(elementNode.IsDirty);
         }
 
         [TestMethod]

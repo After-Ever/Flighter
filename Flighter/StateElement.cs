@@ -12,7 +12,8 @@ namespace Flighter
 
         public StateElement(State state)
         {
-            State = state;
+            State = state ?? throw new ArgumentNullException();
+            State.SetStateElement(this);
         }
 
         public void StateSet()

@@ -80,7 +80,9 @@ namespace Flighter
             if (node.Element.IsInitialized)
             {
                 var rect = node.Element.RectTransform;
+#if !TEST
                 rect.SetParent(Element.RectTransform, false);
+#endif
             }
             
             SetChildDirty();
@@ -100,8 +102,6 @@ namespace Flighter
         public void Emancipate()
         {
             parent?.RemoveChild(this);
-            parent = null;
-            SetDirty();
         }
 
         /// <summary>
@@ -143,8 +143,10 @@ namespace Flighter
         {
             if (!children.Remove(node))
                 throw new Exception("Can't remove none child node");
-
+#if !TEST
             node.Element.RectTransform?.SetParent(null);
+#endif
+            node.parent = null;
             node.SetDirty();
 
             if (HasDirtyChild 
@@ -157,11 +159,13 @@ namespace Flighter
             if (Element.IsInitialized) return;
             if (parent == null || !parent.Element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
-
+#if !TEST
             var newObj = new GameObject(Element.Name);
             var rectTransform = newObj.GetComponent<RectTransform>();
             rectTransform.SetParent(parent.Element.RectTransform, false);
-
+#else
+            RectTransform rectTransform = null;
+#endif
             Element.Init(rectTransform);
         }
 

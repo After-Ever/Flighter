@@ -70,8 +70,9 @@ namespace Flighter
         public void TearDown()
         {
             if (!IsInitialized) return;
-            
+#if !TEST
             UnityEngine.Object.Destroy(RectTransform.gameObject);
+#endif
             RectTransform = null;
             IsInitialized = false;
             WidgetNode = null;
