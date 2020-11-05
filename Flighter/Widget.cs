@@ -38,7 +38,7 @@ namespace Flighter
 
     public abstract class LayoutWidget : Widget
     {
-        public abstract BuildResult Layout(BuildContext context, WidgetNode node);
+        public abstract BuildResult Layout(BuildContext context, WidgetNodeBuilder node);
     }
 
     public abstract class DisplayWidget : LayoutWidget

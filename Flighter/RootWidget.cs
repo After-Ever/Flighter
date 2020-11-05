@@ -16,11 +16,11 @@ namespace Flighter
             var rootWidget = new RootWidget(child);
             var rootElementNode = new RootElementNode(baseTransform);
 
-            var widgetNode = new WidgetNode(
-                rootWidget, 
-                initialBuildContext, 
-                null, 
-                inheritedElementNode: rootElementNode);
+            var widgetNode = new WidgetNodeBuilder(
+                null,
+                rootWidget,
+                initialBuildContext,
+                rootElementNode).Build(null);
 
             return (widgetNode, rootElementNode);
         }
@@ -37,10 +37,10 @@ namespace Flighter
             throw new NotImplementedException("Root widget should never have to make an element.");
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNode node)
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            var childNode = node.Add(child, context);
-            return new BuildResult(childNode.Layout.size);
+            var childNode = node.AddChildWidget(child, context);
+            return new BuildResult(childNode.size);
         }
     }
 }

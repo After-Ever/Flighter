@@ -57,7 +57,7 @@ namespace Flighter.Core
                 p.edgetInsets.Equals(edgetInsets);
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNode node)
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             var horizontal = edgetInsets.left + edgetInsets.right;
             var vertical = edgetInsets.top + edgetInsets.bottom;
@@ -69,12 +69,12 @@ namespace Flighter.Core
                 maxWidth: constraints.maxWidth - horizontal,
                 maxHeight: constraints.maxHeight - vertical);
 
-            var childNode = node.Add(
-                child, 
+            var child = node.AddChildWidget(
+                this.child, 
                 new BuildContext(constraints));
 
-            childNode.SetOffset(new Vector2(edgetInsets.left, edgetInsets.top));
-            var childSize = childNode.Layout.size;
+            child.Offset = new Vector2(edgetInsets.left, edgetInsets.top);
+            var childSize = child.size;
 
             return new BuildResult(childSize.x + horizontal, childSize.y + vertical);
         }

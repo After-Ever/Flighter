@@ -16,7 +16,7 @@ namespace Flighter.Core
             return base.IsSame(other);
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNode node)
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             throw new NotImplementedException();
         }

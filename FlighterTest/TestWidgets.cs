@@ -23,7 +23,7 @@ namespace FlighterTest
             return base.IsSame(other);
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNode node)
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             return new BuildResult(10, 10);
         }
@@ -39,16 +39,17 @@ namespace FlighterTest
             this.right = right;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNode node)
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            NodeLayout l = new NodeLayout(0,0), r = new NodeLayout(0,0);
+            UnityEngine.Vector2 l, r;
+            l = r = UnityEngine.Vector2.zero;
             if (left != null)
-                l = node.Add(left, context).Layout;
+                l = node.AddChildWidget(left, context).size;
             if (right != null)
-                r = node.Add(right, context).Layout;
+                r = node.AddChildWidget(right, context).size;
 
-            float x = Math.Max(l.size.x, r.size.x);
-            float y = Math.Max(l.size.y, r.size.y);
+            float x = Math.Max(l.x, r.x);
+            float y = Math.Max(l.y, r.y);
 
             return new BuildResult(x, y);
         }

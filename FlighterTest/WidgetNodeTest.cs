@@ -58,15 +58,7 @@ namespace FlighterTest
         {
             var root = makeSimpleRoot();
 
-            Assert.AreEqual(new UnityEngine.Vector2(10,10), root.Layout.size);
-        }
-
-        [TestMethod]
-        public void CannotAddUnlessConstructing()
-        {
-            var root = makeSimpleRoot();
-
-            Assert.ThrowsException<Exception>(() => root.Add(new TestDisplayWidget(), new BuildContext()));
+            Assert.AreEqual(new UnityEngine.Vector2(10,10), root.layout.size);
         }
 
         [TestMethod]
