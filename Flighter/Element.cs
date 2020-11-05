@@ -9,8 +9,8 @@ namespace Flighter
     /// </summary>
     public abstract class Element
     {
-        protected WidgetNode WidgetNode;
-        public Widget Widget => WidgetNode?.Widget;
+        protected WidgetNode widgetNode;
+        public Widget widget => widgetNode?.widget;
 
         /// <summary>
         /// To be called when the element would like an update. Should
@@ -33,6 +33,13 @@ namespace Flighter
         /// </summary>
         public RectTransform RectTransform { get; private set; }
 
+        public virtual string name => "Element";
+
+        // The following are for the subclass implementations.
+
+        protected abstract void _Init();
+        protected abstract void _Update();
+
         /// <summary>
         /// Instrument the element, displaying it.
         /// </summary>
@@ -42,7 +49,7 @@ namespace Flighter
             if (IsInitialized) return;
 
             RectTransform = rectTransform;
-
+            SizeAndPositionRect();
             _Init();
 
             IsInitialized = true;
@@ -50,7 +57,7 @@ namespace Flighter
 
         public void UpdateWidgetNode(WidgetNode newWidgetNode)
         {
-            WidgetNode = newWidgetNode;
+            widgetNode = newWidgetNode;
         }
         
         /// <summary>
@@ -63,7 +70,8 @@ namespace Flighter
         {
             if (!IsInitialized)
                 throw new ElementUninitializedException("Element must be initialized before calling update.");
-
+            
+            SizeAndPositionRect();
             _Update();
         }
 
@@ -75,7 +83,7 @@ namespace Flighter
 #endif
             RectTransform = null;
             IsInitialized = false;
-            WidgetNode = null;
+            widgetNode = null;
         }
 
         public void SetDirtyCallback(Action setDirty)
@@ -83,12 +91,14 @@ namespace Flighter
             this.setDirty = setDirty;
         }
 
-        public virtual string Name => "Element";
-
-        // The following are for the subclass implementations.
-
-        protected abstract void _Init();
-        protected abstract void _Update();
+        void SizeAndPositionRect()
+        {
+#if !TEST
+            RectTransform.anchoredPosition = WidgetNode.BuildResult.Offset;
+            RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, WidgetNode.BuildResult.Size.x);
+            RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, WidgetNode.BuildResult.Size.y);
+#endif
+        }
     }
 
     public class ElementUninitializedException : Exception

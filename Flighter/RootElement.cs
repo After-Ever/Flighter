@@ -6,7 +6,7 @@ namespace Flighter
 {
     public class RootElement : Element
     {
-        public override string Name => "Root";
+        public override string name => "Root";
 
         protected override void _Init() { }
 

@@ -31,7 +31,7 @@ namespace Flighter
         public abstract Widget Build(BuildContext context);
     }
 
-    public abstract class StatefullWidget : Widget
+    public abstract class StatefulWidget : Widget
     {
         public abstract State CreateState();
     }

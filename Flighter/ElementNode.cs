@@ -12,12 +12,13 @@ namespace Flighter
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
 
-        // TODO: Describe how these dirty variables are used.
-        bool isDirty = true;
-        public bool IsDirty
-        {
-            get => isDirty || HasDirtyChild;
-        }
+        /// <summary>
+        /// This node needs an update.
+        /// </summary>
+        public bool IsDirty { get; private set; } = true;
+        /// <summary>
+        /// This node has descendants which need updates.
+        /// </summary>
         public bool HasDirtyChild { get; private set; } = false;
 
         public ElementNode(Element element, ElementNode parent)
@@ -30,9 +31,9 @@ namespace Flighter
 
         public void Update()
         {
-            if (!IsDirty) return;
+            if (!IsDirty && !HasDirtyChild) return;
 
-            if (isDirty)
+            if (IsDirty)
             {
                 if (Element.IsInitialized)
                 {
@@ -90,9 +91,9 @@ namespace Flighter
 
         public void SetDirty()
         {
-            if (isDirty) return;
+            if (IsDirty) return;
 
-            isDirty = true;
+            IsDirty = true;
             parent?.SetChildDirty();
         }
 
@@ -117,7 +118,7 @@ namespace Flighter
 
         void SetClean()
         {
-            isDirty = false;
+            IsDirty = false;
             HasDirtyChild = false;
         }
 
@@ -125,14 +126,14 @@ namespace Flighter
         {
             if (HasDirtyChild) return;
             HasDirtyChild = true;
-            if (isDirty) return;
+            if (IsDirty) return;
 
             parent?.SetChildDirty();
         }
 
         List<ElementNode> GetDirtyChildren()
         {
-            return children.FindAll((n) => n.IsDirty);
+            return children.FindAll((n) => n.IsDirty || n.HasDirtyChild);
         }
 
         /// <summary>
@@ -150,7 +151,7 @@ namespace Flighter
             node.SetDirty();
 
             if (HasDirtyChild 
-                && children.Find((n) => n.IsDirty) == null)
+                && children.Find((n) => n.IsDirty || n.HasDirtyChild) == null)
                 HasDirtyChild = false;
         }
 
@@ -175,7 +176,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += Element.Name + "\n";
+            r += Element.name + "\n";
 
             foreach (var c in children)
                 r += c.Print(indent + 1);

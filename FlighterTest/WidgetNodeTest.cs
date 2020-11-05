@@ -46,7 +46,7 @@ namespace FlighterTest
             // Update the element tree.
             elementNode.Update();
 
-            Assert.IsFalse(elementNode.IsDirty);
+            Assert.IsFalse(elementNode.IsDirty || elementNode.HasDirtyChild);
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace FlighterTest
         {
             var root = makeSimpleRoot();
 
-            Assert.AreEqual(new BuildResult(10, 10), root.BuildResult);
+            Assert.AreEqual(new UnityEngine.Vector2(10,10), root.Layout.size);
         }
 
         [TestMethod]

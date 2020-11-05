@@ -1,21 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using UnityEngine;
+
 namespace Flighter
 {
+    public struct NodeLayout
+    {
+        public Vector2 size, offset;
+
+        public NodeLayout(Vector2 size, Vector2 offset)
+        {
+            this.size = size;
+            this.offset = offset;
+        }
+
+        public NodeLayout(float width, float height, float x = 0, float y = 0)
+        {
+            size = new Vector2(width, height);
+            offset = new Vector2(x, y);
+        }
+    }
+
+    /// <summary>
+    /// Delegate to use for getting an offset given a size.
+    /// </summary>
+    /// <param name="size"></param>
+    /// <returns>The offset based on <para>size</para></returns>
+    public delegate Vector2 OffsetCallback(Vector2 size);
+    
     public class WidgetNode
     {
-        public readonly Widget Widget;
+        public readonly Widget widget;
+        public readonly BuildContext buildContext;
 
         /// <summary>
-        /// The BuildContext with which this node was built.
+        /// The layout properties of this node.
         /// </summary>
-        public readonly BuildContext BuildContext;
-
-        /// <summary>
-        /// The result of building this node.
-        /// </summary>
-        public readonly BuildResult BuildResult;
+        public NodeLayout Layout { get; private set; }
 
         ElementNode elementNode;
 
@@ -29,31 +51,43 @@ namespace Flighter
         public WidgetNode(
             Widget widget, 
             BuildContext buildContext, 
-            WidgetNode parent, 
+            WidgetNode parent,
             ElementNode inheritedElementNode = null, 
             Queue<WidgetNode> inheritedChildren = null)
         {
-            this.Widget = widget ?? throw new ArgumentNullException("WidgetNode's widget must not be null.");
-            this.BuildContext = buildContext ?? throw new ArgumentNullException("WidgetNode's buildContext must not be null.");
+            this.widget = widget ?? throw new ArgumentNullException("WidgetNode's widget must not be null.");
+            this.buildContext = buildContext;
             this.parent = parent;
 
             this.inheritedChildren = inheritedChildren;
 
-            if (Widget is StatelessWidget slw)
+            if (this.widget is StatelessWidget slw)
             {
                 if (inheritedElementNode != null)
                     throw new Exception("StatelessWidget cannot inherit an element node!");
 
-                var child = slw.Build(BuildContext);
-                var childNode = Add(child, BuildContext);
+                var child = slw.Build(this.buildContext);
+                var childNode = Add(child, this.buildContext);
 
-                BuildResult = childNode.BuildResult;
+                Layout = childNode.Layout;
             }
-            else if (Widget is StatefullWidget sfw)
+            else if (this.widget is StatefulWidget sfw)
             {
                 if (inheritedElementNode != null)
                 {
+                    if (inheritedChildren?.Count != 1)
+                        throw new Exception("If a StatefulWidget inherits an ElementNode," +
+                            "it should inherit exactly one child.");
                     ConnectInheritedElementNode(inheritedElementNode);
+
+                    // Directly adopt the inherited child. This is okay
+                    // because the state element will be marked dirty,
+                    // rebuilding its widget, and thus causing this widget
+                    // to go through normal replacement.
+                    var childNode = inheritedChildren.Dequeue();
+                    AdoptNode(childNode);
+
+                    Layout = childNode.Layout;
                 }
                 else
                 {
@@ -62,15 +96,13 @@ namespace Flighter
                     ConnectElement(new StateElement(state));
 
                     // Manually do the first build. The rest will be handled with state updates.
-                    var child = state.Build(BuildContext);
-                    var childNode = Add(child, BuildContext);
+                    var child = state.Build(this.buildContext);
+                    var childNode = Add(child, this.buildContext);
 
-                    BuildResult = childNode.BuildResult;
+                    Layout = childNode.Layout;
                 }
-
-                BuildResult = children[0].BuildResult;
             }
-            else if (Widget is LayoutWidget lw)
+            else if (this.widget is LayoutWidget lw)
             {
                 if (lw is DisplayWidget dw)
                 {
@@ -83,8 +115,16 @@ namespace Flighter
                         ConnectElement(dw.CreateElement());
                     }
                 }
+                else if (inheritedElementNode != null)
+                    throw new Exception("This widget should not inherit ElementNode.");
 
-                BuildResult = lw.Layout(buildContext, this);
+                var buildResults = lw.Layout(buildContext, this);
+
+                Layout = new NodeLayout(buildResults.size, Vector2.zero);
+            }
+            else
+            {
+                throw new Exception("Unsupported Widget type: " + this.widget.GetType());
             }
 
             // Remove any inherited children which have not been used.
@@ -109,42 +149,47 @@ namespace Flighter
             ElementNode childElementNode = null;
             Queue<WidgetNode> orphans = null;
 
-            if (inheritedChildren != null)
+            if ((inheritedChildren?.Count ?? 0) > 0)
             {
-                try
+                var c = inheritedChildren.Dequeue();
+                // The context and widget are the same, so no need to add the new widget.
+                if (context.Equals(c.buildContext) && widget.IsSame(c.widget))
                 {
-                    var c = inheritedChildren.Dequeue();
-                    // The context and widget are the same, so no need to add the new widget.
-                    if (context == c.BuildContext && widget.IsSame(c.Widget))
-                    {
-                        children.Add(c);
-                        c.parent = this;
-                        return c;
-                        // TODO: need to connect to element tree?
-                    }
-                    
-                    if (widget.CanReplace(c.Widget))
-                    {
-                        childElementNode = c.DisconnectElementNode();
-                        orphans = c.PruneAndAdopt();
-                    }
-                    else
-                    {
-                        c.Prune();
-                    }
+                    AdoptNode(c);
+                    return c;
                 }
-                catch (InvalidOperationException) { }
+                    
+                if (widget.CanReplace(c.widget))
+                {
+                    childElementNode = c.elementNode;
+                    c.elementNode = null;
+                    orphans = c.EmancipateChildrenAndPrune();
+                }
+                else
+                {
+                    c.Prune();
+                }
             }
 
             WidgetNode child = new WidgetNode(
-                                        widget,
-                                        context,
-                                        this,
-                                        childElementNode,
-                                        orphans);
+                                        widget: widget,
+                                        buildContext: context,
+                                        parent: this,
+                                        inheritedElementNode: childElementNode,
+                                        inheritedChildren: orphans);
 
             children.Add(child);
             return child;
+        }
+
+        public void SetOffset(Vector2 offset)
+        {
+            if (elementNode == null)
+                throw new Exception("Only Widgets with connected element node can have an offset.");
+            if (!elementNode.IsDirty)
+                throw new Exception("Cannot set offset when attached element node is clean.");
+
+            Layout = new NodeLayout(Layout.size, offset);
         }
 
         /// <summary>
@@ -166,28 +211,38 @@ namespace Flighter
         }
 
         /// <summary>
-        /// Disconnect this tree from the element tree.
-        /// If this node is itself connected, then that connection is broken.
-        /// Otherwise, this is called on it's children.
+        /// Connect the given node to this.
         /// </summary>
-        /// <returns>The disconnected node, if there is one. Null otherwise.</returns>
-        ElementNode DisconnectElementNode()
+        /// <param name="node">The node to adopt. This must be a free node.</param>
+        void AdoptNode(WidgetNode node)
         {
-            if (elementNode != null)
-            {
-                elementNode.Emancipate();
-                return  elementNode;
-            }
-            return null;
+            children.Add(node);
+            node.parent = this;
+
+            var nearestAncestorElementNode = NearestAncestorElementNode();
+            node.GetElementSurface().ForEach((e) => ConnectInheritedElementNode(e, nearestAncestorElementNode));
+        }
+
+        /// <summary>
+        /// Disconnect the element surface.
+        /// </summary>
+        /// <returns>The element surface, ie the nodes emancipated.</returns>
+        List<ElementNode> EmancipateElementSurface()
+        {
+            var surface = GetElementSurface();
+            surface.ForEach((e) => e.Emancipate());
+            return surface;
         }
 
         /// <summary>
         /// Connect the given element node to this.
         /// </summary>
         /// <param name="node"></param>
-        void ConnectInheritedElementNode(ElementNode node)
+        /// <param name="nearestAncestor">Manually pass the nearest ancestor to avoid searching each call.</param>
+        void ConnectInheritedElementNode(ElementNode node, ElementNode nearestAncestor = null)
         {
-            var nearestAncestor = NearestAncestorElementNode();
+            nearestAncestor = nearestAncestor ?? NearestAncestorElementNode();
+
             elementNode = node;
             // If there is no nearestAncestor, that's fine! We will be the root.
             nearestAncestor?.ConnectNode(elementNode);
@@ -235,7 +290,7 @@ namespace Flighter
         /// This node's elements will be deconstructed, but children will be left alone.
         /// </summary>
         /// <returns></returns>
-        Queue<WidgetNode> PruneAndAdopt()
+        Queue<WidgetNode> EmancipateChildrenAndPrune()
         {
             var emancipatedChildren = EmancipateChildren();
 
@@ -257,29 +312,38 @@ namespace Flighter
             return emancipatedChildren;
         }
 
+        /// <summary>
+        /// Get all element nodes that would attach to an ancestor.
+        /// </summary>
+        /// <returns></returns>
+        List<ElementNode> GetElementSurface()
+        {
+            if (elementNode != null)
+                return new List<ElementNode> { elementNode };
+
+            var r = new List<ElementNode>();
+            children.ForEach((c) => r.AddRange(c.GetElementSurface()));
+
+            return r;
+        }
+
         void PruneInheritedChildren()
         {
-            while (inheritedChildren != null)
-            {
-                try
-                {
-                    inheritedChildren.Dequeue().Prune();
-                }
-                catch (InvalidOperationException)
-                {
-                    inheritedChildren = null;
-                }
-            }
+            while ((inheritedChildren?.Count ?? 0) > 0)
+                inheritedChildren.Dequeue().Prune();
+
+            inheritedChildren = null;
         }
 
         /// <summary>
         /// Remove this from its parent.
-        /// Does NOT disconnect an attached element from the element tree.
+        /// Also disconnects any attached elements from the element tree.
         /// </summary>
         void Emancipate()
         {
             parent?.children?.Remove(this);
             parent = null;
+            EmancipateElementSurface();
         }
 
         /// <summary>

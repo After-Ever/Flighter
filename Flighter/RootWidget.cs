@@ -16,7 +16,11 @@ namespace Flighter
             var rootWidget = new RootWidget(child);
             var rootElementNode = new RootElementNode(baseTransform);
 
-            var widgetNode = new WidgetNode(rootWidget, initialBuildContext, null, rootElementNode);
+            var widgetNode = new WidgetNode(
+                rootWidget, 
+                initialBuildContext, 
+                null, 
+                inheritedElementNode: rootElementNode);
 
             return (widgetNode, rootElementNode);
         }
@@ -36,7 +40,7 @@ namespace Flighter
         public override BuildResult Layout(BuildContext context, WidgetNode node)
         {
             var childNode = node.Add(child, context);
-            return childNode.BuildResult;
+            return new BuildResult(childNode.Layout.size);
         }
     }
 }

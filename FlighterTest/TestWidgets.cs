@@ -41,11 +41,11 @@ namespace FlighterTest
 
         public override BuildResult Layout(BuildContext context, WidgetNode node)
         {
-            BuildResult l = new BuildResult(0,0), r = new BuildResult(0,0);
+            NodeLayout l = new NodeLayout(0,0), r = new NodeLayout(0,0);
             if (left != null)
-                l = node.Add(left, context).BuildResult;
+                l = node.Add(left, context).Layout;
             if (right != null)
-                r = node.Add(right, context).BuildResult;
+                r = node.Add(right, context).Layout;
 
             float x = Math.Max(l.size.x, r.size.x);
             float y = Math.Max(l.size.y, r.size.y);
@@ -69,7 +69,7 @@ namespace FlighterTest
         }
     }
 
-    public class TestStatefulWidget : StatefullWidget
+    public class TestStatefulWidget : StatefulWidget
     {
         public override State CreateState()
         {

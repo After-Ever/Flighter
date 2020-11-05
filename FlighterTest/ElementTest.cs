@@ -10,7 +10,7 @@ namespace FlighterTest
         public bool UpdateCalled { get; private set; } = false;
         public bool ClearCalled { get; private set; } = false;
 
-        public override string Name => "TestElement";
+        public override string name => "TestElement";
         
         protected override void _Init() { InitCalled = true; }
         protected override void _Update() { UpdateCalled = true; }

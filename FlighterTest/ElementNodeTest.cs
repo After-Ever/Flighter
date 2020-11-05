@@ -141,7 +141,7 @@ namespace FlighterTest
             root.Update();
             c.SetDirty();
 
-            Assert.IsTrue(root.HasDirtyChild && root.IsDirty);
+            Assert.IsTrue(root.HasDirtyChild && !root.IsDirty);
         }
 
         [TestMethod]
@@ -158,7 +158,7 @@ namespace FlighterTest
 
             c.SetDirty();
 
-            Assert.IsTrue(root.HasDirtyChild && root.IsDirty);
+            Assert.IsTrue(root.HasDirtyChild && !root.IsDirty);
         }
 
         [TestMethod]

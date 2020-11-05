@@ -10,9 +10,9 @@ namespace Flighter
     {
         public readonly Vector2 size;
 
-        public BuildResult(float x, float y)
+        public BuildResult(float width, float height)
         {
-            size = new Vector2(x, y);
+            size = new Vector2(width, height);
         }
 
         public BuildResult(Vector2 size)
