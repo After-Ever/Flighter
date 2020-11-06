@@ -6,7 +6,7 @@ namespace Flighter
 {
     public class StateElement : Element
     {
-        public override string name => "State";
+        public override string Name => "State";
 
         public readonly State state; 
 

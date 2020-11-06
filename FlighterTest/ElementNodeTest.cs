@@ -7,12 +7,14 @@ namespace FlighterTest
     [TestClass]
     public class ElementNodeTest
     {
+        ElementNode MakeRoot() => new RootElementNode(new TestDisplayRect());
+
         [TestMethod]
         public void UpdateInitializes()
         {
             TestElement e1, e2, e3;
 
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
 
             var c1 = root.AddChild(e1 = new TestElement());
             var c2 = root.AddChild(e2 = new TestElement());
@@ -22,10 +24,10 @@ namespace FlighterTest
             root.Update();
 
             Assert.IsTrue(
-                root.Element.IsInitialized &&
-                c1.Element.IsInitialized &&
-                c2.Element.IsInitialized &&
-                g1.Element.IsInitialized);
+                root.element.IsInitialized &&
+                c1.element.IsInitialized &&
+                c2.element.IsInitialized &&
+                g1.element.IsInitialized);
 
             Assert.IsTrue(
                 e1.InitCalled &&
@@ -38,7 +40,7 @@ namespace FlighterTest
         {
             TestElement e1, e2, e3;
 
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
 
             var c1 = root.AddChild(e1 = new TestElement());
             var c2 = root.AddChild(e2 = new TestElement());
@@ -71,7 +73,7 @@ namespace FlighterTest
         [TestMethod]
         public void UpdateCleans()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
 
             var c1 = root.AddChild(new TestElement());
             var c2 = root.AddChild(new TestElement());
@@ -91,7 +93,7 @@ namespace FlighterTest
         public void AddingChildren()
         {
             // Make the root.
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
 
             // Add children.
             var c1 = root.AddChild(new TestElement());
@@ -124,7 +126,7 @@ namespace FlighterTest
         [TestMethod]
         public void SetDirtySetsSelf()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
             // Update to set clean.
             root.Update();
             root.SetDirty();
@@ -134,7 +136,7 @@ namespace FlighterTest
         [TestMethod]
         public void SetDirtyUpdatesParent()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
             var c = root.AddChild(new TestElement());
 
             // Update to set clean.
@@ -147,7 +149,7 @@ namespace FlighterTest
         [TestMethod]
         public void SetDirtyPropagates()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
             var c = root
                 .AddChild(new TestElement())
                 .AddChild(new TestElement())
@@ -164,7 +166,7 @@ namespace FlighterTest
         [TestMethod]
         public void EmancipateSetsDirty()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
             var c = root.AddChild(new TestElement());
 
             root.Update();

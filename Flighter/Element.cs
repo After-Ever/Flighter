@@ -1,7 +1,5 @@
 ﻿using System;
 
-using UnityEngine;
-
 namespace Flighter
 {
     /// <summary>
@@ -10,7 +8,7 @@ namespace Flighter
     public abstract class Element
     {
         protected WidgetNode widgetNode;
-        public Widget widget => widgetNode?.widget;
+        public Widget Widget => widgetNode?.widget;
 
         /// <summary>
         /// To be called when the element would like an update. Should
@@ -28,12 +26,12 @@ namespace Flighter
         /// Should not be modified outside the element, save for changing
         /// family hierarchy.
         /// 
-        /// This will be null before <see cref="Init(RectTransform)"/> is called,
+        /// This will be null before <see cref="Init(IDisplayRect)"/> is called,
         /// and after <see cref="TearDown"/> is called.
         /// </summary>
-        public RectTransform RectTransform { get; private set; }
+        public IDisplayRect DisplayRect { get; private set; }
 
-        public virtual string name => "Element";
+        public virtual string Name => "Element";
 
         // The following are for the subclass implementations.
 
@@ -44,11 +42,11 @@ namespace Flighter
         /// Instrument the element, displaying it.
         /// </summary>
         /// <param name="rectTransform"></param>
-        public void Init(RectTransform rectTransform)
+        public void Init(IDisplayRect displayRect)
         {
             if (IsInitialized) return;
-
-            RectTransform = rectTransform;
+            
+            DisplayRect = displayRect ?? throw new ArgumentNullException();
             SizeAndPositionRect();
             _Init();
 
@@ -78,10 +76,10 @@ namespace Flighter
         public void TearDown()
         {
             if (!IsInitialized) return;
-#if !TEST
-            UnityEngine.Object.Destroy(RectTransform.gameObject);
-#endif
-            RectTransform = null;
+
+            DisplayRect.TearDown();
+
+            DisplayRect = null;
             IsInitialized = false;
             widgetNode = null;
         }
@@ -93,11 +91,11 @@ namespace Flighter
 
         void SizeAndPositionRect()
         {
-#if !TEST
-            RectTransform.anchoredPosition = WidgetNode.BuildResult.Offset;
-            RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, WidgetNode.BuildResult.Size.x);
-            RectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, WidgetNode.BuildResult.Size.y);
-#endif
+            if (widgetNode == null)
+                return;
+
+            DisplayRect.Size = widgetNode.layout.size;
+            DisplayRect.Offset = widgetNode.layout.offset;
         }
     }
 

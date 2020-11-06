@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using UnityEngine;
-
 namespace Flighter
 {
     public struct NodeLayout
     {
-        public Vector2 size, offset;
+        public Size size;
+        public Point offset;
 
-        public NodeLayout(Vector2 size, Vector2 offset)
+        public NodeLayout(Size size, Point offset)
         {
             this.size = size;
             this.offset = offset;
@@ -17,8 +16,8 @@ namespace Flighter
 
         public NodeLayout(float width, float height, float x = 0, float y = 0)
         {
-            size = new Vector2(width, height);
-            offset = new Vector2(x, y);
+            size = new Size(width, height);
+            offset = new Point(x, y);
         }
     }
     
@@ -47,6 +46,8 @@ namespace Flighter
 
             if (elementNode != null)
             {
+                elementNode.element.UpdateWidgetNode(this);
+
                 // Connect first so we don't connect to ourself!
                 // If there is no ancestor, that's fine! We'll just be a root.
                 GetNearestAncestorElementNode()?.ConnectNode(elementNode);
@@ -56,13 +57,14 @@ namespace Flighter
             children = childrenBuilders.ConvertAll((c) => c.Build(this));
         }
 
-        public void UpdateConnection(WidgetNode parent, NodeLayout layout)
+        public void UpdateConnection(WidgetNode parent, NodeLayout? layout = null)
         {
             if (parent != null)
                 throw new Exception("Node must not have parent to udpate the connection.");
 
             this.parent = parent;
-            this.layout = layout;
+            if (layout != null)
+                this.layout = layout.Value;
 
             var elementParent = parent.GetNearestAncestorElementNode();
             GetElementSurface().ForEach((e) => elementParent.ConnectNode(e));
@@ -84,22 +86,43 @@ namespace Flighter
                 {
                     (var widget, var context) = c;
 
-                    WidgetNode toReplace = null;
-                    if (freeChildren?.Count > 0)
-                        toReplace = freeChildren.Dequeue();
+                    ElementNode nodeToInherit = null;
+                    Queue<WidgetNode> childrenToInherit = null;
 
-                    // TODO, before directly passing the replaced element node and children, should check if they are the same, or replacement is allowed.
-                    var newBuilder = new WidgetNodeBuilder(
-                        null, 
+                    if (freeChildren?.Count > 0)
+                    {
+                        var toReplace = freeChildren.Dequeue();
+
+                        if (context.Equals(toReplace.buildContext) && widget.IsSame(toReplace.widget))
+                        {
+                            toReplace.UpdateConnection(this);
+                            return toReplace;
+                        }
+
+                        if (widget.CanReplace(toReplace.widget))
+                        {
+                            nodeToInherit = toReplace.elementNode;
+                            childrenToInherit = toReplace.EmancipateChildren();
+                        }
+
+                        toReplace.Prune();
+                    }
+
+                    return new WidgetNodeBuilder(
                         widget, 
                         context,
-                        toReplace.elementNode,
-                        toReplace.EmancipateChildrenAndPrune());
-                    
-                    return newBuilder.Build(this);
+                        nodeToInherit,
+                        childrenToInherit
+                      ).Build(this);
                 });
 
             children.AddRange(newChildNodes);
+
+            // Clear any remaining emancipated children.
+            while (freeChildren?.Count > 0)
+            {
+                freeChildren.Dequeue().Prune();
+            }
         }
         
         /// <summary>

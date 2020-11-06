@@ -8,11 +8,11 @@ namespace FlighterTest
     [TestClass]
     public class WidgetNodeTest
     {
-        WidgetNode makeSimpleRoot()
+        WidgetNode MakeSimpleRoot()
             => RootWidget.MakeRootWidgetNode(
                 new TestDisplayWidget(), 
                 new BuildContext(), 
-                null)
+                new TestDisplayRect())
                     .Item1;
 
         [TestMethod]
@@ -21,7 +21,7 @@ namespace FlighterTest
         /// </summary>
         public void SimpleTest()
         {
-            makeSimpleRoot();
+            MakeSimpleRoot();
         }
 
         [TestMethod]
@@ -41,7 +41,7 @@ namespace FlighterTest
             (var root, var elementNode) = RootWidget.MakeRootWidgetNode(
                 w,
                 new BuildContext(),
-                null);
+                new TestDisplayRect());
 
             // Update the element tree.
             elementNode.Update();
@@ -56,15 +56,15 @@ namespace FlighterTest
         /// </summary>
         public void GetBuildResults()
         {
-            var root = makeSimpleRoot();
+            var root = MakeSimpleRoot();
 
-            Assert.AreEqual(new UnityEngine.Vector2(10,10), root.layout.size);
+            Assert.AreEqual(new Size(10,10), root.layout.size);
         }
 
         [TestMethod]
         public void ReplaceChild()
         {
-            var root = makeSimpleRoot();
+            var root = MakeSimpleRoot();
             root.ReplaceChildren(new System.Collections.Generic.List<(Widget, BuildContext)>
             {
                 (new TestDisplayWidget(), new BuildContext()),

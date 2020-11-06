@@ -24,7 +24,7 @@ namespace Flighter.Core
 
     class ColoredBoxElement : Element
     {
-        public override string name => "ColoredBox";
+        public override string Name => "ColoredBox";
 
         protected override void _Init()
         {

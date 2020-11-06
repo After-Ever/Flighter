@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using UnityEngine;
-
 namespace Flighter
 {
     public class ElementNode
     {
-        public Element Element { get; private set; }
+        public readonly Element element;
 
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
@@ -23,10 +21,10 @@ namespace Flighter
 
         public ElementNode(Element element, ElementNode parent)
         {
-            this.Element = element;
+            this.element = element ?? throw new ArgumentNullException();
             this.parent = parent;
 
-            Element.SetDirtyCallback(() => SetDirty());
+            this.element.SetDirtyCallback(() => SetDirty());
         }
 
         public void Update()
@@ -35,9 +33,9 @@ namespace Flighter
 
             if (IsDirty)
             {
-                if (Element.IsInitialized)
+                if (element.IsInitialized)
                 {
-                    Element.Update();
+                    element.Update();
                 }
                 else
                 {
@@ -78,12 +76,10 @@ namespace Flighter
             children.Add(node);
             node.parent = this;
             
-            if (node.Element.IsInitialized)
+            if (node.element.IsInitialized)
             {
-                var rect = node.Element.RectTransform;
-#if !TEST
-                rect.SetParent(Element.RectTransform, false);
-#endif
+                var rect = node.element.DisplayRect;
+                rect.SetParent(element.DisplayRect);
             }
             
             SetChildDirty();
@@ -99,10 +95,18 @@ namespace Flighter
 
         /// <summary>
         /// Remove this from its parent.
+        /// Sets this as dirty.
         /// </summary>
         public void Emancipate()
         {
-            parent?.RemoveChild(this);
+            if (parent == null)
+                return;
+
+            if (!parent.children.Remove(this))
+                throw new Exception("Node not in parent's child list.");
+            
+            parent = null;
+            SetDirty();
         }
 
         /// <summary>
@@ -113,7 +117,7 @@ namespace Flighter
             // TODO: What about children?
             Emancipate();
 
-            Element.TearDown();
+            element.TearDown();
         }
 
         void SetClean()
@@ -136,38 +140,16 @@ namespace Flighter
             return children.FindAll((n) => n.IsDirty || n.HasDirtyChild);
         }
 
-        /// <summary>
-        /// Remove a node from this node's children.
-        /// </summary>
-        /// <param name="node">The node to remove.</param>
-        void RemoveChild(ElementNode node)
-        {
-            if (!children.Remove(node))
-                throw new Exception("Can't remove none child node");
-#if !TEST
-            node.Element.RectTransform?.SetParent(null);
-#endif
-            node.parent = null;
-            node.SetDirty();
-
-            if (HasDirtyChild 
-                && children.Find((n) => n.IsDirty || n.HasDirtyChild) == null)
-                HasDirtyChild = false;
-        }
-
         protected virtual void InitElement()
         {
-            if (Element.IsInitialized) return;
-            if (parent == null || !parent.Element.IsInitialized)
+            if (element.IsInitialized) return;
+            if (parent == null || !parent.element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
-#if !TEST
-            var newObj = new GameObject(Element.Name);
-            var rectTransform = newObj.GetComponent<RectTransform>();
-            rectTransform.SetParent(parent.Element.RectTransform, false);
-#else
-            RectTransform rectTransform = null;
-#endif
-            Element.Init(rectTransform);
+
+            var rect = parent.element.DisplayRect.CreateChild();
+            rect.Name = element.Name;
+
+            element.Init(rect);
         }
 
         public string Print(int indent = 0)
@@ -176,7 +158,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += Element.name + "\n";
+            r += element.Name + "\n";
 
             foreach (var c in children)
                 r += c.Print(indent + 1);

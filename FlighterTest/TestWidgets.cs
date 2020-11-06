@@ -31,7 +31,7 @@ namespace FlighterTest
 
     public class TestLayoutWidget : LayoutWidget
     {
-        Widget left, right;
+        readonly Widget left, right;
 
         public TestLayoutWidget(Widget left, Widget right)
         {
@@ -41,17 +41,17 @@ namespace FlighterTest
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            UnityEngine.Vector2 l, r;
-            l = r = UnityEngine.Vector2.zero;
+            Size l, r;
+            l = r = Size.Zero;
             if (left != null)
                 l = node.AddChildWidget(left, context).size;
             if (right != null)
                 r = node.AddChildWidget(right, context).size;
 
-            float x = Math.Max(l.x, r.x);
-            float y = Math.Max(l.y, r.y);
+            float width = Math.Max(l.width, r.width);
+            float height = Math.Max(l.height, r.height);
 
-            return new BuildResult(x, y);
+            return new BuildResult(width, height);
         }
     }
 

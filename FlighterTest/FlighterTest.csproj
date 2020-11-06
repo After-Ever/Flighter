@@ -16,10 +16,4 @@
     <ProjectReference Include="..\Flighter\Flighter.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="UnityEngine">
-      <HintPath>..\Flighter\deps\UnityEngine.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

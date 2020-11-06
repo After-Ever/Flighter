@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
 
 namespace Flighter
 {
     public class WidgetNodeBuilder
     {
-        public Vector2 Offset;
-
-        readonly WidgetNodeBuilder parent;
+        public Point Offset;
+        
         readonly Widget widget;
         readonly BuildContext buildContext;
-        public readonly Vector2 size;
+        public readonly Size size;
         readonly ElementNode elementNode;
 
         readonly List<WidgetNodeBuilder> children = new List<WidgetNodeBuilder>();
@@ -26,7 +23,6 @@ namespace Flighter
         WidgetNode builtNode = null;
 
         public WidgetNodeBuilder(
-            WidgetNodeBuilder parent,
             Widget widget, 
             BuildContext buildContext,
             ElementNode inheritedElementNode = null,
@@ -51,8 +47,15 @@ namespace Flighter
             {
                 if (inheritedElementNode != null)
                 {
+                    if (inheritedChildren == null || inheritedChildren.Count != 1)
+                        throw new Exception("When StatefulWidgets inherit an element node, they must inherit exactly one child.");
+
                     elementNode = inheritedElementNode;
-                    // TODO: Need to attach inherited child...
+
+                    // Directly add the inherited child, as the inherited element node
+                    // is marked dirty, so the state will rebuild the widget when it's element is updated.
+                    var c = inheritedChildren.Dequeue();
+                    children.Add(new WidgetNodeBuilder(c));
                 }
                 else
                 {
@@ -75,6 +78,12 @@ namespace Flighter
                 }
 
                 size = lw.Layout(buildContext, this).size;
+            }
+
+            // Clear any remaining inherited children.
+            while (inheritedChildren?.Count > 0)
+            {
+                inheritedChildren.Dequeue().Prune();
             }
         }
 
@@ -143,7 +152,7 @@ namespace Flighter
                 toReplace.Prune();
             }
 
-            var childBuilder = new WidgetNodeBuilder(this, widget, context, childElementNode, orphans);
+            var childBuilder = new WidgetNodeBuilder(widget, context, childElementNode, orphans);
             children.Add(childBuilder);
             return childBuilder;
         }

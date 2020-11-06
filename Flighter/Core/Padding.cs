@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-using UnityEngine;
 namespace Flighter.Core
 {
     public struct EdgetInsets
@@ -73,10 +72,10 @@ namespace Flighter.Core
                 this.child, 
                 new BuildContext(constraints));
 
-            child.Offset = new Vector2(edgetInsets.left, edgetInsets.top);
+            child.Offset = new Point(edgetInsets.left, edgetInsets.top);
             var childSize = child.size;
 
-            return new BuildResult(childSize.x + horizontal, childSize.y + vertical);
+            return new BuildResult(childSize.width + horizontal, childSize.height + vertical);
         }
     }
 }

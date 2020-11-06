@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-using UnityEngine;
-
 namespace Flighter
 {
     public class RootWidget : DisplayWidget
@@ -11,13 +9,12 @@ namespace Flighter
         static public (WidgetNode, ElementNode) MakeRootWidgetNode(
             Widget child,
             BuildContext initialBuildContext,
-            RectTransform baseTransform)
+            IDisplayRect baseRect)
         {
             var rootWidget = new RootWidget(child);
-            var rootElementNode = new RootElementNode(baseTransform);
+            var rootElementNode = new RootElementNode(baseRect);
 
             var widgetNode = new WidgetNodeBuilder(
-                null,
                 rootWidget,
                 initialBuildContext,
                 rootElementNode).Build(null);
