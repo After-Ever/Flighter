@@ -6,24 +6,54 @@ namespace Flighter
 {
     public struct Point
     {
+        public static Point Zero => new Point();
+
         public float x;
         public float y;
 
-        public static Point Zero => new Point();
+        public Size ToSize() => new Size(x, y);
 
         public Point(float x = 0, float y = 0)
         {
             this.x = x;
             this.y = y;
         }
+
+        public static Point operator +(Point a, Point b)
+        {
+            return new Point(a.x + b.x, a.y + b.y);
+        }
+
+        public static Point operator -(Point p)
+        {
+            return new Point(-p.x, -p.y);
+        }
+
+        public static Point operator -(Point a, Point b)
+        {
+            return a + (-b);
+        }
+
+        public static Point operator *(Point p, float s)
+        {
+            return new Point(p.x * s, p.y * s);
+        }
+
+        public static Point operator *(float s, Point p) => p * s;
+
+        public static Point operator /(Point p, float s) => p * (1 / s);
+
+        public static float operator *(Point a, Point b) => a.x * b.x + a.y * b.y;
     }
 
     public struct Size
     {
+        public static Size Zero => new Size();
+
         public float width;
         public float height;
 
-        public static Size Zero => new Size();
+        public Point ToPoint() => new Point(width, height);
 
         public Size(float width = 0, float height = 0)
         {
@@ -66,6 +96,21 @@ namespace Flighter
             this.maxWidth = maxWidth;
 
             CheckConstraints();
+        }
+
+        /// <summary>
+        /// The biggest size which satisfies the constrainst, if they are bounded.
+        /// If a dimension is unbounded, the min will be returned.
+        /// </summary>
+        public Size MaxSize
+        {
+            get
+            {
+                float width = float.IsPositiveInfinity(maxWidth) ? minWidth : maxWidth;
+                float height = float.IsPositiveInfinity(minHeight) ? minHeight : maxHeight;
+
+                return new Size(width, height);
+            }
         }
 
         /// <summary>

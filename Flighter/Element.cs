@@ -8,7 +8,10 @@ namespace Flighter
     public abstract class Element
     {
         protected WidgetNode widgetNode;
-        public Widget Widget => widgetNode?.widget;
+        protected W GetWidget<W>() where W : Widget
+        {
+            return widgetNode.widget as W;
+        }
 
         /// <summary>
         /// To be called when the element would like an update. Should
@@ -33,21 +36,25 @@ namespace Flighter
 
         public virtual string Name => "Element";
 
+        protected IComponentProvider componentProvider;
+
         // The following are for the subclass implementations.
 
         protected abstract void _Init();
         protected abstract void _Update();
 
         /// <summary>
-        /// Instrument the element, displaying it.
+        /// Instrument the element. Element not guaranteed to display correctly until
+        /// after <see cref="Update()"/> is called.
         /// </summary>
         /// <param name="rectTransform"></param>
-        public void Init(IDisplayRect displayRect)
+        public void Init(IDisplayRect displayRect, IComponentProvider componentProvider)
         {
             if (IsInitialized) return;
-            
+
+            componentProvider = componentProvider ?? throw new ArgumentNullException();
             DisplayRect = displayRect ?? throw new ArgumentNullException();
-            SizeAndPositionRect();
+
             _Init();
 
             IsInitialized = true;
@@ -94,8 +101,8 @@ namespace Flighter
             if (widgetNode == null)
                 return;
 
-            DisplayRect.Size = widgetNode.layout.size;
-            DisplayRect.Offset = widgetNode.layout.offset;
+            DisplayRect.Size = widgetNode.Size;
+            DisplayRect.Offset = widgetNode.Offset;
         }
     }
 

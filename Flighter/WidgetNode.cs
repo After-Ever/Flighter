@@ -25,11 +25,27 @@ namespace Flighter
     {
         public readonly Widget widget;
         public readonly BuildContext buildContext;
-        public NodeLayout layout;
-        
+
+        NodeLayout layout;
         WidgetNode parent;
         readonly List<WidgetNode> children;
         public readonly ElementNode elementNode;
+
+        public Size Size => layout.size;
+        public Point Offset
+        {
+            get
+            {
+                if (parent?.elementNode != null)
+                {
+                    return layout.offset;
+                }
+                else
+                {
+                    return layout.offset + parent?.Offset ?? throw new Exception("Not rooted in element tree.");
+                }
+            }
+        }
         
         public WidgetNode(
             Widget widget,

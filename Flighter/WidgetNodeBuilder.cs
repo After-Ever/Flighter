@@ -60,7 +60,6 @@ namespace Flighter
                 else
                 {
                     var state = sfw.CreateState();
-                    // Must connect the element before building the rest of the tree.
                     elementNode = new ElementNode(new StateElement(state), null);
 
                     // Manually do the first build. The rest will be handled with state updates.
@@ -76,6 +75,8 @@ namespace Flighter
                 {
                     elementNode = inheritedElementNode ?? new ElementNode(dw.CreateElement(), null);
                 }
+                else if (inheritedElementNode != null)
+                    throw new Exception("Pure layout widget cannot inherit element!");
 
                 size = lw.Layout(buildContext, this).size;
             }
@@ -90,7 +91,7 @@ namespace Flighter
         public WidgetNodeBuilder(WidgetNode builtNode)
         {
             this.builtNode = builtNode;
-            this.size = this.builtNode.layout.size;
+            this.size = this.builtNode.Size;
         }
 
         public WidgetNode Build(WidgetNode parent)

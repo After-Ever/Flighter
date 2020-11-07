@@ -1,24 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
 
 namespace Flighter.Core
 {
     public class ColoredBox : DisplayWidget
     {
+        public readonly Color color;
+
+        public ColoredBox(Color color)
+        {
+            this.color = color;
+        }
+
         public override bool IsSame(Widget other)
         {
-            throw new NotImplementedException();
+            return other is ColoredBox c && c.color == color;
         }
 
         public override Element CreateElement()
         {
-            throw new NotImplementedException();
+            return new ColoredBoxElement();
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            throw new NotImplementedException();
+            var size = context.constraints.MaxSize;
+            return new BuildResult(size);
         }
     }
 
@@ -26,14 +35,17 @@ namespace Flighter.Core
     {
         public override string Name => "ColoredBox";
 
+        IColorComponent component;
+
         protected override void _Init()
         {
-            throw new NotImplementedException();
+            component = componentProvider.CreateComponent<IColorComponent>();
+            DisplayRect.AddComponent(component);
         }
 
         protected override void _Update()
         {
-            throw new NotImplementedException();
+            component.Color = GetWidget<ColoredBox>().color;
         }
     }
 }

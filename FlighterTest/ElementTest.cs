@@ -8,9 +8,13 @@ namespace FlighterTest
     {
         public bool InitCalled { get; private set; } = false;
         public bool UpdateCalled { get; private set; } = false;
-        public bool ClearCalled { get; private set; } = false;
 
         public override string Name => "TestElement";
+
+        public void Reset()
+        {
+            InitCalled = UpdateCalled = false;
+        }
         
         protected override void _Init() { InitCalled = true; }
         protected override void _Update() { UpdateCalled = true; }
@@ -28,9 +32,8 @@ namespace FlighterTest
             Assert.IsFalse(testElement.IsInitialized);
             Assert.IsFalse(testElement.InitCalled);
             Assert.IsFalse(testElement.UpdateCalled);
-            Assert.IsFalse(testElement.ClearCalled);
 
-            testElement.Init(new TestDisplayRect());
+            testElement.Init(new TestDisplayRect(), new TestComponentProvider());
 
             // Set to initialized.
             Assert.IsTrue(testElement.IsInitialized);
@@ -49,7 +52,7 @@ namespace FlighterTest
             // Internal method should remain uncalled.
             Assert.IsFalse(testElement.UpdateCalled);
 
-            testElement.Init(new TestDisplayRect());
+            testElement.Init(new TestDisplayRect(), new TestComponentProvider());
 
             testElement.Update();
 

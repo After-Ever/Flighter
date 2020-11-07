@@ -10,6 +10,19 @@ namespace Flighter
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
 
+        IComponentProvider componentProvider;
+        IComponentProvider ComponentProvider
+        {
+            get
+            {
+                if (componentProvider != null)
+                    return componentProvider;
+
+                return componentProvider = 
+                    parent?.ComponentProvider ?? throw new Exception("Could not find component provider.");
+            }
+        }
+
         /// <summary>
         /// This node needs an update.
         /// </summary>
@@ -19,10 +32,11 @@ namespace Flighter
         /// </summary>
         public bool HasDirtyChild { get; private set; } = false;
 
-        public ElementNode(Element element, ElementNode parent)
+        public ElementNode(Element element, ElementNode parent, IComponentProvider componentProvider = null)
         {
             this.element = element ?? throw new ArgumentNullException();
             this.parent = parent;
+            this.componentProvider = componentProvider;
 
             this.element.SetDirtyCallback(() => SetDirty());
         }
@@ -60,7 +74,9 @@ namespace Flighter
             if (element.IsInitialized)
                 throw new Exception("Cannot add an initialized element!");
 
-            var node = new ElementNode(element, this);
+            // Just pass the componentProvider field (instead of the property)
+            // because we don't care if it's null here; it can always search later.
+            var node = new ElementNode(element, this, componentProvider);
             children.Add(node);
 
             SetChildDirty();
@@ -149,7 +165,9 @@ namespace Flighter
             var rect = parent.element.DisplayRect.CreateChild();
             rect.Name = element.Name;
 
-            element.Init(rect);
+            // Use the componentProvider property here to make sure we find it.
+            element.Init(rect, ComponentProvider);
+            element.Update();
         }
 
         public string Print(int indent = 0)

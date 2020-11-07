@@ -7,7 +7,7 @@ namespace FlighterTest
     [TestClass]
     public class ElementNodeTest
     {
-        ElementNode MakeRoot() => new RootElementNode(new TestDisplayRect());
+        ElementNode MakeRoot() => new RootElementNode(new TestDisplayRect(), new TestComponentProvider());
 
         [TestMethod]
         public void UpdateInitializes()
@@ -47,15 +47,12 @@ namespace FlighterTest
 
             var g1 = c2.AddChild(e3 = new TestElement());
 
-            // Call once to init.
-            root.Update();
-            // Call again to update, though nothing should be dirty.
+            // Update to set all nodes clean.
             root.Update();
 
-            Assert.IsFalse(
-                e1.UpdateCalled ||
-                e2.UpdateCalled || 
-                e3.UpdateCalled);
+            e1.Reset();
+            e2.Reset();
+            e3.Reset();
 
             c2.SetDirty();
 
@@ -113,8 +110,8 @@ namespace FlighterTest
         [TestMethod]
         public void ConnectNode()
         {
-            var a = new ElementNode(new TestElement(), null);
-            var b = new ElementNode(new TestElement(), null);
+            var a = new ElementNode(new TestElement(), null, new TestComponentProvider());
+            var b = new ElementNode(new TestElement(), null, new TestComponentProvider());
 
             a.ConnectNode(b);
 
@@ -183,11 +180,11 @@ namespace FlighterTest
         [TestMethod]
         public void EmancipatePreservesTreeState()
         {
-            var a = new ElementNode(new TestElement(), null);
+            var a = new ElementNode(new TestElement(), null, new TestComponentProvider());
             a.AddChild(new TestElement())
                     .AddChild(new TestElement());
             
-            var b = new ElementNode(new TestElement(), null);
+            var b = new ElementNode(new TestElement(), null, new TestComponentProvider());
             var youngestChild = 
                 b.AddChild(new TestElement())
                     .AddChild(new TestElement());

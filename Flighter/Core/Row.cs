@@ -4,14 +4,14 @@ using System.Text;
 
 namespace Flighter.Core
 {
-    public class Column : LayoutWidget
+    public class Row : LayoutWidget
     {
         public readonly List<Widget> children;
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            if (float.IsPositiveInfinity(context.constraints.maxHeight))
-                throw new Exception("Column cannot have unconstrained height.");
+            if (float.IsPositiveInfinity(context.constraints.maxWidth))
+                throw new Exception("Row cannot have unconstrained width.");
 
             Dictionary<Widget, WidgetNodeBuilder> widgetNodes = new Dictionary<Widget, WidgetNodeBuilder>();
 
@@ -27,48 +27,48 @@ namespace Flighter.Core
             });
 
             var absoluteBuildContext = new BuildContext(new BoxConstraints(
-                    minWidth: context.constraints.minWidth,
-                    maxWidth: context.constraints.maxWidth
+                    minHeight: context.constraints.minHeight,
+                    maxHeight: context.constraints.maxHeight
                 ));
 
-            float totalAbsoluteHeight = 0;
+            float totalAbsoluteWidth = 0;
             absoluteChildren.ForEach((c) =>
             {
                 var n = widgetNodes[c] = node.AddChildWidget(c, absoluteBuildContext);
-                totalAbsoluteHeight += n.size.height;
+                totalAbsoluteWidth += n.size.width;
             });
 
-            float remainingHeight = context.constraints.maxHeight - totalAbsoluteHeight;
+            float remainingWidth = context.constraints.maxWidth - totalAbsoluteWidth;
             float totalFlex = 0;
             flexChildren.ForEach((f) => totalFlex += f.flexValue);
 
             flexChildren.ForEach((f) =>
             {
-                float height = (f.flexValue / totalFlex) * remainingHeight;
+                float width = (f.flexValue / totalFlex) * remainingWidth;
                 var constraint = new BoxConstraints(
-                    minWidth: context.constraints.minWidth,
-                    maxWidth: context.constraints.maxWidth,
-                    minHeight: height,
-                    maxHeight: height); // TODO: Could give children the option to not fill the full space?
+                    minWidth: width,// TODO: Could give children the option to not fill the full space?
+                    maxWidth: width,
+                    minHeight: context.constraints.minHeight,
+                    maxHeight: context.constraints.maxHeight); 
 
                 widgetNodes[f] = node.AddChildWidget(f, new BuildContext(constraint));
             });
 
-            float runningHeightOffset = 0;
-            float maxWidth = 0;
+            float runningWidthOffset = 0;
+            float maxHeight = 0;
             // Now set all the offsets.
-            // TODO: Currently just drop all the widgets flush with the left edge, stacked one ontop of the other.
+            // TODO: Currently just drop all the widgets flush with the top edge, stacked one beside of the other.
             //       There should be options to change the alignment and spacing.
             children.ForEach((c) =>
             {
                 var n = widgetNodes[c];
-                n.Offset = new Point(0, runningHeightOffset);
+                n.Offset = new Point(runningWidthOffset, 0);
 
-                runningHeightOffset += n.size.height;
-                maxWidth = Math.Max(maxWidth, n.size.width);
+                runningWidthOffset += n.size.width;
+                maxHeight = Math.Max(maxHeight, n.size.height);
             });
 
-            return new BuildResult(maxWidth, runningHeightOffset);
+            return new BuildResult(runningWidthOffset, maxHeight);
         }
     }
 }

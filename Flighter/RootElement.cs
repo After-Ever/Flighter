@@ -17,21 +17,23 @@ namespace Flighter
     public class RootElementNode : ElementNode
     {
         readonly IDisplayRect parent;
+        readonly IComponentProvider componentProvider;
 
         /// <param name="parent">The parent object of
         /// the tree. This object will not be modified,
         /// and should not be modified externally.</param>
-        public RootElementNode(IDisplayRect parent)
-            : base(new RootElement(), null)
+        public RootElementNode(IDisplayRect parent, IComponentProvider componentProvider)
+            : base(new RootElement(), null, componentProvider)
         {
             this.parent = parent;
+            this.componentProvider = componentProvider;
         }
 
         // Overriding lets us avoid not having a parent,
         // by manually passing the rectTransform.
         protected override void InitElement()
         {
-            element.Init(parent);
+            element.Init(parent, componentProvider);
         }
     }
 }

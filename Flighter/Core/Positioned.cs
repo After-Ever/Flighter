@@ -4,11 +4,15 @@ using System.Text;
 
 namespace Flighter.Core
 {
-    public class Positioned : DisplayWidget
+    public class Positioned : LayoutWidget
     {
-        public override Element CreateElement()
+        public readonly Widget child;
+        public readonly Point offset;
+
+        public Positioned(Widget child, Point offset)
         {
-            throw new NotImplementedException();
+            this.child = child;
+            this.offset = offset;
         }
 
         public override bool IsSame(Widget other)
@@ -18,7 +22,10 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            throw new NotImplementedException();
+            var childNode = node.AddChildWidget(child, context);
+            childNode.Offset = offset;
+
+            return new BuildResult(childNode.size);
         }
     }
 }

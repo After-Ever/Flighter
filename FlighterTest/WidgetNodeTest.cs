@@ -12,7 +12,8 @@ namespace FlighterTest
             => RootWidget.MakeRootWidgetNode(
                 new TestDisplayWidget(), 
                 new BuildContext(), 
-                new TestDisplayRect())
+                new TestDisplayRect(),
+                new TestComponentProvider())
                     .Item1;
 
         [TestMethod]
@@ -41,7 +42,8 @@ namespace FlighterTest
             (var root, var elementNode) = RootWidget.MakeRootWidgetNode(
                 w,
                 new BuildContext(),
-                new TestDisplayRect());
+                new TestDisplayRect(),
+                new TestComponentProvider());
 
             // Update the element tree.
             elementNode.Update();
@@ -58,7 +60,7 @@ namespace FlighterTest
         {
             var root = MakeSimpleRoot();
 
-            Assert.AreEqual(new Size(10,10), root.layout.size);
+            Assert.AreEqual(new Size(10,10), root.Size);
         }
 
         [TestMethod]

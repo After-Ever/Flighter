@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 using Flighter;
-using Component = Flighter.Component;
 
 namespace FlighterTest
 {
@@ -13,7 +10,7 @@ namespace FlighterTest
         public Size Size { get; set; }
         public Point Offset { get; set; }
 
-        public void AddComponent(Component component)
+        public void AddComponent(IComponent component)
         {
             throw new NotImplementedException();
         }
@@ -28,7 +25,7 @@ namespace FlighterTest
             return new TestDisplayRect();
         }
 
-        public bool RemoveComponent(Flighter.Component component)
+        public bool RemoveComponent(IComponent component)
         {
             return true;
         }
