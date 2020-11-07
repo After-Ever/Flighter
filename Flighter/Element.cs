@@ -36,7 +36,7 @@ namespace Flighter
 
         public virtual string Name => "Element";
 
-        protected IComponentProvider componentProvider;
+        protected ComponentProvider componentProvider;
 
         // The following are for the subclass implementations.
 
@@ -48,7 +48,7 @@ namespace Flighter
         /// after <see cref="Update()"/> is called.
         /// </summary>
         /// <param name="rectTransform"></param>
-        public void Init(IDisplayRect displayRect, IComponentProvider componentProvider)
+        public void Init(IDisplayRect displayRect, ComponentProvider componentProvider)
         {
             if (IsInitialized) return;
 

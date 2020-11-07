@@ -13,7 +13,7 @@ namespace FlighterTest
                 new TestDisplayWidget(), 
                 new BuildContext(), 
                 new TestDisplayRect(),
-                new TestComponentProvider())
+                new ComponentProvider(new System.Collections.Generic.Dictionary<Type, Type>()))
                     .Item1;
 
         [TestMethod]
@@ -43,7 +43,7 @@ namespace FlighterTest
                 w,
                 new BuildContext(),
                 new TestDisplayRect(),
-                new TestComponentProvider());
+                new ComponentProvider(new System.Collections.Generic.Dictionary<Type, Type>()));
 
             // Update the element tree.
             elementNode.Update();

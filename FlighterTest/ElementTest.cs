@@ -33,7 +33,7 @@ namespace FlighterTest
             Assert.IsFalse(testElement.InitCalled);
             Assert.IsFalse(testElement.UpdateCalled);
 
-            testElement.Init(new TestDisplayRect(), new TestComponentProvider());
+            testElement.Init(new TestDisplayRect(), new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
 
             // Set to initialized.
             Assert.IsTrue(testElement.IsInitialized);
@@ -52,7 +52,7 @@ namespace FlighterTest
             // Internal method should remain uncalled.
             Assert.IsFalse(testElement.UpdateCalled);
 
-            testElement.Init(new TestDisplayRect(), new TestComponentProvider());
+            testElement.Init(new TestDisplayRect(), new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
 
             testElement.Update();
 

@@ -10,7 +10,7 @@ namespace Flighter
             Widget child,
             BuildContext initialBuildContext,
             IDisplayRect baseRect,
-            IComponentProvider componentProvider)
+            ComponentProvider componentProvider)
         {
             var rootWidget = new RootWidget(child);
             var rootElementNode = new RootElementNode(baseRect, componentProvider);

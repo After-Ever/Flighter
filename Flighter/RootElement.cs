@@ -17,12 +17,12 @@ namespace Flighter
     public class RootElementNode : ElementNode
     {
         readonly IDisplayRect parent;
-        readonly IComponentProvider componentProvider;
+        readonly ComponentProvider componentProvider;
 
         /// <param name="parent">The parent object of
         /// the tree. This object will not be modified,
         /// and should not be modified externally.</param>
-        public RootElementNode(IDisplayRect parent, IComponentProvider componentProvider)
+        public RootElementNode(IDisplayRect parent, ComponentProvider componentProvider)
             : base(new RootElement(), null, componentProvider)
         {
             this.parent = parent;

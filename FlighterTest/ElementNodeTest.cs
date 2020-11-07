@@ -7,7 +7,7 @@ namespace FlighterTest
     [TestClass]
     public class ElementNodeTest
     {
-        ElementNode MakeRoot() => new RootElementNode(new TestDisplayRect(), new TestComponentProvider());
+        ElementNode MakeRoot() => new RootElementNode(new TestDisplayRect(), new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
 
         [TestMethod]
         public void UpdateInitializes()
@@ -110,8 +110,8 @@ namespace FlighterTest
         [TestMethod]
         public void ConnectNode()
         {
-            var a = new ElementNode(new TestElement(), null, new TestComponentProvider());
-            var b = new ElementNode(new TestElement(), null, new TestComponentProvider());
+            var a = new ElementNode(new TestElement(), null, new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
+            var b = new ElementNode(new TestElement(), null, new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
 
             a.ConnectNode(b);
 
@@ -180,11 +180,11 @@ namespace FlighterTest
         [TestMethod]
         public void EmancipatePreservesTreeState()
         {
-            var a = new ElementNode(new TestElement(), null, new TestComponentProvider());
+            var a = new ElementNode(new TestElement(), null, new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
             a.AddChild(new TestElement())
                     .AddChild(new TestElement());
             
-            var b = new ElementNode(new TestElement(), null, new TestComponentProvider());
+            var b = new ElementNode(new TestElement(), null, new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
             var youngestChild = 
                 b.AddChild(new TestElement())
                     .AddChild(new TestElement());

@@ -35,11 +35,11 @@ namespace Flighter.Core
     {
         public override string Name => "ColoredBox";
 
-        IColorComponent component;
+        ColorComponent component;
 
         protected override void _Init()
         {
-            component = componentProvider.CreateComponent<IColorComponent>();
+            component = componentProvider.CreateComponent<ColorComponent>();
             DisplayRect.AddComponent(component);
         }
 

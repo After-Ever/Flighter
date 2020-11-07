@@ -4,11 +4,11 @@ using System.Text;
 
 using Flighter;
 
-namespace FlighterTest
+namespace FlighterUnity
 {
-    public class TestComponentProvider : IComponentProvider
+    public class DisplayRectProvider : IDisplayRectProvider
     {
-        public C CreateComponent<C>() where C : IComponent
+        public IDisplayRect CreateDisplayRect()
         {
             throw new NotImplementedException();
         }

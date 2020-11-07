@@ -50,11 +50,11 @@ namespace Flighter.Core
 
     public class TextElement : Element
     {
-        ITextComponent component;
+        TextComponent component;
 
         protected override void _Init()
         {
-            component = componentProvider.CreateComponent<ITextComponent>();
+            component = componentProvider.CreateComponent<TextComponent>();
             DisplayRect.AddComponent(component);
         }
 

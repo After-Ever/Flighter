@@ -27,28 +27,28 @@ namespace Flighter.Core
         Overflow
     }
 
-    public interface ITextComponent : IComponent
+    public abstract class TextComponent : Component
     {
         /// <summary>
         /// The text to display.
         /// </summary>
-        string Data { get; set; }
+        public abstract string Data { get; set; }
         /// <summary>
         /// Style of the text.
         /// </summary>
-        TextStyle Style { get; set; }
+        public abstract TextStyle Style { get; set; }
         /// <summary>
         /// Alignment of the text.
         /// </summary>
-        TextAlign Alignment { get; set; }
+        public abstract TextAlign Alignment { get; set; }
         /// <summary>
         /// How the text handles overflowing.
         /// </summary>
-        TextOverflow Overflow { get; set; }
+        public abstract TextOverflow Overflow { get; set; }
     }
 
-    public interface IColorComponent : IComponent
+    public abstract class ColorComponent : Component
     {
-        Color Color { get; set; }
+        public abstract Color Color { get; set; }
     }
 }

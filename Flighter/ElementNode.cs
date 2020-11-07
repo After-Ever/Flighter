@@ -10,8 +10,8 @@ namespace Flighter
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
 
-        IComponentProvider componentProvider;
-        IComponentProvider ComponentProvider
+        ComponentProvider componentProvider;
+        ComponentProvider ComponentProvider
         {
             get
             {
@@ -32,7 +32,7 @@ namespace Flighter
         /// </summary>
         public bool HasDirtyChild { get; private set; } = false;
 
-        public ElementNode(Element element, ElementNode parent, IComponentProvider componentProvider = null)
+        public ElementNode(Element element, ElementNode parent, ComponentProvider componentProvider = null)
         {
             this.element = element ?? throw new ArgumentNullException();
             this.parent = parent;

@@ -10,7 +10,7 @@ namespace FlighterTest
         public Size Size { get; set; }
         public Point Offset { get; set; }
 
-        public void AddComponent(IComponent component)
+        public void AddComponent(Component component)
         {
             throw new NotImplementedException();
         }
@@ -25,7 +25,7 @@ namespace FlighterTest
             return new TestDisplayRect();
         }
 
-        public bool RemoveComponent(IComponent component)
+        public bool RemoveComponent(Component component)
         {
             return true;
         }
