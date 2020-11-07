@@ -15,19 +15,13 @@ namespace FlighterTest
             throw new NotImplementedException();
         }
 
-        public void ClearComponents()
-        {
-            throw new NotImplementedException();
-        }
-
         public IDisplayRect CreateChild()
         {
             return new TestDisplayRect();
         }
 
-        public bool RemoveComponent(Component component)
+        public void RemoveComponent(Component component)
         {
-            return true;
         }
 
         public void SetParent(IDisplayRect rect)

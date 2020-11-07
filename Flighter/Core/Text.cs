@@ -15,7 +15,7 @@ namespace Flighter.Core
             string data,
             TextStyle? style = null,
             TextAlign alignment = TextAlign.TopLeft,
-            TextOverflow overflow = TextOverflow.Ellipsis)
+            TextOverflow overflow = TextOverflow.Clip)
         {
             this.data = data;
             this.style = style ?? GetDefaultStyle();
@@ -39,17 +39,20 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            throw new NotImplementedException();
+            return new BuildResult(context.constraints.MaxSize);
         }
 
         TextStyle GetDefaultStyle()
         {
-            throw new NotImplementedException();
+            // TODO: Something!
+            return new TextStyle();
         }
     }
 
     public class TextElement : Element
     {
+        public override string Name => "Text";
+
         TextComponent component;
 
         protected override void _Init()

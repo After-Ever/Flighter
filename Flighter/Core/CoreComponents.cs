@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Text;
+﻿
 
 namespace Flighter.Core
 {
@@ -45,6 +42,19 @@ namespace Flighter.Core
         /// How the text handles overflowing.
         /// </summary>
         public abstract TextOverflow Overflow { get; set; }
+    }
+
+    public struct Color
+    {
+        public float r, g, b, a;
+
+        public Color(float r = 0, float g = 0, float b = 0, float a = 1)
+        {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.a = a;
+        }
     }
 
     public abstract class ColorComponent : Component
