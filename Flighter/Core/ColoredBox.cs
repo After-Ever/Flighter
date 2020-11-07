@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Text;
 
 namespace Flighter.Core
@@ -16,7 +15,7 @@ namespace Flighter.Core
 
         public override bool IsSame(Widget other)
         {
-            return other is ColoredBox c && c.color == color;
+            return other is ColoredBox c && c.color.Equals(color);
         }
 
         public override Element CreateElement()

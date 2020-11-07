@@ -3,12 +3,20 @@ using System.Collections.Generic;
 
 using Flighter;
 using Flighter.Core;
+using UnityEngine;
+using Component = Flighter.Component;
 
 namespace FlighterUnity
 {
+    public interface IUnityFlighterComponent
+    {
+        void InflateGameObject(GameObject gameObject);
+        void Clear();
+    }
+
     public class ComponentProviderMaker
     {
-        static ComponentProvider Make()
+        public static ComponentProvider Make()
             => new ComponentProvider(new Dictionary<Type, Type>
             {
                 { typeof(TextComponent), typeof(UnityTextComponent) },

@@ -52,7 +52,7 @@ namespace Flighter
         {
             if (IsInitialized) return;
 
-            componentProvider = componentProvider ?? throw new ArgumentNullException();
+            this.componentProvider = componentProvider ?? throw new ArgumentNullException();
             DisplayRect = displayRect ?? throw new ArgumentNullException();
 
             _Init();

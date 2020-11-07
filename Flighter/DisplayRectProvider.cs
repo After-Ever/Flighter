@@ -18,8 +18,7 @@ namespace Flighter
         void SetParent(IDisplayRect rect);
 
         void AddComponent(Component component);
-        bool RemoveComponent(Component component);
-        void ClearComponents();
+        void RemoveComponent(Component component);
 
         void TearDown();
     }

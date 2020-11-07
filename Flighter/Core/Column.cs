@@ -8,6 +8,11 @@ namespace Flighter.Core
     {
         public readonly List<Widget> children;
 
+        public Column(List<Widget> children)
+        {
+            this.children = children;
+        }
+
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             if (float.IsPositiveInfinity(context.constraints.maxHeight))

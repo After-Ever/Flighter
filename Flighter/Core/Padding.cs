@@ -70,7 +70,7 @@ namespace Flighter.Core
 
             var child = node.AddChildWidget(
                 this.child, 
-                new BuildContext(constraints));
+                new BuildContext(childConstraints));
 
             child.Offset = new Point(edgetInsets.left, edgetInsets.top);
             var childSize = child.size;
