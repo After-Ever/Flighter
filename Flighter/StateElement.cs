@@ -8,12 +8,12 @@ namespace Flighter
     {
         public override string Name => "State";
 
-        public readonly State State; 
+        public readonly State state; 
 
         public StateElement(State state)
         {
-            State = state ?? throw new ArgumentNullException();
-            State.SetStateElement(this);
+            this.state = state ?? throw new ArgumentNullException();
+            this.state.SetStateElement(this);
         }
 
         public void StateSet()
@@ -29,13 +29,13 @@ namespace Flighter
             // Called when the state should be rebuilt.
 
             // First we let State carry out updates.
-            State.Updated();
+            state.Updated();
 
             // Then rebuild its widget.
-            var context = WidgetNode.BuildContext;
-            var widget = State.Build(context);
+            var context = widgetNode.buildContext;
+            var widget = state.Build(context);
 
-            WidgetNode.ReplaceChildren(new List<(Widget, BuildContext)> {
+            widgetNode.ReplaceChildren(new List<(Widget, BuildContext)> {
                 (widget, context)
             });
         }

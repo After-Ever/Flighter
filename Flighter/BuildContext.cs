@@ -4,7 +4,13 @@ using System.Text;
 
 namespace Flighter
 {
-    public class BuildContext
+    public struct BuildContext
     {
+        public readonly BoxConstraints constraints;
+
+        public BuildContext(BoxConstraints constraints)
+        {
+            this.constraints = constraints;
+        }
     }
 }

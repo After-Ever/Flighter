@@ -8,11 +8,12 @@ namespace FlighterTest
     [TestClass]
     public class WidgetNodeTest
     {
-        WidgetNode makeSimpleRoot()
+        WidgetNode MakeSimpleRoot()
             => RootWidget.MakeRootWidgetNode(
                 new TestDisplayWidget(), 
                 new BuildContext(), 
-                null)
+                new TestDisplayRect(),
+                new ComponentProvider(new System.Collections.Generic.Dictionary<Type, Type>()))
                     .Item1;
 
         [TestMethod]
@@ -21,7 +22,7 @@ namespace FlighterTest
         /// </summary>
         public void SimpleTest()
         {
-            makeSimpleRoot();
+            MakeSimpleRoot();
         }
 
         [TestMethod]
@@ -41,12 +42,13 @@ namespace FlighterTest
             (var root, var elementNode) = RootWidget.MakeRootWidgetNode(
                 w,
                 new BuildContext(),
-                null);
+                new TestDisplayRect(),
+                new ComponentProvider(new System.Collections.Generic.Dictionary<Type, Type>()));
 
             // Update the element tree.
             elementNode.Update();
 
-            Assert.IsFalse(elementNode.IsDirty);
+            Assert.IsFalse(elementNode.IsDirty || elementNode.HasDirtyChild);
         }
 
         [TestMethod]
@@ -56,23 +58,15 @@ namespace FlighterTest
         /// </summary>
         public void GetBuildResults()
         {
-            var root = makeSimpleRoot();
+            var root = MakeSimpleRoot();
 
-            Assert.AreEqual(new BuildResult(10, 10), root.BuildResult);
-        }
-
-        [TestMethod]
-        public void CannotAddUnlessConstructing()
-        {
-            var root = makeSimpleRoot();
-
-            Assert.ThrowsException<Exception>(() => root.Add(new TestDisplayWidget(), new BuildContext()));
+            Assert.AreEqual(new Size(10,10), root.Size);
         }
 
         [TestMethod]
         public void ReplaceChild()
         {
-            var root = makeSimpleRoot();
+            var root = MakeSimpleRoot();
             root.ReplaceChildren(new System.Collections.Generic.List<(Widget, BuildContext)>
             {
                 (new TestDisplayWidget(), new BuildContext()),

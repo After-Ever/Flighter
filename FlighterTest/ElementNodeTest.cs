@@ -7,12 +7,14 @@ namespace FlighterTest
     [TestClass]
     public class ElementNodeTest
     {
+        ElementNode MakeRoot() => new RootElementNode(new TestDisplayRect(), new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
+
         [TestMethod]
         public void UpdateInitializes()
         {
             TestElement e1, e2, e3;
 
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
 
             var c1 = root.AddChild(e1 = new TestElement());
             var c2 = root.AddChild(e2 = new TestElement());
@@ -22,10 +24,10 @@ namespace FlighterTest
             root.Update();
 
             Assert.IsTrue(
-                root.Element.IsInitialized &&
-                c1.Element.IsInitialized &&
-                c2.Element.IsInitialized &&
-                g1.Element.IsInitialized);
+                root.element.IsInitialized &&
+                c1.element.IsInitialized &&
+                c2.element.IsInitialized &&
+                g1.element.IsInitialized);
 
             Assert.IsTrue(
                 e1.InitCalled &&
@@ -38,22 +40,19 @@ namespace FlighterTest
         {
             TestElement e1, e2, e3;
 
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
 
             var c1 = root.AddChild(e1 = new TestElement());
             var c2 = root.AddChild(e2 = new TestElement());
 
             var g1 = c2.AddChild(e3 = new TestElement());
 
-            // Call once to init.
-            root.Update();
-            // Call again to update, though nothing should be dirty.
+            // Update to set all nodes clean.
             root.Update();
 
-            Assert.IsFalse(
-                e1.UpdateCalled ||
-                e2.UpdateCalled || 
-                e3.UpdateCalled);
+            e1.Reset();
+            e2.Reset();
+            e3.Reset();
 
             c2.SetDirty();
 
@@ -71,7 +70,7 @@ namespace FlighterTest
         [TestMethod]
         public void UpdateCleans()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
 
             var c1 = root.AddChild(new TestElement());
             var c2 = root.AddChild(new TestElement());
@@ -91,7 +90,7 @@ namespace FlighterTest
         public void AddingChildren()
         {
             // Make the root.
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
 
             // Add children.
             var c1 = root.AddChild(new TestElement());
@@ -111,8 +110,8 @@ namespace FlighterTest
         [TestMethod]
         public void ConnectNode()
         {
-            var a = new ElementNode(new TestElement(), null);
-            var b = new ElementNode(new TestElement(), null);
+            var a = new ElementNode(new TestElement(), null, new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
+            var b = new ElementNode(new TestElement(), null, new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
 
             a.ConnectNode(b);
 
@@ -124,7 +123,7 @@ namespace FlighterTest
         [TestMethod]
         public void SetDirtySetsSelf()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
             // Update to set clean.
             root.Update();
             root.SetDirty();
@@ -134,20 +133,20 @@ namespace FlighterTest
         [TestMethod]
         public void SetDirtyUpdatesParent()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
             var c = root.AddChild(new TestElement());
 
             // Update to set clean.
             root.Update();
             c.SetDirty();
 
-            Assert.IsTrue(root.HasDirtyChild && root.IsDirty);
+            Assert.IsTrue(root.HasDirtyChild && !root.IsDirty);
         }
 
         [TestMethod]
         public void SetDirtyPropagates()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
             var c = root
                 .AddChild(new TestElement())
                 .AddChild(new TestElement())
@@ -158,13 +157,13 @@ namespace FlighterTest
 
             c.SetDirty();
 
-            Assert.IsTrue(root.HasDirtyChild && root.IsDirty);
+            Assert.IsTrue(root.HasDirtyChild && !root.IsDirty);
         }
 
         [TestMethod]
         public void EmancipateSetsDirty()
         {
-            var root = new RootElementNode(null);
+            var root = MakeRoot();
             var c = root.AddChild(new TestElement());
 
             root.Update();
@@ -181,11 +180,11 @@ namespace FlighterTest
         [TestMethod]
         public void EmancipatePreservesTreeState()
         {
-            var a = new ElementNode(new TestElement(), null);
+            var a = new ElementNode(new TestElement(), null, new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
             a.AddChild(new TestElement())
                     .AddChild(new TestElement());
             
-            var b = new ElementNode(new TestElement(), null);
+            var b = new ElementNode(new TestElement(), null, new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
             var youngestChild = 
                 b.AddChild(new TestElement())
                     .AddChild(new TestElement());

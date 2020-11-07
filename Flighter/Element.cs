@@ -1,7 +1,5 @@
 ﻿using System;
 
-using UnityEngine;
-
 namespace Flighter
 {
     /// <summary>
@@ -9,8 +7,11 @@ namespace Flighter
     /// </summary>
     public abstract class Element
     {
-        protected WidgetNode WidgetNode;
-        public Widget Widget => WidgetNode?.Widget;
+        protected WidgetNode widgetNode;
+        protected W GetWidget<W>() where W : Widget
+        {
+            return widgetNode.widget as W;
+        }
 
         /// <summary>
         /// To be called when the element would like an update. Should
@@ -28,20 +29,31 @@ namespace Flighter
         /// Should not be modified outside the element, save for changing
         /// family hierarchy.
         /// 
-        /// This will be null before <see cref="Init(RectTransform)"/> is called,
+        /// This will be null before <see cref="Init(IDisplayRect)"/> is called,
         /// and after <see cref="TearDown"/> is called.
         /// </summary>
-        public RectTransform RectTransform { get; private set; }
+        public IDisplayRect DisplayRect { get; private set; }
+
+        public virtual string Name => "Element";
+
+        protected ComponentProvider componentProvider;
+
+        // The following are for the subclass implementations.
+
+        protected abstract void _Init();
+        protected abstract void _Update();
 
         /// <summary>
-        /// Instrument the element, displaying it.
+        /// Instrument the element. Element not guaranteed to display correctly until
+        /// after <see cref="Update()"/> is called.
         /// </summary>
         /// <param name="rectTransform"></param>
-        public void Init(RectTransform rectTransform)
+        public void Init(IDisplayRect displayRect, ComponentProvider componentProvider)
         {
             if (IsInitialized) return;
 
-            RectTransform = rectTransform;
+            componentProvider = componentProvider ?? throw new ArgumentNullException();
+            DisplayRect = displayRect ?? throw new ArgumentNullException();
 
             _Init();
 
@@ -50,7 +62,7 @@ namespace Flighter
 
         public void UpdateWidgetNode(WidgetNode newWidgetNode)
         {
-            WidgetNode = newWidgetNode;
+            widgetNode = newWidgetNode;
         }
         
         /// <summary>
@@ -63,19 +75,20 @@ namespace Flighter
         {
             if (!IsInitialized)
                 throw new ElementUninitializedException("Element must be initialized before calling update.");
-
+            
+            SizeAndPositionRect();
             _Update();
         }
 
         public void TearDown()
         {
             if (!IsInitialized) return;
-#if !TEST
-            UnityEngine.Object.Destroy(RectTransform.gameObject);
-#endif
-            RectTransform = null;
+
+            DisplayRect.TearDown();
+
+            DisplayRect = null;
             IsInitialized = false;
-            WidgetNode = null;
+            widgetNode = null;
         }
 
         public void SetDirtyCallback(Action setDirty)
@@ -83,12 +96,14 @@ namespace Flighter
             this.setDirty = setDirty;
         }
 
-        public virtual string Name => "Element";
+        void SizeAndPositionRect()
+        {
+            if (widgetNode == null)
+                return;
 
-        // The following are for the subclass implementations.
-
-        protected abstract void _Init();
-        protected abstract void _Update();
+            DisplayRect.Size = widgetNode.Size;
+            DisplayRect.Offset = widgetNode.Offset;
+        }
     }
 
     public class ElementUninitializedException : Exception

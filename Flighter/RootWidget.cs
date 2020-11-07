@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-using UnityEngine;
-
 namespace Flighter
 {
     public class RootWidget : DisplayWidget
@@ -11,12 +9,16 @@ namespace Flighter
         static public (WidgetNode, ElementNode) MakeRootWidgetNode(
             Widget child,
             BuildContext initialBuildContext,
-            RectTransform baseTransform)
+            IDisplayRect baseRect,
+            ComponentProvider componentProvider)
         {
             var rootWidget = new RootWidget(child);
-            var rootElementNode = new RootElementNode(baseTransform);
+            var rootElementNode = new RootElementNode(baseRect, componentProvider);
 
-            var widgetNode = new WidgetNode(rootWidget, initialBuildContext, null, rootElementNode);
+            var widgetNode = new WidgetNodeBuilder(
+                rootWidget,
+                initialBuildContext,
+                rootElementNode).Build(null);
 
             return (widgetNode, rootElementNode);
         }
@@ -33,10 +35,10 @@ namespace Flighter
             throw new NotImplementedException("Root widget should never have to make an element.");
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNode node)
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            var childNode = node.Add(child, context);
-            return childNode.BuildResult;
+            var childNode = node.AddChildWidget(child, context);
+            return new BuildResult(childNode.size);
         }
     }
 }

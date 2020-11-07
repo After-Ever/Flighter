@@ -23,7 +23,7 @@ namespace FlighterTest
             return base.IsSame(other);
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNode node)
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             return new BuildResult(10, 10);
         }
@@ -31,7 +31,7 @@ namespace FlighterTest
 
     public class TestLayoutWidget : LayoutWidget
     {
-        Widget left, right;
+        readonly Widget left, right;
 
         public TestLayoutWidget(Widget left, Widget right)
         {
@@ -39,18 +39,19 @@ namespace FlighterTest
             this.right = right;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNode node)
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            BuildResult l = new BuildResult(0,0), r = new BuildResult(0,0);
+            Size l, r;
+            l = r = Size.Zero;
             if (left != null)
-                l = node.Add(left, context).BuildResult;
+                l = node.AddChildWidget(left, context).size;
             if (right != null)
-                r = node.Add(right, context).BuildResult;
+                r = node.AddChildWidget(right, context).size;
 
-            float x = Math.Max(l.size.x, r.size.x);
-            float y = Math.Max(l.size.y, r.size.y);
+            float width = Math.Max(l.width, r.width);
+            float height = Math.Max(l.height, r.height);
 
-            return new BuildResult(x, y);
+            return new BuildResult(width, height);
         }
     }
 
@@ -69,7 +70,7 @@ namespace FlighterTest
         }
     }
 
-    public class TestStatefulWidget : StatefullWidget
+    public class TestStatefulWidget : StatefulWidget
     {
         public override State CreateState()
         {

@@ -1,42 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using UnityEngine;
-
 namespace Flighter
 {
     public class ElementNode
     {
-        public Element Element { get; private set; }
+        public readonly Element element;
 
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
 
-        // TODO: Describe how these dirty variables are used.
-        bool isDirty = true;
-        public bool IsDirty
+        ComponentProvider componentProvider;
+        ComponentProvider ComponentProvider
         {
-            get => isDirty || HasDirtyChild;
+            get
+            {
+                if (componentProvider != null)
+                    return componentProvider;
+
+                return componentProvider = 
+                    parent?.ComponentProvider ?? throw new Exception("Could not find component provider.");
+            }
         }
+
+        /// <summary>
+        /// This node needs an update.
+        /// </summary>
+        public bool IsDirty { get; private set; } = true;
+        /// <summary>
+        /// This node has descendants which need updates.
+        /// </summary>
         public bool HasDirtyChild { get; private set; } = false;
 
-        public ElementNode(Element element, ElementNode parent)
+        public ElementNode(Element element, ElementNode parent, ComponentProvider componentProvider = null)
         {
-            this.Element = element;
+            this.element = element ?? throw new ArgumentNullException();
             this.parent = parent;
+            this.componentProvider = componentProvider;
 
-            Element.SetDirtyCallback(() => SetDirty());
+            this.element.SetDirtyCallback(() => SetDirty());
         }
 
         public void Update()
         {
-            if (!IsDirty) return;
+            if (!IsDirty && !HasDirtyChild) return;
 
-            if (isDirty)
+            if (IsDirty)
             {
-                if (Element.IsInitialized)
+                if (element.IsInitialized)
                 {
-                    Element.Update();
+                    element.Update();
                 }
                 else
                 {
@@ -61,7 +74,9 @@ namespace Flighter
             if (element.IsInitialized)
                 throw new Exception("Cannot add an initialized element!");
 
-            var node = new ElementNode(element, this);
+            // Just pass the componentProvider field (instead of the property)
+            // because we don't care if it's null here; it can always search later.
+            var node = new ElementNode(element, this, componentProvider);
             children.Add(node);
 
             SetChildDirty();
@@ -77,12 +92,10 @@ namespace Flighter
             children.Add(node);
             node.parent = this;
             
-            if (node.Element.IsInitialized)
+            if (node.element.IsInitialized)
             {
-                var rect = node.Element.RectTransform;
-#if !TEST
-                rect.SetParent(Element.RectTransform, false);
-#endif
+                var rect = node.element.DisplayRect;
+                rect.SetParent(element.DisplayRect);
             }
             
             SetChildDirty();
@@ -90,18 +103,26 @@ namespace Flighter
 
         public void SetDirty()
         {
-            if (isDirty) return;
+            if (IsDirty) return;
 
-            isDirty = true;
+            IsDirty = true;
             parent?.SetChildDirty();
         }
 
         /// <summary>
         /// Remove this from its parent.
+        /// Sets this as dirty.
         /// </summary>
         public void Emancipate()
         {
-            parent?.RemoveChild(this);
+            if (parent == null)
+                return;
+
+            if (!parent.children.Remove(this))
+                throw new Exception("Node not in parent's child list.");
+            
+            parent = null;
+            SetDirty();
         }
 
         /// <summary>
@@ -112,12 +133,12 @@ namespace Flighter
             // TODO: What about children?
             Emancipate();
 
-            Element.TearDown();
+            element.TearDown();
         }
 
         void SetClean()
         {
-            isDirty = false;
+            IsDirty = false;
             HasDirtyChild = false;
         }
 
@@ -125,48 +146,28 @@ namespace Flighter
         {
             if (HasDirtyChild) return;
             HasDirtyChild = true;
-            if (isDirty) return;
+            if (IsDirty) return;
 
             parent?.SetChildDirty();
         }
 
         List<ElementNode> GetDirtyChildren()
         {
-            return children.FindAll((n) => n.IsDirty);
-        }
-
-        /// <summary>
-        /// Remove a node from this node's children.
-        /// </summary>
-        /// <param name="node">The node to remove.</param>
-        void RemoveChild(ElementNode node)
-        {
-            if (!children.Remove(node))
-                throw new Exception("Can't remove none child node");
-#if !TEST
-            node.Element.RectTransform?.SetParent(null);
-#endif
-            node.parent = null;
-            node.SetDirty();
-
-            if (HasDirtyChild 
-                && children.Find((n) => n.IsDirty) == null)
-                HasDirtyChild = false;
+            return children.FindAll((n) => n.IsDirty || n.HasDirtyChild);
         }
 
         protected virtual void InitElement()
         {
-            if (Element.IsInitialized) return;
-            if (parent == null || !parent.Element.IsInitialized)
+            if (element.IsInitialized) return;
+            if (parent == null || !parent.element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
-#if !TEST
-            var newObj = new GameObject(Element.Name);
-            var rectTransform = newObj.GetComponent<RectTransform>();
-            rectTransform.SetParent(parent.Element.RectTransform, false);
-#else
-            RectTransform rectTransform = null;
-#endif
-            Element.Init(rectTransform);
+
+            var rect = parent.element.DisplayRect.CreateChild();
+            rect.Name = element.Name;
+
+            // Use the componentProvider property here to make sure we find it.
+            element.Init(rect, ComponentProvider);
+            element.Update();
         }
 
         public string Print(int indent = 0)
@@ -175,7 +176,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += Element.Name + "\n";
+            r += element.Name + "\n";
 
             foreach (var c in children)
                 r += c.Print(indent + 1);

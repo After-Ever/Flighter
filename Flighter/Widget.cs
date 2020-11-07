@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-using UnityEngine;
-
-namespace Flighter
+﻿namespace Flighter
 {
     public abstract class Widget
     {
@@ -31,14 +25,14 @@ namespace Flighter
         public abstract Widget Build(BuildContext context);
     }
 
-    public abstract class StatefullWidget : Widget
+    public abstract class StatefulWidget : Widget
     {
         public abstract State CreateState();
     }
 
     public abstract class LayoutWidget : Widget
     {
-        public abstract BuildResult Layout(BuildContext context, WidgetNode node);
+        public abstract BuildResult Layout(BuildContext context, WidgetNodeBuilder node);
     }
 
     public abstract class DisplayWidget : LayoutWidget
