@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Flighter.Input
 {
-    public delegate void KeyEventCallback(KeyCode key, KeyEventType type);
+    public delegate void KeyEventCallback(KeyEventData data);
     public delegate void MouseEventCallback(MouseEventData data);
 
     public enum KeyEventType
@@ -12,6 +12,18 @@ namespace Flighter.Input
         Active,
         Down,
         Up
+    }
+
+    public class KeyEventData
+    {
+        public readonly KeyCode key;
+        public readonly KeyEventType type;
+
+        public KeyEventData(KeyCode key, KeyEventType type)
+        {
+            this.key = key;
+            this.type = type;
+        }
     }
 
     public class MouseEventData
@@ -46,11 +58,12 @@ namespace Flighter.Input
                 var kvp = keyListenerEnumerator.Current;
                 (var key, var type) = kvp.Key;
 
-                if (!CheckKeyEvent(key, type))
+                if (!CheckForKeyEvent(key, type))
                     continue;
 
                 var listeners = kvp.Value;
-                listeners.ForEach((c) => c(key, type));
+                var data = new KeyEventData(key, type);
+                listeners.ForEach((c) => c(data));
             }
 
             // TODO: Mouse events.
@@ -77,7 +90,7 @@ namespace Flighter.Input
                 throw new Exception("Listener not found.");
         }
 
-        bool CheckKeyEvent(KeyCode key, KeyEventType type)
+        bool CheckForKeyEvent(KeyCode key, KeyEventType type)
         {
             switch (type)
             {

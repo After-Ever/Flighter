@@ -6,7 +6,8 @@ namespace Flighter
     public class WidgetNodeBuilder
     {
         public Point Offset;
-        
+
+        readonly WidgetTree tree;
         readonly Widget widget;
         readonly BuildContext buildContext;
         public readonly Size size;
@@ -23,11 +24,14 @@ namespace Flighter
         WidgetNode builtNode = null;
 
         public WidgetNodeBuilder(
+            WidgetTree tree,
             Widget widget, 
             BuildContext buildContext,
             ElementNode inheritedElementNode = null,
             Queue<WidgetNode> inheritedChildren = null)
         {
+            this.tree = tree
+                ?? throw new ArgumentNullException("WidgetNode must be part of a tree.");
             this.widget = widget
                 ?? throw new ArgumentNullException("Widget must not be null.");
             this.buildContext = buildContext;
@@ -109,6 +113,7 @@ namespace Flighter
             else
             {
                 node = builtNode ?? new WidgetNode(
+                    tree,
                     widget,
                     buildContext,
                     new NodeLayout(size, Offset),
@@ -153,7 +158,7 @@ namespace Flighter
                 toReplace.Prune();
             }
 
-            var childBuilder = new WidgetNodeBuilder(widget, context, childElementNode, orphans);
+            var childBuilder = new WidgetNodeBuilder(tree, widget, context, childElementNode, orphans);
             children.Add(childBuilder);
             return childBuilder;
         }

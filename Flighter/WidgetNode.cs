@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Flighter.Input;
+
 namespace Flighter
 {
     public struct NodeLayout
@@ -23,6 +25,7 @@ namespace Flighter
     
     public class WidgetNode
     {
+        public readonly WidgetTree tree;
         public readonly Widget widget;
         public readonly BuildContext buildContext;
 
@@ -36,8 +39,9 @@ namespace Flighter
 
         Point? cachedElementOffset;
         Point? cachedAbsoluteOffset;
-        
+
         public WidgetNode(
+            WidgetTree tree,
             Widget widget,
             BuildContext buildContext,
             NodeLayout layout,
@@ -45,10 +49,13 @@ namespace Flighter
             List<WidgetNodeBuilder> childrenBuilders,
             ElementNode elementNode = null)
         {
+            this.tree = tree ?? throw new ArgumentNullException("Widget node must belong to a tree.");
             this.parent = parent;
             this.widget = widget ?? throw new ArgumentNullException("WidgetNode's widget must not be null.");
             this.buildContext = buildContext;
             this.layout = layout;
+
+            ConnectInputTree();
 
             if (elementNode != null)
             {
@@ -73,6 +80,8 @@ namespace Flighter
             this.parent = parent;
             if (layout != null)
                 this.layout = layout.Value;
+
+            ConnectInputTree();
 
             var elementParent = parent.GetNearestAncestorElementNode();
             GetElementSurface().ForEach((e) => elementParent.ConnectNode(e));
@@ -117,6 +126,7 @@ namespace Flighter
                     }
 
                     return new WidgetNodeBuilder(
+                        tree,
                         widget, 
                         context,
                         nodeToInherit,
@@ -140,6 +150,8 @@ namespace Flighter
         /// </summary>
         void Emancipate()
         {
+            DisconnectInputTree();
+
             parent?.children?.Remove(this);
             parent = null;
             GetElementSurface().ForEach((e) => e.Emancipate());
@@ -227,6 +239,7 @@ namespace Flighter
             return r;
         }
 
+        // TODO refine this. Not really the nearest ancestor if THIS can be returned.
         /// <summary>
         /// Find the nearest ancestor with an attached
         /// element node. Returns attached element node if this has one.
@@ -249,6 +262,44 @@ namespace Flighter
             cachedElementOffset = cachedAbsoluteOffset = null;
 
             children.ForEach((c) => c.ClearCachedOffsets());
+        }
+
+        void ConnectInputTree()
+        {
+            // If I am an input widget, perform relevant subscriptions.
+            if (widget is InputWidget i)
+            {
+                // TODO: Do the subs
+                throw new NotImplementedException();
+            }
+
+            // Connect children.
+            children?.ForEach((c) => c.ConnectInputTree());
+        }
+
+        void DisconnectInputTree()
+        {
+            // If I am an input widget, perform relevant unsubscriptions.
+            if (widget is InputWidget i)
+            {
+                // TODO: Do the unsubs.
+                throw new NotImplementedException();
+            }
+
+            // Disconnect children.
+            children?.ForEach((c) => c.DisconnectInputTree());
+        }
+
+        bool IsHovering(Point p)
+        {
+            var absOffset = GetAbsoluteOffset();
+
+            if (p.x < absOffset.x || p.y < absOffset.y)
+                return false;
+
+            p -= absOffset;
+
+            return p.x < Size.width && p.y < Size.height;
         }
     }
 }
