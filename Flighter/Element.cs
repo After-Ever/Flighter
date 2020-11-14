@@ -102,7 +102,7 @@ namespace Flighter
                 return;
 
             DisplayRect.Size = widgetNode.Size;
-            DisplayRect.Offset = widgetNode.Offset;
+            DisplayRect.Offset = widgetNode.GetElementOffset();
         }
     }
 

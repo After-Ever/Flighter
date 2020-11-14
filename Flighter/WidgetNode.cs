@@ -32,20 +32,10 @@ namespace Flighter
         public readonly ElementNode elementNode;
 
         public Size Size => layout.size;
-        public Point Offset
-        {
-            get
-            {
-                if (parent?.elementNode != null)
-                {
-                    return layout.offset;
-                }
-                else
-                {
-                    return layout.offset + parent?.Offset ?? throw new Exception("Not rooted in element tree.");
-                }
-            }
-        }
+        public Point Offset => layout.offset;
+
+        Point? cachedElementOffset;
+        Point? cachedAbsoluteOffset;
         
         public WidgetNode(
             Widget widget,
@@ -77,6 +67,8 @@ namespace Flighter
         {
             if (parent != null)
                 throw new Exception("Node must not have parent to udpate the connection.");
+
+            ClearCachedOffsets();
 
             this.parent = parent;
             if (layout != null)
@@ -135,9 +127,10 @@ namespace Flighter
             children.AddRange(newChildNodes);
 
             // Clear any remaining emancipated children.
-            while (freeChildren?.Count > 0)
+            if (freeChildren != null)
             {
-                freeChildren.Dequeue().Prune();
+                foreach (var c in freeChildren)
+                    c.Prune();
             }
         }
         
@@ -150,6 +143,7 @@ namespace Flighter
             parent?.children?.Remove(this);
             parent = null;
             GetElementSurface().ForEach((e) => e.Emancipate());
+            ClearCachedOffsets();
         }
 
         public Queue<WidgetNode> EmancipateChildren()
@@ -192,6 +186,31 @@ namespace Flighter
 
             return emancipatedChildren;
         }
+        
+        public Point GetElementOffset()
+        {
+            if (cachedElementOffset != null) return cachedElementOffset.Value;
+
+            if (parent?.elementNode != null)
+                cachedElementOffset = Offset;
+            else
+                cachedElementOffset = layout.offset + parent?.GetElementOffset()
+                    ?? throw new Exception("Not rooted in element tree.");
+
+            return cachedElementOffset.Value;
+        }
+
+        public Point GetAbsoluteOffset()
+        {
+            if (cachedAbsoluteOffset != null) return cachedAbsoluteOffset.Value;
+
+            if (parent == null)
+                cachedAbsoluteOffset = Offset;
+            else
+                cachedAbsoluteOffset = Offset + parent.GetAbsoluteOffset();
+
+            return cachedAbsoluteOffset.Value;
+        }
 
         /// <summary>
         /// Get all element nodes that would attach to an ancestor.
@@ -219,6 +238,17 @@ namespace Flighter
                 return elementNode;
 
             return parent?.GetNearestAncestorElementNode();
+        }
+
+        void ClearCachedOffsets()
+        {
+            // If this node has neither offset set, then its children can't have theirs set.
+            if (cachedElementOffset == null && cachedAbsoluteOffset == null)
+                return;
+
+            cachedElementOffset = cachedAbsoluteOffset = null;
+
+            children.ForEach((c) => c.ClearCachedOffsets());
         }
     }
 }
