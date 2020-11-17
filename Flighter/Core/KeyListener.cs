@@ -6,20 +6,25 @@ using Flighter.Input;
 
 namespace Flighter.Core
 {
+    public delegate void KeyEventCallback(KeyEventFilter filter, IInputPoller inputPoller);
+
     /// <summary>
     /// Widget that triggers callbacks when
     /// specified key events occure.
     /// </summary>
     public class KeyListener : InputWidget
     {
-        public readonly List<(KeyCode, KeyEventType)> keyEvents;
-        public readonly KeyEventCallback onKeyEvent;
+        readonly KeyEventCallback onKeyEvent;
 
-        public KeyListener(Widget child, List<(KeyCode, KeyEventType)> keyEvents, KeyEventCallback onKeyEvent, bool onlyWhileHovering = false)
-            : base(child, onlyWhileHovering)
+        public KeyListener(Widget child, List<KeyEventFilter> keyEvents, KeyEventCallback onKeyEvent, bool onlyWhileHovering = false)
+            : base(child, onlyWhileHovering, keyEvents)
         {
-            this.keyEvents = keyEvents;
             this.onKeyEvent = onKeyEvent;
+        }
+
+        public override void OnKeyEvent(KeyEventFilter filter, IInputPoller inputPoller)
+        {
+            onKeyEvent?.Invoke(filter, inputPoller);
         }
     }
 }

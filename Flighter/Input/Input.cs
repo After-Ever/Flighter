@@ -1,49 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Flighter.Input
 {
-    public delegate void KeyEventCallback(KeyEventData data);
-    public delegate void MouseEventCallback(MouseEventData data);
-
-    public enum KeyEventType
+    public interface IInputSubscriber
     {
-        Active,
-        Down,
-        Up
+        /// <summary>
+        /// The key events for which this subscriber would like <see cref="OnKeyEvent(KeyEventData)"/>
+        /// to be called.
+        /// </summary>
+        IEnumerable<KeyEventFilter> KeyEventsToRecieve { get; }
+
+        IEnumerable<MouseEventFilter> MouseEventsToRecieve { get; }
+
+        /// <summary>
+        /// Whether or not this subscriber should receieve the given update.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        bool ShouldReceiveUpdate(IInputPoller inputPoller);
+
+        /// <summary>
+        /// Called each time a key event listed in <see cref="KeyEventsToRecieve"/> occurs.
+        /// If multiple such events happen in a single frame, this will be called multiple times,
+        /// in the order of <see cref="KeyEventsToRecieve"/>.
+        /// </summary>
+        /// <param name="filter">The filter this event fired for.</param>
+        /// <param name="inputPoller"></param>
+        void OnKeyEvent(KeyEventFilter filter, IInputPoller inputPoller);
+
+        /// <summary>
+        /// Called each time a mouse event occurs.
+        /// </summary>
+        /// <param name="filter">The filter this event fired for.</param>
+        /// <param name="inputPoller"></param>
+        void OnMouseEvent(MouseEventFilter filter, IInputPoller inputPoller);
+
+        /// <summary>
+        /// Called each frame <see cref="ShouldReceiveUpdate(EventData)"/> returns true.
+        /// </summary>
+        /// <param name="mousePoller"></param>
+        /// <param name="keyPoller"></param>
+        void OnUpdate(IInputPoller inputPoller);
     }
-
-    public class KeyEventData
-    {
-        public readonly KeyCode key;
-        public readonly KeyEventType type;
-
-        public KeyEventData(KeyCode key, KeyEventType type)
-        {
-            this.key = key;
-            this.type = type;
-        }
-    }
-
-    public class MouseEventData
-    {
-    }
-
+    
     public class Input
     {
-        public readonly MouseInputPoller mouseInputPoller;
-        public readonly KeyInputPoller keyInputPoller;
+        public readonly IInputPoller inputPoller;
 
-        public event MouseEventCallback MouseEvent;
+        readonly HashSet<IInputSubscriber> subscribers = new HashSet<IInputSubscriber>();
 
-        readonly Dictionary<(KeyCode, KeyEventType), List<KeyEventCallback>> keyListeners
-            = new Dictionary<(KeyCode, KeyEventType), List<KeyEventCallback>>();
-
-        public Input(MouseInputPoller mousePoller, KeyInputPoller keyPoller)
+        public Input(IInputPoller inputPoller)
         {
-            this.mouseInputPoller = mousePoller;
-            this.keyInputPoller = keyPoller;
+            this.inputPoller = inputPoller;
         }
 
         /// <summary>
@@ -51,57 +60,85 @@ namespace Flighter.Input
         /// </summary>
         public void Update()
         {
-            // Send updates to all the key listeners.
-            var keyListenerEnumerator = keyListeners.GetEnumerator();
-            while (keyListenerEnumerator.MoveNext())
+            foreach (var s in subscribers)
             {
-                var kvp = keyListenerEnumerator.Current;
-                (var key, var type) = kvp.Key;
-
-                if (!CheckForKeyEvent(key, type))
+                if (!s.ShouldReceiveUpdate(inputPoller))
                     continue;
 
-                var listeners = kvp.Value;
-                var data = new KeyEventData(key, type);
-                listeners.ForEach((c) => c(data));
+                if (s.KeyEventsToRecieve != null)
+                {
+                    foreach(var keyEvent in s.KeyEventsToRecieve)
+                    {
+                        if (CheckForKeyEvent(keyEvent))
+                            s.OnKeyEvent(keyEvent, inputPoller);
+                    }
+                }
+
+                if (s.MouseEventsToRecieve != null)
+                {
+                    foreach (var mouseEvent in s.MouseEventsToRecieve)
+                    {
+                        if (CheckForMouseEvent(mouseEvent))
+                            s.OnMouseEvent(mouseEvent, inputPoller);
+                    }
+                }
+
+                s.OnUpdate(inputPoller);
             }
-
-            // TODO: Mouse events.
         }
 
-        public void ListenToKeyEvent(KeyCode key, KeyEventType type, KeyEventCallback callback)
+        /// <summary>
+        /// Add the specified subscriber.
+        /// </summary>
+        /// <param name="subscriber"></param>
+        /// <returns>True if subscriber was added. False if they were
+        /// already present.</returns>
+        public bool AddSubscriber(IInputSubscriber subscriber)
         {
-            keyListeners.TryGetValue((key, type), out List<KeyEventCallback> listeners);
-            if (listeners == null)
-            {
-                listeners = keyListeners[(key, type)] = new List<KeyEventCallback>();
-            }
-
-            listeners.Add(callback);
+            return subscribers.Add(subscriber);
         }
 
-        public void RemoveKeyEventListener(KeyCode key, KeyEventType type, KeyEventCallback callback)
+        /// <summary>
+        /// Remove the specified subscriber.
+        /// </summary>
+        /// <param name="subscriber"></param>
+        /// <returns>True if the subscriber was found and removed, false otherwise.</returns>
+        public bool RemoveSubscriber(IInputSubscriber subscriber)
         {
-            keyListeners.TryGetValue((key, type), out List<KeyEventCallback> listeners);
-            if (keyListeners == null)
-                throw new Exception("Listener not found.");
-
-            if (!keyListeners.Remove((key, type)))
-                throw new Exception("Listener not found.");
+            return subscribers.Remove(subscriber);
         }
 
-        bool CheckForKeyEvent(KeyCode key, KeyEventType type)
+        bool CheckForKeyEvent(KeyEventFilter filter)
         {
-            switch (type)
+            switch (filter.type)
             {
                 case KeyEventType.Active:
-                    return keyInputPoller.GetKey(key);
+                    return inputPoller.KeyPoller.GetKey(filter.key);
                 case KeyEventType.Down:
-                    return keyInputPoller.GetKeyDown(key);
+                    return inputPoller.KeyPoller.GetKeyDown(filter.key);
                 case KeyEventType.Up:
-                    return keyInputPoller.GetKeyUp(key);
+                    return inputPoller.KeyPoller.GetKeyUp(filter.key);
                 default:
-                    throw new Exception("KeyEventType not supported: " + type.ToString());
+                    throw new NotSupportedException("KeyEventType not supported: " + filter.type);
+            }
+        }
+
+        bool CheckForMouseEvent(MouseEventFilter filter)
+        {
+            switch(filter.type)
+            {
+                case MouseEventType.Active:
+                    return inputPoller.MousePoller.GetButton(filter.button);
+                case MouseEventType.Down:
+                    return inputPoller.MousePoller.GetButtonDown(filter.button);
+                case MouseEventType.Up:
+                    return inputPoller.MousePoller.GetButtonUp(filter.button);
+                case MouseEventType.Move:
+                    return !inputPoller.MousePoller.PositionDelta.Equals(Point.Zero);
+                case MouseEventType.Scroll:
+                    return inputPoller.MousePoller.ScrollDelta != 0;
+                default:
+                    throw new NotSupportedException("MouseEventType not supported: " + filter.type);
             }
         }
     }

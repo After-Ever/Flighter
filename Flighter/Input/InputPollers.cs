@@ -4,27 +4,27 @@ using System.Text;
 
 namespace Flighter.Input
 {
-    public abstract class KeyInputPoller
+    public interface IInputPoller
     {
-        public abstract bool GetKey(KeyCode key);
-        public abstract bool GetKeyDown(KeyCode key);
-        public abstract bool GetKeyUp(KeyCode key);
+        IKeyInputPoller KeyPoller { get; }
+        IMouseInputPoller MousePoller { get; }
     }
 
-    public abstract class MouseInputPoller
+    public interface IKeyInputPoller
     {
-        public enum MouseButton
-        {
-            Left,
-            Right,
-            Middle
-        }
+        bool GetKey(KeyCode key);
+        bool GetKeyDown(KeyCode key);
+        bool GetKeyUp(KeyCode key);
+    }
 
-        public abstract float ScrollDelta { get; }
-        public abstract Point Position { get; }
+    public interface IMouseInputPoller
+    {
+        float ScrollDelta { get; }
+        Point PositionDelta { get; }
+        Point Position { get; }
 
-        public abstract bool GetButton(MouseButton button);
-        public abstract bool GetButtonDown(MouseButton button);
-        public abstract bool GetButtonUp(MouseButton button);
+        bool GetButton(MouseButton button);
+        bool GetButtonDown(MouseButton button);
+        bool GetButtonUp(MouseButton button);
     }
 }

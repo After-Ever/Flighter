@@ -40,6 +40,8 @@ namespace Flighter
         Point? cachedElementOffset;
         Point? cachedAbsoluteOffset;
 
+        InputWidgetSubscriber inputSubscriber;
+
         public WidgetNode(
             WidgetTree tree,
             Widget widget,
@@ -224,6 +226,18 @@ namespace Flighter
             return cachedAbsoluteOffset.Value;
         }
 
+        public bool IsHovering(Point p)
+        {
+            var absOffset = GetAbsoluteOffset();
+
+            if (p.x < absOffset.x || p.y < absOffset.y)
+                return false;
+
+            p -= absOffset;
+
+            return p.x < Size.width && p.y < Size.height;
+        }
+
         /// <summary>
         /// Get all element nodes that would attach to an ancestor.
         /// </summary>
@@ -266,11 +280,10 @@ namespace Flighter
 
         void ConnectInputTree()
         {
-            // If I am an input widget, perform relevant subscriptions.
-            if (widget is InputWidget i)
+            // If I am an input widget, and don't already have a subscriber, perform relevant subscriptions.
+            if (widget is InputWidget i && inputSubscriber == null)
             {
-                // TODO: Do the subs
-                throw new NotImplementedException();
+                tree.input.AddSubscriber(inputSubscriber = new InputWidgetSubscriber(this));
             }
 
             // Connect children.
@@ -280,26 +293,14 @@ namespace Flighter
         void DisconnectInputTree()
         {
             // If I am an input widget, perform relevant unsubscriptions.
-            if (widget is InputWidget i)
+            if (inputSubscriber != null)
             {
-                // TODO: Do the unsubs.
-                throw new NotImplementedException();
+                tree.input.RemoveSubscriber(inputSubscriber);
+                inputSubscriber = null;
             }
 
             // Disconnect children.
             children?.ForEach((c) => c.DisconnectInputTree());
-        }
-
-        bool IsHovering(Point p)
-        {
-            var absOffset = GetAbsoluteOffset();
-
-            if (p.x < absOffset.x || p.y < absOffset.y)
-                return false;
-
-            p -= absOffset;
-
-            return p.x < Size.width && p.y < Size.height;
         }
     }
 }

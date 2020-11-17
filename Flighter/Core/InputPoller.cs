@@ -6,14 +6,24 @@ using Flighter.Input;
 
 namespace Flighter.Core
 {
+    public delegate void InputUpdateCallback(IInputPoller poller);
+
     /// <summary>
     /// Widget which has the option to poll input each frame.
     /// </summary>
     public class InputPoller : InputWidget
     {
-        public InputPoller(Widget child)
-            : base(child, false) { }
+        readonly InputUpdateCallback callback;
 
-        // TODO: This
+        public InputPoller(Widget child, InputUpdateCallback callback)
+            : base(child, false)
+        {
+            this.callback = callback;
+        }
+
+        public override void OnUpdate(IInputPoller inputPoller)
+        {
+            callback?.Invoke(inputPoller);
+        }
     }
 }

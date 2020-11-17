@@ -13,6 +13,23 @@ namespace Flighter
 
         public Size ToSize() => new Size(x, y);
 
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Point p))
+                return false;
+            
+            return x == p.x &&
+                   y == p.y;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1502939027;
+            hashCode = hashCode * -1521134295 + x.GetHashCode();
+            hashCode = hashCode * -1521134295 + y.GetHashCode();
+            return hashCode;
+        }
+
         public Point(float x = 0, float y = 0)
         {
             this.x = x;
