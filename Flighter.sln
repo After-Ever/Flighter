@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flighter", "Flighter\Flight
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlighterTest", "FlighterTest\FlighterTest.csproj", "{13B24B62-A376-472A-ABDC-67833260BB47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlighterUnity", "FlighterUnity\FlighterUnity.csproj", "{8C83913F-C67F-45B7-B8FD-FCDD4BF8F59A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlighterUnity", "FlighterUnity\FlighterUnity.csproj", "{8C83913F-C67F-45B7-B8FD-FCDD4BF8F59A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

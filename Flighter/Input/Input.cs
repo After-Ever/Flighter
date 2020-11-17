@@ -3,6 +3,15 @@ using System.Collections.Generic;
 
 namespace Flighter.Input
 {
+    /// <summary>
+    /// Provides an <see cref="Input"/>.
+    /// This object is responsible for calling <see cref="Input.Update"/>.
+    /// </summary>
+    public interface IInputProvider
+    {
+        Input GetInput();
+    }
+
     public interface IInputSubscriber
     {
         /// <summary>
