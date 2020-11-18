@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Flighter
 {
-    public class RootWidget : InputWidget
+    public class RootWidget : DisplayWidget
     {
         static public (WidgetNode, ElementNode) MakeRootWidgetNode(
             Widget child,
@@ -26,7 +26,22 @@ namespace Flighter
             return (widgetNode, rootElementNode);
         }
 
+        readonly Widget child;
+
         RootWidget(Widget child)
-            : base(child, false) { }
+        {
+            this.child = child;
+        }
+
+        public override Element CreateElement()
+        {
+            throw new NotImplementedException("Root widget should never have to make an element.");
+        }
+
+        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        {
+            var childNode = node.AddChildWidget(child, context);
+            return new BuildResult(childNode.size);
+        }
     }
 }

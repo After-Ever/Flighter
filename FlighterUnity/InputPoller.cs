@@ -10,17 +10,13 @@ namespace FlighterUnity
 {
     public class InputPoller : IInputPoller, IKeyInputPoller, IMouseInputPoller
     {
-        readonly Camera camera;
         readonly RectTransform rootRect;
 
         Point lastPosition = Point.Zero;
 
-        public InputPoller(Camera camera = null, RectTransform rootRect = null)
+        // TODO make explicit what changes when root rect is supplied.
+        public InputPoller(RectTransform rootRect = null)
         {
-            if ((camera == null) != (rootRect == null))
-                throw new ArgumentNullException("Must provider either both camera and rootRect, or neither.");
-
-            this.camera = camera;
             this.rootRect = rootRect;
         }
 
@@ -83,27 +79,34 @@ namespace FlighterUnity
         /// <returns></returns>
         Point ScreenPosToDisplayRectPos(Vector3 screenPos)
         {
-            if (camera == null)
+            var cam = Camera.main;
+
+            if (rootRect == null || cam == null)
             {
                 var point = screenPos.ToPoint();
                 point.y = Screen.height - point.y;
                 return point;
             }
-
-            var pointerRay = camera.ScreenPointToRay(screenPos);
+            
+            var pointerRay = cam.ScreenPointToRay(screenPos);
             var rectOrigin = rootRect.position;
+
+            // TODO What if root rect has scale? Can we get the global scale?
+            //      Should have a better way of thinking about the basis vectors.
             var rectRight = rootRect.right;
             var rectDown = -rootRect.up;
             var rectNormal = rootRect.forward;
 
             var inDirection = Vector3.Dot(rectNormal, pointerRay.direction);
 
+            // Not actually pointing at the rect's plane.
             if (inDirection <= 0)
                 return new Point(-1, -1);
 
-            var d = Vector3.Dot(rectNormal, pointerRay.origin - rectOrigin) / inDirection;
+            var d = Vector3.Dot(rectNormal, rectOrigin - pointerRay.origin) / inDirection;
 
-            var pointOnRect = (pointerRay.origin + pointerRay.direction * d) - rectOrigin;
+            var intersectPoint = pointerRay.origin + pointerRay.direction * d;
+            var pointOnRect = intersectPoint - rectOrigin;
 
             var x = Vector3.Dot(pointOnRect, rectRight);
             var y = Vector3.Dot(pointOnRect, rectDown);

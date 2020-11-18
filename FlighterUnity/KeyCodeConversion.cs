@@ -273,7 +273,6 @@ namespace FlighterUnity
                 { UnityKeyCode.RightAlt, FlighterKeyCode.RightAlt },
                 { UnityKeyCode.LeftAlt, FlighterKeyCode.LeftAlt },
                 { UnityKeyCode.LeftCommand, FlighterKeyCode.LeftCommand },
-                { UnityKeyCode.LeftApple, FlighterKeyCode.LeftApple },
                 { UnityKeyCode.LeftWindows, FlighterKeyCode.LeftWindows },
                 { UnityKeyCode.AltGr, FlighterKeyCode.AltGr },
                 { UnityKeyCode.Help, FlighterKeyCode.Help },

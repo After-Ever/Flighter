@@ -39,8 +39,8 @@ namespace Flighter.Input
 
     public class InputWidgetSubscriber : IInputSubscriber
     {
-        public IEnumerable<KeyEventFilter> KeyEventsToRecieve => throw new NotImplementedException();
-        public IEnumerable<MouseEventFilter> MouseEventsToRecieve => throw new NotImplementedException();
+        public IEnumerable<KeyEventFilter> KeyEventsToRecieve => widget.keyEventsToReceive;
+        public IEnumerable<MouseEventFilter> MouseEventsToRecieve => widget.mouseEventsToReceive;
 
         readonly InputWidget widget;
         readonly WidgetNode node;

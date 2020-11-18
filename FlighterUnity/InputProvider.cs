@@ -10,22 +10,18 @@ namespace FlighterUnity
 {
     public class InputProvider : MonoBehaviour, IInputProvider
     {
-        readonly InputPoller poller;
-        readonly Input input;
+        public RectTransform rootRect;
 
-        /// <summary>
-        /// </summary>
-        /// <param name="camera">Include this and <paramref name="rootRect"/> to make positions relative to a world rect.
-        /// Otherwise, screen space will be used.</param>
-        /// <param name="rootRect">Include this and <paramref name="camera"/> to make positions relative to a world rect.
-        /// Otherwise, screen space will be used.</param>
-        public InputProvider(Camera camera, RectTransform rootRect)
-        {
-            poller = new InputPoller(camera, rootRect);
-            input = new Input(poller);
-        }
+        InputPoller poller;
+        Input input;
 
         public Input GetInput() => input;
+
+        void Awake()
+        {
+            poller = new InputPoller(rootRect);
+            input = new Input(poller);
+        }
 
         /// <summary>
         /// Called by Unity each frame.

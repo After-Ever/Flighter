@@ -232,9 +232,9 @@ namespace Flighter
 
             if (p.x < absOffset.x || p.y < absOffset.y)
                 return false;
-
+            
             p -= absOffset;
-
+            
             return p.x < Size.width && p.y < Size.height;
         }
 
