@@ -8,7 +8,7 @@ namespace Flighter
         public Point Offset;
 
         readonly WidgetTree tree;
-        readonly Widget widget;
+        public readonly Widget widget;
         readonly BuildContext buildContext;
         public readonly Size size;
         readonly ElementNode elementNode;
@@ -64,10 +64,11 @@ namespace Flighter
                 else
                 {
                     var state = sfw.CreateState();
-                    elementNode = new ElementNode(new StateElement(state), null);
+                    elementNode = new ElementNode(new StateElement(state, this), null);
 
                     // Manually do the first build. The rest will be handled with state updates.
                     var child = state.Build(this.buildContext);
+
                     var childNode = AddChildWidget(child, this.buildContext);
 
                     size = childNode.size;
@@ -112,7 +113,7 @@ namespace Flighter
             }
             else
             {
-                node = builtNode ?? new WidgetNode(
+                node = new WidgetNode(
                     tree,
                     widget,
                     buildContext,

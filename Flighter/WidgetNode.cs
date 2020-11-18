@@ -74,8 +74,8 @@ namespace Flighter
 
         public void UpdateConnection(WidgetNode parent, NodeLayout? layout = null)
         {
-            if (parent != null)
-                throw new Exception("Node must not have parent to udpate the connection.");
+            if (this.parent != null)
+                throw new Exception("Node must not have parent to update the connection.");
 
             ClearCachedOffsets();
 
@@ -156,6 +156,7 @@ namespace Flighter
 
             parent?.children?.Remove(this);
             parent = null;
+
             GetElementSurface().ForEach((e) => e.Emancipate());
             ClearCachedOffsets();
         }

@@ -8,11 +8,24 @@ namespace Flighter
     {
         public override string Name => "State";
 
-        public readonly State state; 
+        public readonly State state;
 
-        public StateElement(State state)
+        /// <summary>
+        /// Provided so the state can perform an initial build.
+        /// Otherwise, the state would have no way to access the widget.
+        /// </summary>
+        public readonly WidgetNodeBuilder builder;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="builder">Only needed when the state is being
+        /// created from a <see cref="WidgetNodeBuilder"/></param>
+        public StateElement(State state, WidgetNodeBuilder builder = null)
         {
             this.state = state ?? throw new ArgumentNullException();
+            this.builder = builder;
             this.state.SetStateElement(this);
         }
 

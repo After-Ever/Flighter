@@ -8,9 +8,9 @@ namespace Flighter
     public abstract class Element
     {
         protected WidgetNode widgetNode;
-        protected W GetWidget<W>() where W : Widget
+        public W GetWidget<W>() where W : Widget
         {
-            return widgetNode.widget as W;
+            return widgetNode?.widget as W;
         }
 
         /// <summary>

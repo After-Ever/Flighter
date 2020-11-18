@@ -8,6 +8,12 @@ namespace Flighter
     {
         public abstract Widget Build(BuildContext context);
 
+        protected W GetWidget<W>() where W : Widget
+        {
+            return stateElement.GetWidget<W>() ?? stateElement?.builder?.widget as W
+                ?? throw new Exception("Could not get widget!");
+        }
+
         StateElement stateElement;
         readonly Queue<Action> updates = new Queue<Action>();
 
