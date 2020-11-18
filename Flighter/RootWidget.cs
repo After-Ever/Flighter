@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Flighter.Input;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,12 +11,14 @@ namespace Flighter
             Widget child,
             BuildContext initialBuildContext,
             IDisplayRect baseRect,
-            ComponentProvider componentProvider)
+            ComponentProvider componentProvider,
+            Input.Input input)
         {
             var rootWidget = new RootWidget(child);
             var rootElementNode = new RootElementNode(baseRect, componentProvider);
 
             var widgetNode = new WidgetNodeBuilder(
+                new WidgetTree(input),
                 rootWidget,
                 initialBuildContext,
                 rootElementNode).Build(null);
@@ -27,7 +30,7 @@ namespace Flighter
 
         RootWidget(Widget child)
         {
-            this.child = child ?? throw new ArgumentNullException();
+            this.child = child;
         }
 
         public override Element CreateElement()

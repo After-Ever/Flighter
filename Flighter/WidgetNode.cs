@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Flighter.Input;
+
 namespace Flighter
 {
     public struct NodeLayout
@@ -23,6 +25,7 @@ namespace Flighter
     
     public class WidgetNode
     {
+        public readonly WidgetTree tree;
         public readonly Widget widget;
         public readonly BuildContext buildContext;
 
@@ -32,22 +35,15 @@ namespace Flighter
         public readonly ElementNode elementNode;
 
         public Size Size => layout.size;
-        public Point Offset
-        {
-            get
-            {
-                if (parent?.elementNode != null)
-                {
-                    return layout.offset;
-                }
-                else
-                {
-                    return layout.offset + parent?.Offset ?? throw new Exception("Not rooted in element tree.");
-                }
-            }
-        }
-        
+        public Point Offset => layout.offset;
+
+        Point? cachedElementOffset;
+        Point? cachedAbsoluteOffset;
+
+        InputWidgetSubscriber inputSubscriber;
+
         public WidgetNode(
+            WidgetTree tree,
             Widget widget,
             BuildContext buildContext,
             NodeLayout layout,
@@ -55,10 +51,13 @@ namespace Flighter
             List<WidgetNodeBuilder> childrenBuilders,
             ElementNode elementNode = null)
         {
+            this.tree = tree ?? throw new ArgumentNullException("Widget node must belong to a tree.");
             this.parent = parent;
             this.widget = widget ?? throw new ArgumentNullException("WidgetNode's widget must not be null.");
             this.buildContext = buildContext;
             this.layout = layout;
+
+            ConnectInputTree();
 
             if (elementNode != null)
             {
@@ -78,9 +77,13 @@ namespace Flighter
             if (parent != null)
                 throw new Exception("Node must not have parent to udpate the connection.");
 
+            ClearCachedOffsets();
+
             this.parent = parent;
             if (layout != null)
                 this.layout = layout.Value;
+
+            ConnectInputTree();
 
             var elementParent = parent.GetNearestAncestorElementNode();
             GetElementSurface().ForEach((e) => elementParent.ConnectNode(e));
@@ -125,6 +128,7 @@ namespace Flighter
                     }
 
                     return new WidgetNodeBuilder(
+                        tree,
                         widget, 
                         context,
                         nodeToInherit,
@@ -135,9 +139,10 @@ namespace Flighter
             children.AddRange(newChildNodes);
 
             // Clear any remaining emancipated children.
-            while (freeChildren?.Count > 0)
+            if (freeChildren != null)
             {
-                freeChildren.Dequeue().Prune();
+                foreach (var c in freeChildren)
+                    c.Prune();
             }
         }
         
@@ -147,9 +152,12 @@ namespace Flighter
         /// </summary>
         void Emancipate()
         {
+            DisconnectInputTree();
+
             parent?.children?.Remove(this);
             parent = null;
             GetElementSurface().ForEach((e) => e.Emancipate());
+            ClearCachedOffsets();
         }
 
         public Queue<WidgetNode> EmancipateChildren()
@@ -192,6 +200,43 @@ namespace Flighter
 
             return emancipatedChildren;
         }
+        
+        public Point GetElementOffset()
+        {
+            if (cachedElementOffset != null) return cachedElementOffset.Value;
+
+            if (parent?.elementNode != null)
+                cachedElementOffset = Offset;
+            else
+                cachedElementOffset = layout.offset + parent?.GetElementOffset()
+                    ?? throw new Exception("Not rooted in element tree.");
+
+            return cachedElementOffset.Value;
+        }
+
+        public Point GetAbsoluteOffset()
+        {
+            if (cachedAbsoluteOffset != null) return cachedAbsoluteOffset.Value;
+
+            if (parent == null)
+                cachedAbsoluteOffset = Offset;
+            else
+                cachedAbsoluteOffset = Offset + parent.GetAbsoluteOffset();
+
+            return cachedAbsoluteOffset.Value;
+        }
+
+        public bool IsHovering(Point p)
+        {
+            var absOffset = GetAbsoluteOffset();
+
+            if (p.x < absOffset.x || p.y < absOffset.y)
+                return false;
+            
+            p -= absOffset;
+            
+            return p.x < Size.width && p.y < Size.height;
+        }
 
         /// <summary>
         /// Get all element nodes that would attach to an ancestor.
@@ -208,6 +253,7 @@ namespace Flighter
             return r;
         }
 
+        // TODO refine this. Not really the nearest ancestor if THIS can be returned.
         /// <summary>
         /// Find the nearest ancestor with an attached
         /// element node. Returns attached element node if this has one.
@@ -219,6 +265,42 @@ namespace Flighter
                 return elementNode;
 
             return parent?.GetNearestAncestorElementNode();
+        }
+
+        void ClearCachedOffsets()
+        {
+            // If this node has neither offset set, then its children can't have theirs set.
+            if (cachedElementOffset == null && cachedAbsoluteOffset == null)
+                return;
+
+            cachedElementOffset = cachedAbsoluteOffset = null;
+
+            children.ForEach((c) => c.ClearCachedOffsets());
+        }
+
+        void ConnectInputTree()
+        {
+            // If I am an input widget, and don't already have a subscriber, perform relevant subscriptions.
+            if (widget is InputWidget i && inputSubscriber == null)
+            {
+                tree.input.AddSubscriber(inputSubscriber = new InputWidgetSubscriber(this));
+            }
+
+            // Connect children.
+            children?.ForEach((c) => c.ConnectInputTree());
+        }
+
+        void DisconnectInputTree()
+        {
+            // If I am an input widget, perform relevant unsubscriptions.
+            if (inputSubscriber != null)
+            {
+                tree.input.RemoveSubscriber(inputSubscriber);
+                inputSubscriber = null;
+            }
+
+            // Disconnect children.
+            children?.ForEach((c) => c.DisconnectInputTree());
         }
     }
 }
