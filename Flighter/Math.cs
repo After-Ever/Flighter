@@ -129,7 +129,7 @@ namespace Flighter
             get
             {
                 float width = float.IsPositiveInfinity(maxWidth) ? minWidth : maxWidth;
-                float height = float.IsPositiveInfinity(minHeight) ? minHeight : maxHeight;
+                float height = float.IsPositiveInfinity(maxHeight) ? minHeight : maxHeight;
 
                 return new Size(width, height);
             }
@@ -141,8 +141,8 @@ namespace Flighter
         /// </summary>
         void CheckConstraints()
         {
-            if (!(0 <= minHeight && minHeight <= maxHeight && maxHeight <= float.PositiveInfinity) &&
-                !(0 <= minWidth && minWidth <= maxWidth && maxWidth <= float.PositiveInfinity))
+            if (minHeight < 0 || maxHeight < minHeight ||
+                minWidth < 0 || maxWidth < minWidth)
                 throw new BoxConstrainstException();
         }
     }

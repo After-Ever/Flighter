@@ -80,7 +80,7 @@ namespace FlighterUnity
 
         public void SetParent(IDisplayRect rect)
         {
-            var parent = rect as DisplayRect ?? throw new Exception("Invalid parent rect.");
+            var parent = rect as DisplayRect ?? throw new Exception("Invalid parent rect. ");
             transform.SetParent(parent.transform);
         }
 

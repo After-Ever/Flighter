@@ -10,15 +10,15 @@ namespace Flighter
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
 
-        ComponentProvider componentProvider;
+        ComponentProvider _componentProvider;
         ComponentProvider ComponentProvider
         {
             get
             {
-                if (componentProvider != null)
-                    return componentProvider;
+                if (_componentProvider != null)
+                    return _componentProvider;
 
-                return componentProvider = 
+                return _componentProvider = 
                     parent?.ComponentProvider ?? throw new Exception("Could not find component provider.");
             }
         }
@@ -36,7 +36,7 @@ namespace Flighter
         {
             this.element = element ?? throw new ArgumentNullException();
             this.parent = parent;
-            this.componentProvider = componentProvider;
+            this._componentProvider = componentProvider;
 
             this.element.SetDirtyCallback(() => SetDirty());
         }
@@ -76,7 +76,7 @@ namespace Flighter
 
             // Just pass the componentProvider field (instead of the property)
             // because we don't care if it's null here; it can always search later.
-            var node = new ElementNode(element, this, componentProvider);
+            var node = new ElementNode(element, this, _componentProvider);
             children.Add(node);
 
             SetChildDirty();
@@ -94,6 +94,8 @@ namespace Flighter
             
             if (node.element.IsInitialized)
             {
+                if (!element.IsInitialized)
+                    throw new Exception("Child element is initialized, but this isn't!");
                 var rect = node.element.DisplayRect;
                 rect.SetParent(element.DisplayRect);
             }
@@ -120,6 +122,10 @@ namespace Flighter
 
             if (!parent.children.Remove(this))
                 throw new Exception("Node not in parent's child list.");
+
+            parent.UpdateChildDirtyStatus();
+
+            // TODO need the parent to check again for dirty children.
             
             parent = null;
             SetDirty();
@@ -149,6 +155,21 @@ namespace Flighter
             if (IsDirty) return;
 
             parent?.SetChildDirty();
+        }
+
+        /// <summary>
+        /// Checks the status of <see cref="HasDirtyChild"/>.
+        /// </summary>
+        void UpdateChildDirtyStatus()
+        {
+            var newStatus = children.Exists((n) => n.IsDirty || n.HasDirtyChild);
+
+            if (newStatus == HasDirtyChild)
+                return;
+
+            HasDirtyChild = newStatus;
+            if (HasDirtyChild)
+                parent?.SetChildDirty();
         }
 
         List<ElementNode> GetDirtyChildren()

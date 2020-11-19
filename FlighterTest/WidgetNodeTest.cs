@@ -8,22 +8,13 @@ namespace FlighterTest
     [TestClass]
     public class WidgetNodeTest
     {
-        WidgetNode MakeSimpleRoot()
-            => RootWidget.MakeRootWidgetNode(
-                new TestDisplayWidget(), 
-                new BuildContext(), 
-                new TestDisplayRect(),
-                new ComponentProvider(new System.Collections.Generic.Dictionary<Type, Type>()),
-                null)
-                    .Item1;
-
         [TestMethod]
         /// <summary>
         /// Bare-bones test. Root element and test display widget.
         /// </summary>
         public void SimpleTest()
         {
-            MakeSimpleRoot();
+            TestUtilities.MakeSimpleRootWidgetNode();
         }
 
         [TestMethod]
@@ -39,7 +30,7 @@ namespace FlighterTest
                         right: new TestStatelessWidget(
                             child: new TestDisplayWidget())),
                     right: new TestDisplayWidget()));
-            
+
             (var root, var elementNode) = RootWidget.MakeRootWidgetNode(
                 w,
                 new BuildContext(),
@@ -60,15 +51,15 @@ namespace FlighterTest
         /// </summary>
         public void GetBuildResults()
         {
-            var root = MakeSimpleRoot();
+            var root = TestUtilities.MakeSimpleRootWidgetNode();
 
-            Assert.AreEqual(new Size(10,10), root.Size);
+            Assert.AreEqual(new Size(10, 10), root.Size);
         }
 
         [TestMethod]
         public void ReplaceChild()
         {
-            var root = MakeSimpleRoot();
+            var root = TestUtilities.MakeSimpleRootWidgetNode();
             root.ReplaceChildren(new System.Collections.Generic.List<(Widget, BuildContext)>
             {
                 (new TestDisplayWidget(), new BuildContext()),

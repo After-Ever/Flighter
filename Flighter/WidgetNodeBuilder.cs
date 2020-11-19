@@ -123,7 +123,7 @@ namespace Flighter
                     elementNode);
 
             }
-            parent = null;
+
             children.Clear();
             builtNode = null;
             hasBuilt = true;

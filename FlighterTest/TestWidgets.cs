@@ -48,8 +48,8 @@ namespace FlighterTest
             if (right != null)
                 r = node.AddChildWidget(right, context).size;
 
-            float width = Math.Max(l.width, r.width);
-            float height = Math.Max(l.height, r.height);
+            float width = System.Math.Max(l.width, r.width);
+            float height = System.Math.Max(l.height, r.height);
 
             return new BuildResult(width, height);
         }
@@ -80,6 +80,9 @@ namespace FlighterTest
 
     public class TestState : State
     {
+        public new W GetWidget<W>() where W : Widget => base.GetWidget<W>();
+        public new void SetState(Action action) => base.SetState(action);
+
         public override Widget Build(BuildContext context)
         {
             return new TestDisplayWidget();

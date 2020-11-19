@@ -24,6 +24,7 @@ namespace Flighter
         /// </summary>
         public bool IsInitialized { get; private set; } = false;
         
+        // TODO: Update this doc. Assess if it needs to be public
         /// <summary>
         /// The RectTransform which represents this Element.
         /// Should not be modified outside the element, save for changing

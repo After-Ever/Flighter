@@ -72,6 +72,12 @@ namespace Flighter
             children = childrenBuilders.ConvertAll((c) => c.Build(this));
         }
 
+        /// <summary>
+        /// Update this nodes connection with respects to <paramref name="parent"/>.
+        /// Does NOT add this to the parent's list of children.
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="layout">Optionally provide a new layout value for the widget.</param>
         public void UpdateConnection(WidgetNode parent, NodeLayout? layout = null)
         {
             if (this.parent != null)
@@ -79,7 +85,8 @@ namespace Flighter
 
             ClearCachedOffsets();
 
-            this.parent = parent;
+            this.parent = parent ?? throw new ArgumentNullException();
+            
             if (layout != null)
                 this.layout = layout.Value;
 
