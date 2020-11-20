@@ -66,6 +66,7 @@ namespace Flighter
                 }
             }
 
+            // TODO Is it actually possible for a child to be dirty at this point?
             SetClean();
         }
 
@@ -92,14 +93,6 @@ namespace Flighter
             children.Add(node);
             node.parent = this;
             
-            if (node.element.IsInitialized)
-            {
-                if (!element.IsInitialized)
-                    throw new Exception("Child element is initialized, but this isn't!");
-                var rect = node.element.DisplayRect;
-                rect.SetParent(element.DisplayRect);
-            }
-            
             SetChildDirty();
         }
 
@@ -124,11 +117,11 @@ namespace Flighter
                 throw new Exception("Node not in parent's child list.");
 
             parent.UpdateChildDirtyStatus();
-
-            // TODO need the parent to check again for dirty children.
             
             parent = null;
             SetDirty();
+
+            element.Disconnect();
         }
 
         /// <summary>
@@ -183,11 +176,20 @@ namespace Flighter
             if (parent == null || !parent.element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
 
-            var rect = parent.element.DisplayRect.CreateChild();
-            rect.Name = element.Name;
-
-            // Use the componentProvider property here to make sure we find it.
-            element.Init(rect, ComponentProvider);
+            // If the element already has the display rect, it has been initialized,
+            // and we just have to connect the parent.
+            if (element.DisplayRect != null)
+            {
+                var parentRect = parent.element.DisplayRect;
+                element.Reconnect(parentRect);
+            }
+            else
+            {
+                var rect = parent.element.DisplayRect.CreateChild();
+                // Use the componentProvider property here to make sure we find it.
+                element.Init(rect, ComponentProvider);
+            }
+            
             element.Update();
         }
 

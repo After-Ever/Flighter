@@ -56,7 +56,7 @@ namespace Flighter
 
                     elementNode = inheritedElementNode;
 
-                    // Directly add the inherited child, as the inherited element node
+                    // Directly add the inherited child The inherited element node
                     // is marked dirty, so the state will rebuild the widget when it's element is updated.
                     var c = inheritedChildren.Dequeue();
                     children.Add(new WidgetNodeBuilder(c));
@@ -85,11 +85,15 @@ namespace Flighter
 
                 size = lw.Layout(buildContext, this).size;
             }
+            else
+                throw new Exception("Widget type \"" + widget.GetType() + "\" not handled!");
 
-            // Clear any remaining inherited children.
-            while (inheritedChildren?.Count > 0)
+            if (inheritedChildren != null)
             {
-                inheritedChildren.Dequeue().Prune();
+                // Clear any remaining inherited children.
+                foreach (var c in inheritedChildren)
+                    c.Prune();
+                inheritedChildren.Clear();
             }
         }
 
@@ -142,7 +146,7 @@ namespace Flighter
             if (inheritedChildren?.Count > 0)
             {
                 var toReplace = inheritedChildren.Dequeue();
-
+                
                 if (toReplace.buildContext.Equals(context) && widget.IsSame(toReplace.widget))
                 {
                     var b = new WidgetNodeBuilder(toReplace);
@@ -150,6 +154,8 @@ namespace Flighter
                     return b;
                 }
 
+                // TODO This is the same code as in WidgetNode.ReplaceChildren...
+                //      Should probably consolidate.
                 if (widget.CanReplace(toReplace.widget))
                 {
                     childElementNode = toReplace.elementNode;

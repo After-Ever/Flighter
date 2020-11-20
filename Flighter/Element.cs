@@ -55,9 +55,30 @@ namespace Flighter
 
             this.componentProvider = componentProvider ?? throw new ArgumentNullException();
             DisplayRect = displayRect ?? throw new ArgumentNullException();
+            DisplayRect.Name = Name;
 
             _Init();
 
+            IsInitialized = true;
+        }
+
+        public void Disconnect()
+        {
+            if (!IsInitialized)
+                return;
+
+            DisplayRect.SetParent(null);
+            IsInitialized = false;
+        }
+
+        public void Reconnect(IDisplayRect parentRect)
+        {
+            if (DisplayRect == null)
+                throw new ElementUninitializedException();
+            if (IsInitialized)
+                throw new Exception("Cannot reconnect an initialized element.");
+
+            DisplayRect.SetParent(parentRect);
             IsInitialized = true;
         }
 
@@ -83,9 +104,7 @@ namespace Flighter
 
         public void TearDown()
         {
-            if (!IsInitialized) return;
-
-            DisplayRect.TearDown();
+            DisplayRect?.TearDown();
 
             DisplayRect = null;
             IsInitialized = false;

@@ -6,6 +6,14 @@ namespace FlighterTest
 {
     public static class TestUtilities
     {
+        public static (WidgetNode, ElementNode) MakeTestRoot(Widget child)
+            => RootWidget.MakeRootWidgetNode(
+                child,
+                new BuildContext(),
+                new TestDisplayRect(),
+                new ComponentProvider(new Dictionary<Type, Type>()),
+                null);
+
         public static WidgetNode MakeSimpleRootWidgetNode()
             => RootWidget.MakeRootWidgetNode(
                 new TestDisplayWidget(),

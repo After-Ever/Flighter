@@ -31,7 +31,7 @@ namespace Flighter
 
         NodeLayout layout;
         WidgetNode parent;
-        readonly List<WidgetNode> children;
+        readonly List<WidgetNode> children = new List<WidgetNode>();
         public readonly ElementNode elementNode;
 
         public Size Size => layout.size;
@@ -63,18 +63,19 @@ namespace Flighter
             {
                 elementNode.element.UpdateWidgetNode(this);
 
+                var nearestAncestor = GetNearestAncestorElementNode();
+
                 // Connect first so we don't connect to ourself!
                 // If there is no ancestor, that's fine! We'll just be a root.
                 GetNearestAncestorElementNode()?.ConnectNode(elementNode);
                 this.elementNode = elementNode;
             }
 
-            children = childrenBuilders.ConvertAll((c) => c.Build(this));
+            childrenBuilders.ConvertAll((c) => c.Build(this));
         }
 
         /// <summary>
         /// Update this nodes connection with respects to <paramref name="parent"/>.
-        /// Does NOT add this to the parent's list of children.
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="layout">Optionally provide a new layout value for the widget.</param>
@@ -86,6 +87,7 @@ namespace Flighter
             ClearCachedOffsets();
 
             this.parent = parent ?? throw new ArgumentNullException();
+            parent.children.Add(this);
             
             if (layout != null)
                 this.layout = layout.Value;
@@ -107,7 +109,7 @@ namespace Flighter
         {
             var freeChildren = EmancipateChildren();
 
-            var newChildNodes = newKids.ConvertAll(
+            newKids.ForEach(
                 (c) =>
                 {
                     (var widget, var context) = c;
@@ -122,7 +124,6 @@ namespace Flighter
                         if (context.Equals(toReplace.buildContext) && widget.IsSame(toReplace.widget))
                         {
                             toReplace.UpdateConnection(this);
-                            return toReplace;
                         }
 
                         if (widget.CanReplace(toReplace.widget))
@@ -134,7 +135,7 @@ namespace Flighter
                         toReplace.Prune();
                     }
 
-                    return new WidgetNodeBuilder(
+                    new WidgetNodeBuilder(
                         tree,
                         widget, 
                         context,
@@ -142,8 +143,6 @@ namespace Flighter
                         childrenToInherit
                       ).Build(this);
                 });
-
-            children.AddRange(newChildNodes);
 
             // Clear any remaining emancipated children.
             if (freeChildren != null)
@@ -260,8 +259,7 @@ namespace Flighter
 
             return r;
         }
-
-        // TODO refine this. Not really the nearest ancestor if THIS can be returned.
+        
         /// <summary>
         /// Find the nearest ancestor with an attached
         /// element node. Returns attached element node if this has one.
