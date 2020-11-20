@@ -163,7 +163,7 @@ namespace Flighter
                 //      Should probably consolidate.
                 if (widget.CanReplace(toReplace.widget))
                 {
-                    childElementNode = toReplace.elementNode;
+                    childElementNode = toReplace.TakeElementNode();
                     orphans = toReplace.EmancipateChildren();
                 }
 

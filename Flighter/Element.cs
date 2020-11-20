@@ -23,6 +23,10 @@ namespace Flighter
         /// Whether the Element has been initialized.
         /// </summary>
         public bool IsInitialized { get; private set; } = false;
+        /// <summary>
+        /// Whether the Element is connected to the element tree.
+        /// </summary>
+        public bool IsConnected { get; private set; } = false;
         
         // TODO: Update this doc. Assess if it needs to be public
         /// <summary>
@@ -60,29 +64,26 @@ namespace Flighter
             _Init();
 
             IsInitialized = true;
+            IsConnected = true;
         }
 
         public void Disconnect()
         {
-            if (!IsInitialized)
-                return;
-
-            // TODO: Should this happen? It is over safe, as each element should be
-            //       either added or pruned in the end, so intermediat opperations
-            //       are not needed...
-            DisplayRect.SetParent(null);
-            IsInitialized = false;
+            IsConnected = false;
+            // We don't actually disconnect the parent rect, as
+            // at the end of an update cycle the element will either have
+            // been reconnected, or be torn down.
         }
 
         public void Reconnect(IDisplayRect parentRect)
         {
-            if (DisplayRect == null)
+            if (!IsInitialized)
                 throw new ElementUninitializedException();
-            if (IsInitialized)
-                throw new Exception("Cannot reconnect an initialized element.");
+            if (IsConnected)
+                throw new Exception("Cannot reconnect a connected element.");
 
             DisplayRect.SetParent(parentRect);
-            IsInitialized = true;
+            IsConnected = true;
         }
 
         public void UpdateWidgetNode(WidgetNode newWidgetNode)
@@ -111,6 +112,7 @@ namespace Flighter
 
             DisplayRect = null;
             IsInitialized = false;
+            IsConnected = false;
             widgetNode = null;
         }
 

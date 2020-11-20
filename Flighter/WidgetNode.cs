@@ -32,7 +32,7 @@ namespace Flighter
         NodeLayout layout;
         WidgetNode parent;
         readonly List<WidgetNode> children = new List<WidgetNode>();
-        public readonly ElementNode elementNode;
+        ElementNode elementNode;
 
         public Size Size => layout.size;
         public Point Offset => layout.offset;
@@ -222,6 +222,13 @@ namespace Flighter
             return emancipatedChildren;
         }
         
+        public ElementNode TakeElementNode()
+        {
+            var e = elementNode;
+            elementNode = null;
+            return e;
+        }
+        
         public Point GetElementOffset()
         {
             if (cachedElementOffset != null) return cachedElementOffset.Value;
@@ -230,7 +237,7 @@ namespace Flighter
                 cachedElementOffset = Offset;
             else
                 cachedElementOffset = layout.offset + parent?.GetElementOffset()
-                    ?? throw new Exception("Not rooted in element tree.");
+                    ?? Point.Zero;
 
             return cachedElementOffset.Value;
         }

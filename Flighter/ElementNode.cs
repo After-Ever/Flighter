@@ -47,14 +47,12 @@ namespace Flighter
 
             if (IsDirty)
             {
-                if (element.IsInitialized)
+                if (!element.IsConnected)
                 {
-                    element.Update();
+                    InitOrConnectElement();
                 }
-                else
-                {
-                    InitElement();
-                }
+
+                element.Update();
             }
             if (HasDirtyChild)
             {
@@ -170,27 +168,23 @@ namespace Flighter
             return children.FindAll((n) => n.IsDirty || n.HasDirtyChild);
         }
 
-        protected virtual void InitElement()
+        protected virtual void InitOrConnectElement()
         {
             if (element.IsInitialized) return;
             if (parent == null || !parent.element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
 
-            // If the element already has the display rect, it has been initialized,
-            // and we just have to connect the parent.
-            if (element.DisplayRect != null)
+            var parentRect = parent.element.DisplayRect;
+
+            if (!element.IsInitialized)
             {
-                var parentRect = parent.element.DisplayRect;
-                element.Reconnect(parentRect);
+                // Use the ComponentProvider property here to make sure we find it.
+                element.Init(parentRect.CreateChild(), ComponentProvider);
             }
             else
             {
-                var rect = parent.element.DisplayRect.CreateChild();
-                // Use the componentProvider property here to make sure we find it.
-                element.Init(rect, ComponentProvider);
+                element.Reconnect(parentRect);
             }
-            
-            element.Update();
         }
 
         public string Print(int indent = 0)

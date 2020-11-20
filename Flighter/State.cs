@@ -24,6 +24,11 @@ namespace Flighter
             this.stateElement = stateElement;
         }
 
+        /// <summary>
+        /// Called when this has been inserted into the element tree.
+        /// </summary>
+        public virtual void Init() { }
+
         public void Updated()
         {
             // Make a local copy incase updates queue new updates.
