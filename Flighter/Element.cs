@@ -23,7 +23,12 @@ namespace Flighter
         /// Whether the Element has been initialized.
         /// </summary>
         public bool IsInitialized { get; private set; } = false;
+        /// <summary>
+        /// Whether the Element is connected to the element tree.
+        /// </summary>
+        public bool IsConnected { get; private set; } = false;
         
+        // TODO: Update this doc. Assess if it needs to be public
         /// <summary>
         /// The RectTransform which represents this Element.
         /// Should not be modified outside the element, save for changing
@@ -54,10 +59,31 @@ namespace Flighter
 
             this.componentProvider = componentProvider ?? throw new ArgumentNullException();
             DisplayRect = displayRect ?? throw new ArgumentNullException();
+            DisplayRect.Name = Name;
 
             _Init();
 
             IsInitialized = true;
+            IsConnected = true;
+        }
+
+        public void Disconnect()
+        {
+            IsConnected = false;
+            // We don't actually disconnect the parent rect, as
+            // at the end of an update cycle the element will either have
+            // been reconnected, or be torn down.
+        }
+
+        public void Reconnect(IDisplayRect parentRect)
+        {
+            if (!IsInitialized)
+                throw new ElementUninitializedException();
+            if (IsConnected)
+                throw new Exception("Cannot reconnect a connected element.");
+
+            DisplayRect.SetParent(parentRect);
+            IsConnected = true;
         }
 
         public void UpdateWidgetNode(WidgetNode newWidgetNode)
@@ -82,12 +108,11 @@ namespace Flighter
 
         public void TearDown()
         {
-            if (!IsInitialized) return;
-
-            DisplayRect.TearDown();
+            DisplayRect?.TearDown();
 
             DisplayRect = null;
             IsInitialized = false;
+            IsConnected = false;
             widgetNode = null;
         }
 

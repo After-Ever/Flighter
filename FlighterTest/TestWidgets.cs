@@ -8,19 +8,9 @@ namespace FlighterTest
 {
     public class TestDisplayWidget : DisplayWidget
     {
-        public override bool CanReplace(Widget other)
-        {
-            return base.CanReplace(other);
-        }
-
         public override Element CreateElement()
         {
             return new TestElement();
-        }
-
-        public override bool IsSame(Widget other)
-        {
-            return base.IsSame(other);
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
@@ -48,8 +38,8 @@ namespace FlighterTest
             if (right != null)
                 r = node.AddChildWidget(right, context).size;
 
-            float width = Math.Max(l.width, r.width);
-            float height = Math.Max(l.height, r.height);
+            float width = System.Math.Max(l.width, r.width);
+            float height = System.Math.Max(l.height, r.height);
 
             return new BuildResult(width, height);
         }
@@ -72,17 +62,31 @@ namespace FlighterTest
 
     public class TestStatefulWidget : StatefulWidget
     {
+        public readonly Widget child;
+
+        public State state { get; private set; }
+
+        public TestStatefulWidget(Widget child = null)
+        {
+            this.child = child;
+        }
+
         public override State CreateState()
         {
-            return new TestState();
+            return state = new TestState();
         }
     }
 
     public class TestState : State
     {
+        public new W GetWidget<W>() where W : Widget => base.GetWidget<W>();
+        public new void SetState(Action action) => base.SetState(action);
+
         public override Widget Build(BuildContext context)
         {
-            return new TestDisplayWidget();
+            var w = GetWidget<TestStatefulWidget>();
+
+            return w?.child ?? new TestDisplayWidget();
         }
     }
 }

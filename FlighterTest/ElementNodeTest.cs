@@ -7,14 +7,69 @@ namespace FlighterTest
     [TestClass]
     public class ElementNodeTest
     {
-        ElementNode MakeRoot() => new RootElementNode(new TestDisplayRect(), new ComponentProvider(new System.Collections.Generic.Dictionary<System.Type, System.Type>()));
+        [TestMethod]
+        public void StartsDirty()
+        {
+            var en = TestUtilities.MakeSimpleElementNode();
+
+            Assert.IsTrue(en.IsDirty);
+        }
+
+        [TestMethod]
+        public void UpdateCleans()
+        {
+            var en = TestUtilities.MakeSimpleRootElementNode();
+
+            en.Update();
+
+            Assert.IsFalse(en.IsDirty);
+        }
+
+        [TestMethod]
+        public void DirtyChildren()
+        {
+            var r = TestUtilities.MakeSimpleRootElementNode();
+
+            r.Update();
+
+            var ce = new TestElement();
+            var c = r.AddChild(ce);
+
+            Assert.IsFalse(r.IsDirty);
+            Assert.IsTrue(r.HasDirtyChild);
+
+            r.Update();
+
+            Assert.IsFalse(r.HasDirtyChild);
+            Assert.IsFalse(c.IsDirty);
+
+            c.SetDirty();
+
+            Assert.IsFalse(r.IsDirty);
+            Assert.IsTrue(r.HasDirtyChild);
+            Assert.IsTrue(c.IsDirty);
+
+            r.Update();
+
+            Assert.IsFalse(r.HasDirtyChild);
+            Assert.IsFalse(c.IsDirty);
+            
+            var g = new ElementNode(new TestElement(), null);
+            c.ConnectNode(g);
+
+            Assert.IsFalse(r.IsDirty);
+            Assert.IsFalse(c.IsDirty);
+            Assert.IsTrue(r.HasDirtyChild);
+            Assert.IsTrue(c.HasDirtyChild);
+            Assert.IsTrue(g.IsDirty);
+        }
 
         [TestMethod]
         public void UpdateInitializes()
         {
             TestElement e1, e2, e3;
 
-            var root = MakeRoot();
+            var root = TestUtilities.MakeSimpleRootElementNode();
 
             var c1 = root.AddChild(e1 = new TestElement());
             var c2 = root.AddChild(e2 = new TestElement());
@@ -40,7 +95,7 @@ namespace FlighterTest
         {
             TestElement e1, e2, e3;
 
-            var root = MakeRoot();
+            var root = TestUtilities.MakeSimpleRootElementNode();
 
             var c1 = root.AddChild(e1 = new TestElement());
             var c2 = root.AddChild(e2 = new TestElement());
@@ -64,33 +119,11 @@ namespace FlighterTest
                 !e3.UpdateCalled);
         }
 
-        /// <summary>
-        /// Tests that update leaves nodes clean.
-        /// </summary>
-        [TestMethod]
-        public void UpdateCleans()
-        {
-            var root = MakeRoot();
-
-            var c1 = root.AddChild(new TestElement());
-            var c2 = root.AddChild(new TestElement());
-
-            var g1 = c2.AddChild(new TestElement());
-            
-            root.Update();
-
-            Assert.IsTrue(
-                !root.IsDirty &&
-                !c1.IsDirty &&
-                !c2.IsDirty &&
-                !g1.IsDirty);
-        }
-
         [TestMethod]
         public void AddingChildren()
         {
             // Make the root.
-            var root = MakeRoot();
+            var root = TestUtilities.MakeSimpleRootElementNode();
 
             // Add children.
             var c1 = root.AddChild(new TestElement());
@@ -103,7 +136,13 @@ namespace FlighterTest
             var g4 = c2.AddChild(new TestElement());
 
             Assert.AreEqual(
-                "Root\n-TestElement\n--TestElement\n--TestElement\n-TestElement\n--TestElement\n--TestElement\n", 
+                "Root\n" +
+                "-TestElement\n" +
+                "--TestElement\n" +
+                "--TestElement\n" +
+                "-TestElement\n" +
+                "--TestElement\n" +
+                "--TestElement\n", 
                 root.Print());
         }
 
@@ -116,54 +155,15 @@ namespace FlighterTest
             a.ConnectNode(b);
 
             Assert.AreEqual(
-                "TestElement\n-TestElement\n",
+                "TestElement\n" +
+                "-TestElement\n",
                 a.Print());
-        }
-
-        [TestMethod]
-        public void SetDirtySetsSelf()
-        {
-            var root = MakeRoot();
-            // Update to set clean.
-            root.Update();
-            root.SetDirty();
-            Assert.IsTrue(root.IsDirty && !root.HasDirtyChild);
-        }
-
-        [TestMethod]
-        public void SetDirtyUpdatesParent()
-        {
-            var root = MakeRoot();
-            var c = root.AddChild(new TestElement());
-
-            // Update to set clean.
-            root.Update();
-            c.SetDirty();
-
-            Assert.IsTrue(root.HasDirtyChild && !root.IsDirty);
-        }
-
-        [TestMethod]
-        public void SetDirtyPropagates()
-        {
-            var root = MakeRoot();
-            var c = root
-                .AddChild(new TestElement())
-                .AddChild(new TestElement())
-                .AddChild(new TestElement());
-
-            // Update to set clean.
-            root.Update();
-
-            c.SetDirty();
-
-            Assert.IsTrue(root.HasDirtyChild && !root.IsDirty);
         }
 
         [TestMethod]
         public void EmancipateSetsDirty()
         {
-            var root = MakeRoot();
+            var root = TestUtilities.MakeSimpleRootElementNode();
             var c = root.AddChild(new TestElement());
 
             root.Update();
@@ -172,6 +172,21 @@ namespace FlighterTest
 
             Assert.IsTrue(c.IsDirty && !c.HasDirtyChild);
             Assert.IsFalse(root.IsDirty);
+        }
+
+        [TestMethod]
+        public void EmancipatedUpdatesDirtyChildren()
+        {
+            var root = TestUtilities.MakeSimpleRootElementNode();
+            root.Update();
+
+            var c = root.AddChild(new TestElement());
+
+            Assert.IsTrue(root.HasDirtyChild);
+
+            c.Emancipate();
+
+            Assert.IsFalse(root.HasDirtyChild);
         }
 
         /// <summary>
@@ -208,6 +223,22 @@ namespace FlighterTest
 
             Assert.AreEqual(a.Print(), aPrint);
             Assert.AreEqual(b.Print(), bPrint);
+        }
+
+        [TestMethod]
+        public void PruneCallsTearDown()
+        {
+            var r = TestUtilities.MakeSimpleRootElementNode();
+            var e = new TestElement();
+            var en = r.AddChild(e);
+
+            r.Update();
+
+            var testRect = e.DisplayRect as TestDisplayRect;
+
+            en.Prune();
+
+            Assert.IsTrue(testRect.WasTornDown);
         }
     }
 }

@@ -31,8 +31,8 @@ namespace Flighter
 
         NodeLayout layout;
         WidgetNode parent;
-        readonly List<WidgetNode> children;
-        public readonly ElementNode elementNode;
+        readonly List<WidgetNode> children = new List<WidgetNode>();
+        ElementNode elementNode;
 
         public Size Size => layout.size;
         public Point Offset => layout.offset;
@@ -42,6 +42,18 @@ namespace Flighter
 
         InputWidgetSubscriber inputSubscriber;
 
+        /// <summary>
+        /// Constructs a widget node.
+        /// TODO: Add much more doc about the assumptions and guarentees.
+        /// Adds this as a child of <paramref name="parent"/>.
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <param name="widget"></param>
+        /// <param name="buildContext"></param>
+        /// <param name="layout"></param>
+        /// <param name="parent"></param>
+        /// <param name="childrenBuilders"></param>
+        /// <param name="elementNode"></param>
         public WidgetNode(
             WidgetTree tree,
             Widget widget,
@@ -53,6 +65,8 @@ namespace Flighter
         {
             this.tree = tree ?? throw new ArgumentNullException("Widget node must belong to a tree.");
             this.parent = parent;
+            // TODO: Make sure this is the right place to do this.
+            parent?.children?.Add(this);
             this.widget = widget ?? throw new ArgumentNullException("WidgetNode's widget must not be null.");
             this.buildContext = buildContext;
             this.layout = layout;
@@ -63,15 +77,22 @@ namespace Flighter
             {
                 elementNode.element.UpdateWidgetNode(this);
 
+                var nearestAncestor = GetNearestAncestorElementNode();
+
                 // Connect first so we don't connect to ourself!
                 // If there is no ancestor, that's fine! We'll just be a root.
                 GetNearestAncestorElementNode()?.ConnectNode(elementNode);
                 this.elementNode = elementNode;
             }
 
-            children = childrenBuilders.ConvertAll((c) => c.Build(this));
+            childrenBuilders.ConvertAll((c) => c.Build(this));
         }
 
+        /// <summary>
+        /// Update this nodes connection with respects to <paramref name="parent"/>.
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="layout">Optionally provide a new layout value for the widget.</param>
         public void UpdateConnection(WidgetNode parent, NodeLayout? layout = null)
         {
             if (this.parent != null)
@@ -79,7 +100,9 @@ namespace Flighter
 
             ClearCachedOffsets();
 
-            this.parent = parent;
+            this.parent = parent ?? throw new ArgumentNullException();
+            parent.children.Add(this);
+            
             if (layout != null)
                 this.layout = layout.Value;
 
@@ -100,7 +123,7 @@ namespace Flighter
         {
             var freeChildren = EmancipateChildren();
 
-            var newChildNodes = newKids.ConvertAll(
+            newKids.ForEach(
                 (c) =>
                 {
                     (var widget, var context) = c;
@@ -111,11 +134,10 @@ namespace Flighter
                     if (freeChildren?.Count > 0)
                     {
                         var toReplace = freeChildren.Dequeue();
-
+                        
                         if (context.Equals(toReplace.buildContext) && widget.IsSame(toReplace.widget))
                         {
                             toReplace.UpdateConnection(this);
-                            return toReplace;
                         }
 
                         if (widget.CanReplace(toReplace.widget))
@@ -127,7 +149,7 @@ namespace Flighter
                         toReplace.Prune();
                     }
 
-                    return new WidgetNodeBuilder(
+                    new WidgetNodeBuilder(
                         tree,
                         widget, 
                         context,
@@ -135,8 +157,6 @@ namespace Flighter
                         childrenToInherit
                       ).Build(this);
                 });
-
-            children.AddRange(newChildNodes);
 
             // Clear any remaining emancipated children.
             if (freeChildren != null)
@@ -202,6 +222,13 @@ namespace Flighter
             return emancipatedChildren;
         }
         
+        public ElementNode TakeElementNode()
+        {
+            var e = elementNode;
+            elementNode = null;
+            return e;
+        }
+        
         public Point GetElementOffset()
         {
             if (cachedElementOffset != null) return cachedElementOffset.Value;
@@ -210,7 +237,7 @@ namespace Flighter
                 cachedElementOffset = Offset;
             else
                 cachedElementOffset = layout.offset + parent?.GetElementOffset()
-                    ?? throw new Exception("Not rooted in element tree.");
+                    ?? Point.Zero;
 
             return cachedElementOffset.Value;
         }
@@ -253,8 +280,7 @@ namespace Flighter
 
             return r;
         }
-
-        // TODO refine this. Not really the nearest ancestor if THIS can be returned.
+        
         /// <summary>
         /// Find the nearest ancestor with an attached
         /// element node. Returns attached element node if this has one.
@@ -302,6 +328,20 @@ namespace Flighter
 
             // Disconnect children.
             children?.ForEach((c) => c.DisconnectInputTree());
+        }
+
+        public string Print(int indent = 0)
+        {
+            string r = "";
+            for (int i = 0; i < indent; ++i)
+                r += "-";
+
+            r += widget.GetType() + "\n";
+
+            foreach (var c in children)
+                r += c.Print(indent + 1);
+
+            return r;
         }
     }
 }

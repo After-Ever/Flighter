@@ -33,9 +33,11 @@ namespace Flighter
         {
             setDirty?.Invoke();
         }
-
-        // Nothing to do on init...
-        protected override void _Init() { }
+        
+        protected override void _Init()
+        {
+            state.Init();
+        }
 
         protected override void _Update()
         {

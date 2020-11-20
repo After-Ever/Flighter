@@ -10,6 +10,8 @@ namespace FlighterTest
         public Size Size { get; set; }
         public Point Offset { get; set; }
 
+        public bool WasTornDown { get; private set; } = false;
+
         public void AddComponent(Component component)
         {
             throw new NotImplementedException();
@@ -30,6 +32,7 @@ namespace FlighterTest
 
         public void TearDown()
         {
+            WasTornDown = true;
         }
     }
 }

@@ -10,15 +10,15 @@ namespace Flighter
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
 
-        ComponentProvider componentProvider;
+        ComponentProvider _componentProvider;
         ComponentProvider ComponentProvider
         {
             get
             {
-                if (componentProvider != null)
-                    return componentProvider;
+                if (_componentProvider != null)
+                    return _componentProvider;
 
-                return componentProvider = 
+                return _componentProvider = 
                     parent?.ComponentProvider ?? throw new Exception("Could not find component provider.");
             }
         }
@@ -36,7 +36,7 @@ namespace Flighter
         {
             this.element = element ?? throw new ArgumentNullException();
             this.parent = parent;
-            this.componentProvider = componentProvider;
+            this._componentProvider = componentProvider;
 
             this.element.SetDirtyCallback(() => SetDirty());
         }
@@ -47,14 +47,12 @@ namespace Flighter
 
             if (IsDirty)
             {
-                if (element.IsInitialized)
+                if (!element.IsConnected)
                 {
-                    element.Update();
+                    InitOrConnectElement();
                 }
-                else
-                {
-                    InitElement();
-                }
+
+                element.Update();
             }
             if (HasDirtyChild)
             {
@@ -66,6 +64,7 @@ namespace Flighter
                 }
             }
 
+            // TODO Is it actually possible for a child to be dirty at this point?
             SetClean();
         }
 
@@ -76,7 +75,7 @@ namespace Flighter
 
             // Just pass the componentProvider field (instead of the property)
             // because we don't care if it's null here; it can always search later.
-            var node = new ElementNode(element, this, componentProvider);
+            var node = new ElementNode(element, this, _componentProvider);
             children.Add(node);
 
             SetChildDirty();
@@ -91,12 +90,6 @@ namespace Flighter
 
             children.Add(node);
             node.parent = this;
-            
-            if (node.element.IsInitialized)
-            {
-                var rect = node.element.DisplayRect;
-                rect.SetParent(element.DisplayRect);
-            }
             
             SetChildDirty();
         }
@@ -120,9 +113,13 @@ namespace Flighter
 
             if (!parent.children.Remove(this))
                 throw new Exception("Node not in parent's child list.");
+
+            parent.UpdateChildDirtyStatus();
             
             parent = null;
             SetDirty();
+
+            element.Disconnect();
         }
 
         /// <summary>
@@ -151,23 +148,43 @@ namespace Flighter
             parent?.SetChildDirty();
         }
 
+        /// <summary>
+        /// Checks the status of <see cref="HasDirtyChild"/>.
+        /// </summary>
+        void UpdateChildDirtyStatus()
+        {
+            var newStatus = children.Exists((n) => n.IsDirty || n.HasDirtyChild);
+
+            if (newStatus == HasDirtyChild)
+                return;
+
+            HasDirtyChild = newStatus;
+            if (HasDirtyChild)
+                parent?.SetChildDirty();
+        }
+
         List<ElementNode> GetDirtyChildren()
         {
             return children.FindAll((n) => n.IsDirty || n.HasDirtyChild);
         }
 
-        protected virtual void InitElement()
+        protected virtual void InitOrConnectElement()
         {
             if (element.IsInitialized) return;
             if (parent == null || !parent.element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
 
-            var rect = parent.element.DisplayRect.CreateChild();
-            rect.Name = element.Name;
+            var parentRect = parent.element.DisplayRect;
 
-            // Use the componentProvider property here to make sure we find it.
-            element.Init(rect, ComponentProvider);
-            element.Update();
+            if (!element.IsInitialized)
+            {
+                // Use the ComponentProvider property here to make sure we find it.
+                element.Init(parentRect.CreateChild(), ComponentProvider);
+            }
+            else
+            {
+                element.Reconnect(parentRect);
+            }
         }
 
         public string Print(int indent = 0)

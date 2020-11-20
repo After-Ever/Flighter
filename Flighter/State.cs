@@ -10,7 +10,7 @@ namespace Flighter
 
         protected W GetWidget<W>() where W : Widget
         {
-            return stateElement.GetWidget<W>() ?? stateElement?.builder?.widget as W
+            return stateElement?.GetWidget<W>() ?? stateElement?.builder?.widget as W
                 ?? throw new Exception("Could not get widget!");
         }
 
@@ -24,21 +24,21 @@ namespace Flighter
             this.stateElement = stateElement;
         }
 
+        /// <summary>
+        /// Called when this has been inserted into the element tree.
+        /// </summary>
+        public virtual void Init() { }
+
         public void Updated()
         {
-            while(true)
-            {
-                try
-                {
-                    updates.Dequeue()();
-                }
-                catch (InvalidOperationException)
-                {
-                    break;
-                }
-            }
+            // Make a local copy incase updates queue new updates.
+            var actions = updates.ToArray();
+            updates.Clear();
 
+            // Set as not dirty first incase any actions dirty it.
             isDirty = false;
+            foreach (var action in actions)
+                action();
         }
 
         protected void SetState(Action action)

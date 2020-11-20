@@ -56,10 +56,13 @@ namespace Flighter
 
                     elementNode = inheritedElementNode;
 
-                    // Directly add the inherited child, as the inherited element node
+                    // Directly add the inherited child The inherited element node
                     // is marked dirty, so the state will rebuild the widget when it's element is updated.
-                    var c = inheritedChildren.Dequeue();
-                    children.Add(new WidgetNodeBuilder(c));
+                    var child = inheritedChildren.Dequeue();
+                    var childNode = new WidgetNodeBuilder(child);
+                    children.Add(childNode);
+
+                    size = childNode.size;
                 }
                 else
                 {
@@ -68,7 +71,6 @@ namespace Flighter
 
                     // Manually do the first build. The rest will be handled with state updates.
                     var child = state.Build(this.buildContext);
-
                     var childNode = AddChildWidget(child, this.buildContext);
 
                     size = childNode.size;
@@ -85,18 +87,26 @@ namespace Flighter
 
                 size = lw.Layout(buildContext, this).size;
             }
+            else
+                throw new Exception("Widget type \"" + widget.GetType() + "\" not handled!");
 
-            // Clear any remaining inherited children.
-            while (inheritedChildren?.Count > 0)
+            if (inheritedChildren != null)
             {
-                inheritedChildren.Dequeue().Prune();
+                // Clear any remaining inherited children.
+                foreach (var c in inheritedChildren)
+                    c.Prune();
+                inheritedChildren.Clear();
             }
         }
 
         public WidgetNodeBuilder(WidgetNode builtNode)
         {
             this.builtNode = builtNode;
-            this.size = this.builtNode.Size;
+
+            // Inherit size and offset. Size will stay the same, buy offset could change.
+            size = builtNode.Size;
+            // TODO: Should offset be inheritted? Maybe the default should be zero...
+            Offset = builtNode.Offset;
         }
 
         public WidgetNode Build(WidgetNode parent)
@@ -121,9 +131,8 @@ namespace Flighter
                     parent,
                     children,
                     elementNode);
-
             }
-            parent = null;
+
             children.Clear();
             builtNode = null;
             hasBuilt = true;
@@ -150,9 +159,11 @@ namespace Flighter
                     return b;
                 }
 
+                // TODO This is the same code as in WidgetNode.ReplaceChildren...
+                //      Should probably consolidate.
                 if (widget.CanReplace(toReplace.widget))
                 {
-                    childElementNode = toReplace.elementNode;
+                    childElementNode = toReplace.TakeElementNode();
                     orphans = toReplace.EmancipateChildren();
                 }
 
