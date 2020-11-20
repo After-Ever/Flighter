@@ -67,6 +67,9 @@ namespace Flighter
             if (!IsInitialized)
                 return;
 
+            // TODO: Should this happen? It is over safe, as each element should be
+            //       either added or pruned in the end, so intermediat opperations
+            //       are not needed...
             DisplayRect.SetParent(null);
             IsInitialized = false;
         }

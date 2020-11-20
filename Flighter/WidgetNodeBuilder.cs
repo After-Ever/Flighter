@@ -58,8 +58,11 @@ namespace Flighter
 
                     // Directly add the inherited child The inherited element node
                     // is marked dirty, so the state will rebuild the widget when it's element is updated.
-                    var c = inheritedChildren.Dequeue();
-                    children.Add(new WidgetNodeBuilder(c));
+                    var child = inheritedChildren.Dequeue();
+                    var childNode = new WidgetNodeBuilder(child);
+                    children.Add(childNode);
+
+                    size = childNode.size;
                 }
                 else
                 {
@@ -68,7 +71,6 @@ namespace Flighter
 
                     // Manually do the first build. The rest will be handled with state updates.
                     var child = state.Build(this.buildContext);
-
                     var childNode = AddChildWidget(child, this.buildContext);
 
                     size = childNode.size;
@@ -100,7 +102,11 @@ namespace Flighter
         public WidgetNodeBuilder(WidgetNode builtNode)
         {
             this.builtNode = builtNode;
-            this.size = this.builtNode.Size;
+
+            // Inherit size and offset. Size will stay the same, buy offset could change.
+            size = builtNode.Size;
+            // TODO: Should offset be inheritted? Maybe the default should be zero...
+            Offset = builtNode.Offset;
         }
 
         public WidgetNode Build(WidgetNode parent)
@@ -125,7 +131,6 @@ namespace Flighter
                     parent,
                     children,
                     elementNode);
-
             }
 
             children.Clear();
@@ -146,7 +151,7 @@ namespace Flighter
             if (inheritedChildren?.Count > 0)
             {
                 var toReplace = inheritedChildren.Dequeue();
-                
+
                 if (toReplace.buildContext.Equals(context) && widget.IsSame(toReplace.widget))
                 {
                     var b = new WidgetNodeBuilder(toReplace);

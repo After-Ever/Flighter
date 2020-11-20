@@ -42,6 +42,18 @@ namespace Flighter
 
         InputWidgetSubscriber inputSubscriber;
 
+        /// <summary>
+        /// Constructs a widget node.
+        /// TODO: Add much more doc about the assumptions and guarentees.
+        /// Adds this as a child of <paramref name="parent"/>.
+        /// </summary>
+        /// <param name="tree"></param>
+        /// <param name="widget"></param>
+        /// <param name="buildContext"></param>
+        /// <param name="layout"></param>
+        /// <param name="parent"></param>
+        /// <param name="childrenBuilders"></param>
+        /// <param name="elementNode"></param>
         public WidgetNode(
             WidgetTree tree,
             Widget widget,
@@ -53,6 +65,8 @@ namespace Flighter
         {
             this.tree = tree ?? throw new ArgumentNullException("Widget node must belong to a tree.");
             this.parent = parent;
+            // TODO: Make sure this is the right place to do this.
+            parent?.children?.Add(this);
             this.widget = widget ?? throw new ArgumentNullException("WidgetNode's widget must not be null.");
             this.buildContext = buildContext;
             this.layout = layout;
@@ -120,7 +134,7 @@ namespace Flighter
                     if (freeChildren?.Count > 0)
                     {
                         var toReplace = freeChildren.Dequeue();
-
+                        
                         if (context.Equals(toReplace.buildContext) && widget.IsSame(toReplace.widget))
                         {
                             toReplace.UpdateConnection(this);
@@ -307,6 +321,20 @@ namespace Flighter
 
             // Disconnect children.
             children?.ForEach((c) => c.DisconnectInputTree());
+        }
+
+        public string Print(int indent = 0)
+        {
+            string r = "";
+            for (int i = 0; i < indent; ++i)
+                r += "-";
+
+            r += widget.GetType() + "\n";
+
+            foreach (var c in children)
+                r += c.Print(indent + 1);
+
+            return r;
         }
     }
 }

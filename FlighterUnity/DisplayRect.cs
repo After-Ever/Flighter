@@ -20,8 +20,7 @@ namespace FlighterUnity
         {
             get
             {
-                var unitySize = transform.sizeDelta;
-                return new Size(unitySize.x, unitySize.y);
+                return transform.sizeDelta.ToPoint().ToSize();
             }
             set
             {
