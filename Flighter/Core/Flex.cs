@@ -12,8 +12,8 @@ namespace Flighter.Core
         public Flex(Widget child, float flexValue = 1)
         {
             this.child = child ?? throw new ArgumentNullException("Flex must have a child.");
-            if (flexValue <= 0)
-                throw new Exception("FlexValue must be positive");
+            if (flexValue < 0)
+                throw new Exception("FlexValue cannot be negative");
 
             this.flexValue = flexValue;
         }

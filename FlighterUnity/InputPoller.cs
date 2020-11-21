@@ -10,14 +10,20 @@ namespace FlighterUnity
 {
     public class InputPoller : IInputPoller, IKeyInputPoller, IMouseInputPoller
     {
-        readonly DisplayRect rootRect;
+        readonly RectTransform rootRect;
+        readonly float pixelsPerUnit;
 
         Point lastPosition = Point.Zero;
 
         // TODO make explicit what changes when root rect is supplied.
-        public InputPoller(DisplayRect rootRect = null)
+        public InputPoller(RectTransform rootRect = null, float pixelsPerUnit = 1)
         {
             this.rootRect = rootRect;
+            this.pixelsPerUnit = pixelsPerUnit;
+
+            // TODO: Does this have to be the case?
+            if (rootRect == null && pixelsPerUnit != 1)
+                throw new Exception("Pixel per unit must be 1 for screen space poller.");
         }
 
         /// <summary>
@@ -89,11 +95,11 @@ namespace FlighterUnity
             }
             
             var pointerRay = cam.ScreenPointToRay(screenPos);
-            var rectOrigin = rootRect.transform.position;
+            var rectOrigin = rootRect.position;
             
-            var rectRight = rootRect.transform.right * rootRect.scale;
-            var rectDown = -rootRect.transform.up * rootRect.scale;
-            var rectNormal = rootRect.transform.forward;
+            var rectRight = rootRect.right * pixelsPerUnit;
+            var rectDown = -rootRect.up * pixelsPerUnit;
+            var rectNormal = rootRect.forward;
 
             var inDirection = Vector3.Dot(rectNormal, pointerRay.direction);
 

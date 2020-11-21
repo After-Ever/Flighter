@@ -55,6 +55,11 @@ namespace Flighter.Core
             this.b = b;
             this.a = a;
         }
+
+        public override string ToString()
+        {
+            return "r:" + r + ", g:" + g + ", b:" + b + ", a:" + a;
+        }
     }
 
     public abstract class ColorComponent : Component

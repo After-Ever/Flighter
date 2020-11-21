@@ -8,27 +8,21 @@ using Input = Flighter.Input.Input;
 
 namespace FlighterUnity
 {
-    public class InputProvider : MonoBehaviour, IInputProvider
+    public class InputProvider : MonoBehaviour
     {
-        InputPoller poller = new InputPoller();
+        InputPoller poller;
         Input input;
 
         public Input GetInput() => input;
 
-        public InputProvider()
+        public void SetPoller(InputPoller poller)
         {
-            input = new Input(poller);
-        }
+            if (poller == null)
+                throw new ArgumentNullException("Poller cannot be null");
+            if (input != null)
+                throw new Exception("Cannot set the input poller more than once.");
 
-        /// <summary>
-        /// Set the root of the tree for which to receive input.
-        /// Do not set a root for screen space trees.
-        /// </summary>
-        /// <param name="root"></param>
-        public void SetRootRect(DisplayRect root)
-        {
-            poller = new InputPoller(root);
-            input = new Input(poller);
+            input = new Input(this.poller = poller);
         }
 
         /// <summary>
@@ -36,8 +30,8 @@ namespace FlighterUnity
         /// </summary>
         void Update()
         {
-            input.Update();
-            poller.FramePassed();
+            input?.Update();
+            poller?.FramePassed();
         }
     }
 }
