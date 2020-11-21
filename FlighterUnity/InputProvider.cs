@@ -10,16 +10,24 @@ namespace FlighterUnity
 {
     public class InputProvider : MonoBehaviour, IInputProvider
     {
-        public RectTransform rootRect;
-
-        InputPoller poller;
+        InputPoller poller = new InputPoller();
         Input input;
 
         public Input GetInput() => input;
 
-        void Awake()
+        public InputProvider()
         {
-            poller = new InputPoller(rootRect);
+            input = new Input(poller);
+        }
+
+        /// <summary>
+        /// Set the root of the tree for which to receive input.
+        /// Do not set a root for screen space trees.
+        /// </summary>
+        /// <param name="root"></param>
+        public void SetRootRect(DisplayRect root)
+        {
+            poller = new InputPoller(root);
             input = new Input(poller);
         }
 

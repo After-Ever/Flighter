@@ -20,12 +20,12 @@ namespace FlighterUnity
         {
             get
             {
-                return transform.sizeDelta.ToPoint().ToSize();
+                return (transform.sizeDelta.ToPoint() * scale).ToSize();
             }
             set
             {
-                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, value.width);
-                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, value.height);
+                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, value.width / scale);
+                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, value.height / scale);
             }
         }
 
@@ -33,20 +33,29 @@ namespace FlighterUnity
         {
             get
             {
-                var unityOffset = transform.anchoredPosition;
+                var unityOffset = transform.anchoredPosition * scale;
                 return new Point(unityOffset.x, -unityOffset.y);
             }
             set
             {
                 var unityOffset = new Vector2(value.x, -value.y);
-                transform.anchoredPosition = unityOffset;
+                transform.anchoredPosition = unityOffset / scale;
             }
         }
 
         readonly GameObject gameObject;
-        readonly RectTransform transform;
+        public readonly RectTransform transform;
+        /// <summary>
+        /// Unity units per flighter unit.
+        /// </summary>
+        public readonly float scale;
 
-        public DisplayRect(RectTransform parent)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="scale">Unity units per flighter unit.</param>
+        public DisplayRect(RectTransform parent, float scale = 1)
         {
             if (parent == null)
                 throw new ArgumentNullException();
@@ -61,6 +70,10 @@ namespace FlighterUnity
                 = new Vector2(0, 1);
 
             transform.anchoredPosition = Vector2.zero;
+
+            if (scale == 0)
+                throw new Exception("Scale cannot be zero.");
+            this.scale = scale;
         }
 
         public void AddComponent(Component component)
@@ -69,7 +82,7 @@ namespace FlighterUnity
             c.InflateGameObject(gameObject);
         }
 
-        public IDisplayRect CreateChild() => new DisplayRect(transform);
+        public IDisplayRect CreateChild() => new DisplayRect(transform, scale);
 
         public void RemoveComponent(Component component)
         {

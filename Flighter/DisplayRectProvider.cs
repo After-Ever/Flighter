@@ -22,12 +22,4 @@ namespace Flighter
 
         void TearDown();
     }
-
-    /// <summary>
-    /// Provides platform based implementations of DisplayRects.
-    /// </summary>
-    public interface IDisplayRectProvider
-    {
-        IDisplayRect CreateDisplayRect();
-    }
 }

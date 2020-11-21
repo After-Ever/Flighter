@@ -82,6 +82,11 @@ namespace Flighter
             this.width = width;
             this.height = height;
         }
+
+        public override string ToString()
+        {
+            return "Width: " + width + ", Height:" + height;
+        }
     }
 
     public struct BoxConstraints
