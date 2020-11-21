@@ -142,7 +142,7 @@ namespace Flighter
 
                         if (widget.CanReplace(toReplace.widget))
                         {
-                            nodeToInherit = toReplace.elementNode;
+                            nodeToInherit = toReplace.TakeElementNode();
                             childrenToInherit = toReplace.EmancipateChildren();
                         }
 
@@ -226,6 +226,8 @@ namespace Flighter
         {
             var e = elementNode;
             elementNode = null;
+            e?.Emancipate();
+            e?.element?.UpdateWidgetNode(null);
             return e;
         }
         

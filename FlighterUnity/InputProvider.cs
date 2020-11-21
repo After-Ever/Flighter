@@ -8,19 +8,21 @@ using Input = Flighter.Input.Input;
 
 namespace FlighterUnity
 {
-    public class InputProvider : MonoBehaviour, IInputProvider
+    public class InputProvider : MonoBehaviour
     {
-        public RectTransform rootRect;
-
         InputPoller poller;
         Input input;
 
         public Input GetInput() => input;
 
-        void Awake()
+        public void SetPoller(InputPoller poller)
         {
-            poller = new InputPoller(rootRect);
-            input = new Input(poller);
+            if (poller == null)
+                throw new ArgumentNullException("Poller cannot be null");
+            if (input != null)
+                throw new Exception("Cannot set the input poller more than once.");
+
+            input = new Input(this.poller = poller);
         }
 
         /// <summary>
@@ -28,8 +30,8 @@ namespace FlighterUnity
         /// </summary>
         void Update()
         {
-            input.Update();
-            poller.FramePassed();
+            input?.Update();
+            poller?.FramePassed();
         }
     }
 }

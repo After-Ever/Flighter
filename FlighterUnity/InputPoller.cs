@@ -11,13 +11,19 @@ namespace FlighterUnity
     public class InputPoller : IInputPoller, IKeyInputPoller, IMouseInputPoller
     {
         readonly RectTransform rootRect;
+        readonly float pixelsPerUnit;
 
         Point lastPosition = Point.Zero;
 
         // TODO make explicit what changes when root rect is supplied.
-        public InputPoller(RectTransform rootRect = null)
+        public InputPoller(RectTransform rootRect = null, float pixelsPerUnit = 1)
         {
             this.rootRect = rootRect;
+            this.pixelsPerUnit = pixelsPerUnit;
+
+            // TODO: Does this have to be the case?
+            if (rootRect == null && pixelsPerUnit != 1)
+                throw new Exception("Pixel per unit must be 1 for screen space poller.");
         }
 
         /// <summary>
@@ -90,11 +96,9 @@ namespace FlighterUnity
             
             var pointerRay = cam.ScreenPointToRay(screenPos);
             var rectOrigin = rootRect.position;
-
-            // TODO What if root rect has scale? Can we get the global scale?
-            //      Should have a better way of thinking about the basis vectors.
-            var rectRight = rootRect.right;
-            var rectDown = -rootRect.up;
+            
+            var rectRight = rootRect.right * pixelsPerUnit;
+            var rectDown = -rootRect.up * pixelsPerUnit;
             var rectNormal = rootRect.forward;
 
             var inDirection = Vector3.Dot(rectNormal, pointerRay.direction);
@@ -110,7 +114,7 @@ namespace FlighterUnity
 
             var x = Vector3.Dot(pointOnRect, rectRight);
             var y = Vector3.Dot(pointOnRect, rectDown);
-
+            
             return new Point(x, y);
         }
     }

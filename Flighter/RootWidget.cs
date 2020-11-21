@@ -10,12 +10,12 @@ namespace Flighter
         static public (WidgetNode, ElementNode) MakeRootWidgetNode(
             Widget child,
             BuildContext initialBuildContext,
-            IDisplayRect baseRect,
+            IDisplayRect parentRect,
             ComponentProvider componentProvider,
             Input.Input input)
         {
             var rootWidget = new RootWidget(child);
-            var rootElementNode = new RootElementNode(baseRect, componentProvider);
+            var rootElementNode = new RootElementNode(parentRect, componentProvider);
 
             var widgetNode = new WidgetNodeBuilder(
                 new WidgetTree(input),

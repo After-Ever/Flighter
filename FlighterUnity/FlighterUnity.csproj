@@ -25,6 +25,9 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>..\Flighter\deps\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>..\Flighter\deps\UnityEngine.UIModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

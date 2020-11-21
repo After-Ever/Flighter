@@ -10,6 +10,9 @@ namespace FlighterUnity
 {
     public class DisplayRect : IDisplayRect
     {
+        public const int FlighterLayer = 31;
+        public const int FlighterLayerMask = 1 << FlighterLayer;
+
         public string Name
         {
             get => gameObject.name;
@@ -20,12 +23,12 @@ namespace FlighterUnity
         {
             get
             {
-                return transform.sizeDelta.ToPoint().ToSize();
+                return (transform.sizeDelta.ToPoint() * pixelsPerUnit).ToSize();
             }
             set
             {
-                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, value.width);
-                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, value.height);
+                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, value.width / pixelsPerUnit);
+                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, value.height / pixelsPerUnit);
             }
         }
 
@@ -33,34 +36,38 @@ namespace FlighterUnity
         {
             get
             {
-                var unityOffset = transform.anchoredPosition;
+                var unityOffset = transform.anchoredPosition * pixelsPerUnit;
                 return new Point(unityOffset.x, -unityOffset.y);
             }
             set
             {
-                var unityOffset = new Vector2(value.x, -value.y);
-                transform.anchoredPosition = unityOffset;
+                var pixelOffset = new Vector2(value.x, -value.y);
+                transform.anchoredPosition = pixelOffset / pixelsPerUnit;
             }
         }
 
         readonly GameObject gameObject;
-        readonly RectTransform transform;
+        public readonly RectTransform transform;
+        public readonly float pixelsPerUnit;
 
-        public DisplayRect(RectTransform parent)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <param name="scale">Unity units per flighter unit.</param>
+        public DisplayRect(RectTransform rect, float pixelsPerUnit = 1)
         {
-            if (parent == null)
+            if (rect == null)
                 throw new ArgumentNullException();
 
-            gameObject = new GameObject();
-            transform = gameObject.AddComponent<RectTransform>();
-            transform.SetParent(parent, false);
-            
-            transform.anchorMax 
-                = transform.anchorMin 
-                = transform.pivot 
-                = new Vector2(0, 1);
+            gameObject = rect.gameObject;
+            transform = rect;
 
-            transform.anchoredPosition = Vector2.zero;
+            gameObject.layer = FlighterLayer;
+
+            if (pixelsPerUnit == 0)
+                throw new Exception("Scale cannot be zero.");
+            this.pixelsPerUnit = pixelsPerUnit;
         }
 
         public void AddComponent(Component component)
@@ -69,7 +76,18 @@ namespace FlighterUnity
             c.InflateGameObject(gameObject);
         }
 
-        public IDisplayRect CreateChild() => new DisplayRect(transform);
+        public IDisplayRect CreateChild()
+        {
+            var g = new GameObject();
+            var t = g.AddComponent<RectTransform>();
+            t.SetParent(transform);
+            t.pivot = t.anchorMax = t.anchorMin = new Vector2(0, 1);
+            t.localPosition = Vector3.zero;
+            t.localRotation = Quaternion.identity;
+            t.localScale = new Vector3(1, 1, 1);
+
+            return new DisplayRect(t, pixelsPerUnit);
+        }
 
         public void RemoveComponent(Component component)
         {
@@ -83,7 +101,7 @@ namespace FlighterUnity
                 rect == null 
                 ? null 
                 : rect as DisplayRect ?? throw new Exception("Invalid parent rect.");
-            transform.SetParent(parent?.transform);
+            transform.SetParent(parent?.transform, worldPositionStays: false);
         }
 
         public void TearDown()
