@@ -60,19 +60,22 @@ namespace FlighterUnity
             Size size,
             float pixelsPerUnit,
             Vector3 topLeftPosition,
-            Quaternion rotation,  
-            bool facingCam = false)
+            Quaternion rotation)
         {
             var obj = new GameObject("FlighterDisplayRoot");
             obj.transform.position = topLeftPosition;
             obj.transform.rotation = rotation;
 
-            return OnTransform(widget, size, obj.transform, pixelsPerUnit, facingCam);
+            return OnTransform(widget, size, obj.transform, pixelsPerUnit);
         }
 
-        public static DisplayHandle OnTransform(Widget widget, Size size, Transform transform, float pixelsPerUnit, bool facingCam = false)
+        public static DisplayHandle OnTransform(
+            Widget widget, 
+            Size size, 
+            Transform transform, 
+            float pixelsPerUnit)
         {
-            (var rect, var input) = CreateRootWorldObject(pixelsPerUnit, size, facingCam);
+            (var rect, var input) = CreateRootWorldObject(pixelsPerUnit, size);
             rect.SetParent(transform);
             rect.localPosition = Vector3.zero;
             rect.localRotation = Quaternion.identity;
@@ -122,6 +125,24 @@ namespace FlighterUnity
         static Input screenInput;
         static readonly ComponentProvider componentProvider = ComponentProviderMaker.Make();
 
+        static DisplayHandle InstrumentWidget(Widget widget, DisplayRect rect, Input input)
+        {
+            var size = rect.Size;
+            var constraints = BoxConstraints.Tight(size);
+
+            var root = RootWidget.MakeRootWidgetNode(
+                widget,
+                new BuildContext(constraints),
+                rect,
+                componentProvider,
+                input);
+
+            var rootController = rect.transform.gameObject.AddComponent<RootController>();
+            rootController.SetRoot(root);
+
+            return new DisplayHandle(rootController);
+        }
+
         static void InitScreenRect()
         {
             if (screenRect != null)
@@ -140,7 +161,7 @@ namespace FlighterUnity
             screenInput = inputProvider.GetInput();
         }
 
-        static (RectTransform, Input) CreateRootWorldObject(float pixelPerUnit, Size size, bool facingCam = false)
+        static (RectTransform, Input) CreateRootWorldObject(float pixelPerUnit, Size size)
         {
             var rect = BaseRect(size);
             var obj = rect.gameObject;
@@ -156,24 +177,6 @@ namespace FlighterUnity
             inputProvider.SetPoller(new InputPoller(rect, pixelPerUnit));
 
             return (rect, inputProvider.GetInput());
-        }
-
-        static DisplayHandle InstrumentWidget(Widget widget, DisplayRect rect, Input input)
-        {
-            var size = rect.Size;
-            var constraints = BoxConstraints.Tight(size);
-
-            var root = RootWidget.MakeRootWidgetNode(
-                widget,
-                new BuildContext(constraints),
-                rect,
-                componentProvider,
-                input);
-
-            var rootController = rect.transform.gameObject.AddComponent<RootController>();
-            rootController.SetRoot(root);
-            
-            return new DisplayHandle(rootController);
         }
 
         static RectTransform BaseRect(Size size)
