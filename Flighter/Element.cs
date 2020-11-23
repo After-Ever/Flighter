@@ -2,13 +2,18 @@
 
 namespace Flighter
 {
+    public abstract class Element<W> : Element where W : Widget
+    {
+        public W widget => widgetNode?.widget as W;
+    }
+
     /// <summary>
     /// Used to impact the display tree.
     /// </summary>
     public abstract class Element
     {
         protected WidgetNode widgetNode;
-        public W GetWidget<W>() where W : Widget
+        protected W GetWidget<W>() where W : Widget
         {
             return widgetNode?.widget as W;
         }

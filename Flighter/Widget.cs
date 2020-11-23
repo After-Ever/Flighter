@@ -27,7 +27,7 @@
 
     public abstract class StatefulWidget : Widget
     {
-        public abstract State CreateState();
+        public abstract State<W> CreateState<W>() where W : StatefulWidget;
     }
 
     public abstract class LayoutWidget : Widget

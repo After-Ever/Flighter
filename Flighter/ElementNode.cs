@@ -172,7 +172,7 @@ namespace Flighter
 
         protected virtual void InitOrConnectElement()
         {
-            if (element.IsInitialized) return;
+            if (element.IsInitialized && element.IsConnected) return;
             if (parent == null || !parent.element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
 
