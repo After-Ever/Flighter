@@ -94,7 +94,7 @@ namespace Flighter
             {
                 // Clear any remaining inherited children.
                 foreach (var c in inheritedChildren)
-                    c.Prune();
+                    c.Dispose();
                 inheritedChildren.Clear();
             }
         }
@@ -167,7 +167,7 @@ namespace Flighter
                     orphans = toReplace.EmancipateChildren();
                 }
 
-                toReplace.Prune();
+                toReplace.Dispose();
             }
 
             var childBuilder = new WidgetNodeBuilder(tree, widget, context, childElementNode, orphans);

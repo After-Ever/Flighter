@@ -54,5 +54,10 @@ namespace Flighter
                 (widget, context)
             });
         }
+
+        protected override void _TearDown()
+        {
+            state.Dispose();
+        }
     }
 }

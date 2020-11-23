@@ -226,7 +226,7 @@ namespace FlighterTest
         }
 
         [TestMethod]
-        public void PruneCallsTearDown()
+        public void DisposeCallsTearnDown()
         {
             var r = TestUtilities.MakeSimpleRootElementNode();
             var e = new TestElement();
@@ -236,7 +236,7 @@ namespace FlighterTest
 
             var testRect = e.DisplayRect as TestDisplayRect;
 
-            en.Prune();
+            en.Dispose();
 
             Assert.IsTrue(testRect.WasTornDown);
         }

@@ -47,6 +47,7 @@ namespace Flighter
 
         protected abstract void _Init();
         protected abstract void _Update();
+        protected virtual void _TearDown() { }
 
         /// <summary>
         /// Instrument the element. Element not guaranteed to display correctly until
@@ -106,8 +107,9 @@ namespace Flighter
             _Update();
         }
 
-        public void TearDown()
+        public virtual void TearDown()
         {
+            _TearDown();
             DisplayRect?.TearDown();
 
             DisplayRect = null;

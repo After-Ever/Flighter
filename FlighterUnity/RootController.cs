@@ -25,7 +25,7 @@ namespace FlighterUnity
 
         public void TearDown()
         {
-            widgetRoot?.Prune();
+            widgetRoot?.Dispose();
 
             widgetRoot = null;
             elementRoot = null;

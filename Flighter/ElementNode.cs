@@ -121,14 +121,16 @@ namespace Flighter
 
             element.Disconnect();
         }
-
+        
         /// <summary>
-        /// Remove this node, and any children.
+        /// Remove and destroy this node, and any children.
         /// </summary>
-        public void Prune()
+        public void Dispose(bool emancipate = true)
         {
-            // TODO: What about children?
-            Emancipate();
+            if (emancipate)
+                Emancipate();
+            
+            children.ForEach((c) => c.Dispose(false));
 
             element.TearDown();
         }

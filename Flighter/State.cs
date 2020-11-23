@@ -44,6 +44,11 @@ namespace Flighter
         /// </summary>
         public virtual void Init() { }
 
+        /// <summary>
+        /// Called when the state's element is removed from the element tree.
+        /// </summary>
+        public virtual void Dispose() { }
+
         public void Updated()
         {
             // Make a local copy incase updates queue new updates.
