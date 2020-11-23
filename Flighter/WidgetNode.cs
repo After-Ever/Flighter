@@ -116,7 +116,7 @@ namespace Flighter
         /// Use <paramref name="newKids"/> to replace the current set of children,
         /// if there are any. The same replacement rules will apply as when inheriting
         /// children.
-        /// Old children will be pruned if not re-adopted.
+        /// Old children will be disposed if not re-adopted.
         /// </summary>
         /// <param name="newKids"></param>
         public void ReplaceChildren(List<(Widget, BuildContext)> newKids)
@@ -146,7 +146,7 @@ namespace Flighter
                             childrenToInherit = toReplace.EmancipateChildren();
                         }
 
-                        toReplace.Prune();
+                        toReplace.Dispose();
                     }
 
                     new WidgetNodeBuilder(
@@ -162,7 +162,7 @@ namespace Flighter
             if (freeChildren != null)
             {
                 foreach (var c in freeChildren)
-                    c.Prune();
+                    c.Dispose();
             }
         }
         
@@ -195,16 +195,16 @@ namespace Flighter
 
         /// <summary>
         /// Remove this node and all children.
-        /// This will Prune any attached elements as well.
+        /// This will dispose any attached elements as well.
         /// </summary>
-        public void Prune()
+        public void Dispose()
         {
             Emancipate();
 
-            // With the subtree free we just need to prune any
-            // attached element nodes. Pruning the surface will prune
+            // With the subtree free we just need to dispose any
+            // attached element nodes. Pruning the surface will dispose
             // any descendants as well.
-            GetElementSurface().ForEach((e) => e.Prune());
+            GetElementSurface().ForEach((e) => e.Dispose());
         }
 
         /// <summary>
@@ -212,12 +212,12 @@ namespace Flighter
         /// This node's elements will be deconstructed, but children will be left alone.
         /// </summary>
         /// <returns></returns>
-        public Queue<WidgetNode> EmancipateChildrenAndPrune()
+        public Queue<WidgetNode> EmancipateChildrenAndDispose()
         {
             // Emancipate the children...
             var emancipatedChildren = EmancipateChildren();
-            // And prune!
-            Prune();
+            // And dispose!
+            Dispose();
 
             return emancipatedChildren;
         }
