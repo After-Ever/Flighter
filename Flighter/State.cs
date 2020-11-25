@@ -45,6 +45,10 @@ namespace Flighter
         public virtual void Init() { }
 
         /// <summary>
+        /// Called when this state's widget has changed. This will be called before Build.
+        /// </summary>
+        public virtual void WidgetChanged() { }
+        /// <summary>
         /// Called when the state's element is removed from the element tree.
         /// </summary>
         public virtual void Dispose() { }

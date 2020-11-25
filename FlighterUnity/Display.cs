@@ -1,4 +1,5 @@
 ﻿using Flighter;
+using Flighter.Input;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -52,7 +53,7 @@ namespace FlighterUnity
             var rect = screenRect.CreateChild() as DisplayRect;
             rect.Size = screenRect.Size;
             
-            return InstrumentWidget(widget, rect, screenInput);
+            return InstrumentWidget(widget, rect, screenInputProvider);
         }
 
         public static DisplayHandle InWorld(
@@ -87,7 +88,7 @@ namespace FlighterUnity
             Widget widget, 
             RenderTexture target, 
             Color backgroundColor = new Color(),
-            Input input = null)
+            InputProvider inputProvider = null)
         {
             var camObj = new GameObject("FlighterRenderCam");
             var cam = camObj.AddComponent<Camera>();
@@ -111,7 +112,7 @@ namespace FlighterUnity
             var handle = InstrumentWidget(
                 widget, 
                 new DisplayRect(rect), 
-                input ?? Flighter.Input.NoInput.Input);
+                inputProvider);
 
             handle.WasTornDown += () =>
             {
@@ -122,10 +123,13 @@ namespace FlighterUnity
         }
 
         static DisplayRect screenRect;
-        static Input screenInput;
+        static InputProvider screenInputProvider;
         static readonly ComponentProvider componentProvider = ComponentProviderMaker.Make();
 
-        static DisplayHandle InstrumentWidget(Widget widget, DisplayRect rect, Input input)
+        static DisplayHandle InstrumentWidget(
+            Widget widget, 
+            DisplayRect rect, 
+            InputProvider inputProvider = null)
         {
             var size = rect.Size;
             var constraints = BoxConstraints.Tight(size);
@@ -135,7 +139,9 @@ namespace FlighterUnity
                 new BuildContext(constraints),
                 rect,
                 componentProvider,
-                input);
+                inputProvider?.GetInput() ?? NoInput.Input);
+
+            inputProvider?.AddRoot(root.Item1);
 
             var rootController = rect.transform.gameObject.AddComponent<RootController>();
             rootController.SetRoot(root);
@@ -154,14 +160,13 @@ namespace FlighterUnity
             var canvas = obj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
-            var inputProvider = obj.AddComponent<InputProvider>();
-            inputProvider.SetPoller(new InputPoller());
+            screenInputProvider = obj.AddComponent<InputProvider>();
+            screenInputProvider.SetPoller(new InputPoller());
 
             screenRect = new DisplayRect(rect);
-            screenInput = inputProvider.GetInput();
         }
 
-        static (RectTransform, Input) CreateRootWorldObject(float pixelPerUnit, Size size)
+        static (RectTransform, InputProvider) CreateRootWorldObject(float pixelPerUnit, Size size)
         {
             var rect = BaseRect(size);
             var obj = rect.gameObject;
@@ -176,7 +181,7 @@ namespace FlighterUnity
             var inputProvider = obj.AddComponent<InputProvider>();
             inputProvider.SetPoller(new InputPoller(rect, pixelPerUnit));
 
-            return (rect, inputProvider.GetInput());
+            return (rect, inputProvider);
         }
 
         static RectTransform BaseRect(Size size)

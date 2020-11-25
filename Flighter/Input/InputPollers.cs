@@ -27,4 +27,41 @@ namespace Flighter.Input
         bool GetButtonDown(MouseButton button);
         bool GetButtonUp(MouseButton button);
     }
+
+    public static class InputPollerQuery
+    {
+        public static bool CheckForKeyEvent(this IInputPoller inputPoller, KeyEventFilter filter)
+        {
+            switch (filter.type)
+            {
+                case KeyEventType.Active:
+                    return inputPoller.KeyPoller.GetKey(filter.key);
+                case KeyEventType.Down:
+                    return inputPoller.KeyPoller.GetKeyDown(filter.key);
+                case KeyEventType.Up:
+                    return inputPoller.KeyPoller.GetKeyUp(filter.key);
+                default:
+                    throw new NotSupportedException("KeyEventType not supported: " + filter.type);
+            }
+        }
+
+        public static bool CheckForMouseEvent(this IInputPoller inputPoller, MouseEventFilter filter)
+        {
+            switch (filter.type)
+            {
+                case MouseEventType.Active:
+                    return inputPoller.MousePoller.GetButton(filter.button);
+                case MouseEventType.Down:
+                    return inputPoller.MousePoller.GetButtonDown(filter.button);
+                case MouseEventType.Up:
+                    return inputPoller.MousePoller.GetButtonUp(filter.button);
+                case MouseEventType.Move:
+                    return !inputPoller.MousePoller.PositionDelta.Equals(Point.Zero);
+                case MouseEventType.Scroll:
+                    return inputPoller.MousePoller.ScrollDelta != 0;
+                default:
+                    throw new NotSupportedException("MouseEventType not supported: " + filter.type);
+            }
+        }
+    }
 }

@@ -52,6 +52,8 @@ namespace Flighter
                     InitOrConnectElement();
                 }
 
+                // Set this first incase the elements update sets this dirty.
+                IsDirty = false;
                 element.Update();
             }
             if (HasDirtyChild)
@@ -62,10 +64,9 @@ namespace Flighter
                 {
                     c.Update();
                 }
-            }
 
-            // TODO Is it actually possible for a child to be dirty at this point?
-            SetClean();
+                UpdateChildDirtyStatus();
+            }
         }
 
         public ElementNode AddChild(Element element)
