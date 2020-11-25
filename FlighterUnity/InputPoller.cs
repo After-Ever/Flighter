@@ -90,7 +90,7 @@ namespace FlighterUnity
             if (rootRect == null || cam == null)
             {
                 var point = screenPos.ToPoint();
-                point.y = Screen.height - point.y;
+                point.y = cam.pixelHeight - point.y;
                 return point;
             }
             

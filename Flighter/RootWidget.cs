@@ -18,7 +18,7 @@ namespace Flighter
             var rootElementNode = new RootElementNode(parentRect, componentProvider);
 
             var widgetNode = new WidgetNodeBuilder(
-                new WidgetTree(input),
+                new WidgetForest(),
                 rootWidget,
                 initialBuildContext,
                 rootElementNode).Build(null);

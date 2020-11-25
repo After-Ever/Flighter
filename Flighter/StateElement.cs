@@ -55,6 +55,11 @@ namespace Flighter
             });
         }
 
+        protected override void _WidgetNodeChanged()
+        {
+            state.WidgetChanged();
+        }
+
         protected override void _TearDown()
         {
             state.Dispose();

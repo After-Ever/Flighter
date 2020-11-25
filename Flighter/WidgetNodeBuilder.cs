@@ -7,7 +7,7 @@ namespace Flighter
     {
         public Point Offset;
 
-        readonly WidgetTree tree;
+        public readonly WidgetForest forest;
         public readonly Widget widget;
         readonly BuildContext buildContext;
         public readonly Size size;
@@ -24,14 +24,14 @@ namespace Flighter
         WidgetNode builtNode = null;
 
         public WidgetNodeBuilder(
-            WidgetTree tree,
+            WidgetForest forest,
             Widget widget, 
             BuildContext buildContext,
             ElementNode inheritedElementNode = null,
             Queue<WidgetNode> inheritedChildren = null)
         {
-            this.tree = tree
-                ?? throw new ArgumentNullException("WidgetNode must be part of a tree.");
+            this.forest = forest
+                ?? throw new ArgumentNullException("Widget must belong to a tree");
             this.widget = widget
                 ?? throw new ArgumentNullException("Widget must not be null.");
             this.buildContext = buildContext;
@@ -105,7 +105,6 @@ namespace Flighter
 
             // Inherit size and offset. Size will stay the same, buy offset could change.
             size = builtNode.Size;
-            // TODO: Should offset be inheritted? Maybe the default should be zero...
             Offset = builtNode.Offset;
         }
 
@@ -124,7 +123,7 @@ namespace Flighter
             else
             {
                 node = new WidgetNode(
-                    tree,
+                    forest,
                     widget,
                     buildContext,
                     new NodeLayout(size, Offset),
@@ -170,7 +169,7 @@ namespace Flighter
                 toReplace.Dispose();
             }
 
-            var childBuilder = new WidgetNodeBuilder(tree, widget, context, childElementNode, orphans);
+            var childBuilder = new WidgetNodeBuilder(forest, widget, context, childElementNode, orphans);
             children.Add(childBuilder);
             return childBuilder;
         }

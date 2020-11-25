@@ -28,10 +28,9 @@ namespace Flighter
         /// </summary>
         public bool IsConnected { get; private set; } = false;
         
-        // TODO: Update this doc. Assess if it needs to be public
         /// <summary>
-        /// The RectTransform which represents this Element.
-        /// Should not be modified outside the element, save for changing
+        /// The DisplayRect this element will instrument.
+        /// It should not be modified outside the element, save for changing
         /// family hierarchy.
         /// 
         /// This will be null before <see cref="Init(IDisplayRect)"/> is called,
@@ -48,6 +47,7 @@ namespace Flighter
         protected abstract void _Init();
         protected abstract void _Update();
         protected virtual void _TearDown() { }
+        protected virtual void _WidgetNodeChanged() { }
 
         /// <summary>
         /// Instrument the element. Element not guaranteed to display correctly until
@@ -90,6 +90,7 @@ namespace Flighter
         public void UpdateWidgetNode(WidgetNode newWidgetNode)
         {
             widgetNode = newWidgetNode;
+            _WidgetNodeChanged();
         }
         
         /// <summary>
