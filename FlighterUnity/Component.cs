@@ -20,7 +20,9 @@ namespace FlighterUnity
             => new ComponentProvider(new Dictionary<Type, Type>
             {
                 { typeof(TextComponent), typeof(UnityTextComponent) },
-                { typeof(ColorComponent), typeof(UnityColorComponent) }
+                { typeof(ColorComponent), typeof(UnityColorComponent) },
+                { typeof(ImageComponent), typeof(UnityImageComponent) },
+                { typeof(ClipComponent), typeof(UnityClipComponent) }
             });
     }
 }

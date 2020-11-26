@@ -22,5 +22,15 @@ namespace FlighterUnity
         {
             return new Point(vector3.x, vector3.y);
         }
+
+        public static Color ToUnity(this Flighter.Core.Color color)
+        {
+            return new Color(color.r, color.g, color.b, color.a);
+        }
+
+        public static Flighter.Core.Color ToFlighter(this Color color)
+        {
+            return new Flighter.Core.Color(color.r, color.g, color.b, color.a);
+        }
     }
 }
