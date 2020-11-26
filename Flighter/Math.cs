@@ -142,6 +142,8 @@ namespace Flighter
             }
         }
 
+        public bool IsUnconstrained => float.IsPositiveInfinity(maxHeight) || float.IsPositiveInfinity(maxWidth);
+
         /// <summary>
         /// Checks the guarantees of the constraints, and throws if
         /// they are not met.

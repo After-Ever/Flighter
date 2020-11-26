@@ -8,15 +8,26 @@ using UnityEngine;
 using Color = Flighter.Core.Color;
 using Text = UnityEngine.UI.Text;
 using Image = UnityEngine.UI.Image;
+using UnityEngine.UI;
+using FontStyle = Flighter.Core.FontStyle;
 
 namespace FlighterUnity
 {
     public class UnityTextComponent : TextComponent, IUnityFlighterComponent
     {
+        static readonly TextStyle defaultStyle = new TextStyle
+        {
+            color = new Color(0,0,0),
+            fontStyle = FontStyle.Normal,
+            textAlign = TextAlign.TopLeft,
+            textOverflow = TextOverflow.Clip,
+            // TODO: This is an imporntant idea! It must be well and clearly documented.
+            //       Is there a more reliable way to load a default font?
+            font = new FontHandle(Resources.Load<Font>("default_font"))
+        };
+
         string data;
-        TextStyle style;
-        TextAlign alignment;
-        TextOverflow overflow;
+        TextStyle? style;
 
         Text text;
 
@@ -30,7 +41,7 @@ namespace FlighterUnity
                     text.text = data;
             }
         }
-        public override TextStyle Style
+        public override TextStyle? Style
         {
             get => style;
             set
@@ -38,68 +49,21 @@ namespace FlighterUnity
                 style = value;
                 if (text != null)
                 {
-                    // TODO: Set all the style stuff.
-                }
-            }
-        }
-        public override TextAlign Alignment
-        {
-            get => alignment;
-            set
-            {
-                alignment = value;
-                if (text != null)
-                {
-                    switch (alignment)
-                    {
-                        case TextAlign.TopLeft:
-                            text.alignment = TextAnchor.UpperLeft;
-                            break;
+                    var s = style ?? defaultStyle;
 
-                        case TextAlign.TopCenter:
-                            text.alignment = TextAnchor.UpperCenter;
-                            break;
+                    if (!(s.font is FontHandle fontHandle))
+                        throw new NotSupportedException();
 
-                        case TextAlign.TopRight:
-                            text.alignment = TextAnchor.UpperRight;
-                            break;
+                    text.font = fontHandle.font;
+                    text.fontSize = s.size;
+                    text.lineSpacing = s.lineSpacing;
+                    text.alignment = s.textAlign.ToUnity();
+                    text.color = s.color.ToUnity();
+                    text.horizontalOverflow = s.wrapLines 
+                        ? HorizontalWrapMode.Wrap 
+                        : HorizontalWrapMode.Overflow;
 
-                        case TextAlign.MiddleLeft:
-                            text.alignment = TextAnchor.MiddleLeft;
-                            break;
-
-                        case TextAlign.MiddleCenter:
-                            text.alignment = TextAnchor.MiddleCenter;
-                            break;
-
-                        case TextAlign.MiddleRight:
-                            text.alignment = TextAnchor.MiddleRight;
-                            break;
-
-                        case TextAlign.BottomLeft:
-                            text.alignment = TextAnchor.LowerLeft;
-                            break;
-
-                        case TextAlign.BottomCenter:
-                            text.alignment = TextAnchor.LowerCenter;
-                            break;
-
-                        case TextAlign.BottomRight:
-                            text.alignment = TextAnchor.LowerRight;
-                            break;
-                    }
-                }
-            }
-        }
-        public override TextOverflow Overflow
-        {
-            get => overflow;
-            set
-            {
-                overflow = value;
-                if (text != null)
-                {
-                    switch (overflow)
+                    switch (s.textOverflow)
                     {
                         case TextOverflow.Clip:
                             text.verticalOverflow = VerticalWrapMode.Truncate;
@@ -107,8 +71,6 @@ namespace FlighterUnity
                         case TextOverflow.Overflow:
                             text.verticalOverflow = VerticalWrapMode.Overflow;
                             break;
-                        case TextOverflow.Ellipsis:
-                            throw new NotImplementedException();
                     }
                 }
             }
@@ -123,8 +85,6 @@ namespace FlighterUnity
 
             Data = data;
             Style = style;
-            Alignment = alignment;
-            Overflow = overflow;
         }
 
         public void Clear()
@@ -145,10 +105,7 @@ namespace FlighterUnity
             {
                 color = value;
                 if (image != null)
-                {
-                    var unityColor = new UnityEngine.Color(color.r, color.g, color.b, color.a);
-                    image.color = unityColor;
-                }
+                    image.color = color.ToUnity();
             }
         }
 
@@ -168,6 +125,67 @@ namespace FlighterUnity
         {
             UnityEngine.Object.Destroy(image);
             image = null;
+        }
+    }
+
+    public class UnityImageComponent : ImageComponent, IUnityFlighterComponent
+    {
+        public override Color? Color
+        {
+            get => image?.color.ToFlighter();
+            set
+            {
+                if (image != null)
+                    image.color = value?.ToUnity() ?? UnityEngine.Color.white;
+            }
+        }
+
+        public override IImageHandle ImageHandle
+        {
+            get => imageHandle;
+            set
+            {
+                if (value != null && !(value is ImageHandle))
+                    throw new NotSupportedException();
+
+                imageHandle = value as ImageHandle;
+
+                if (image != null)
+                    image.sprite = imageHandle?.sprite;
+            }
+        }
+
+        Image image;
+        ImageHandle imageHandle;
+        
+        public void InflateGameObject(GameObject gameObject)
+        {
+            if (image != null)
+                throw new Exception("Component already inflated.");
+
+            image = gameObject.AddComponent<Image>();
+        }
+
+        public void Clear()
+        {
+            UnityEngine.Object.Destroy(image);
+            image = null;
+        }
+    }
+
+    public class UnityClipComponent : ClipComponent, IUnityFlighterComponent
+    {
+        RectMask2D mask;
+
+        public void InflateGameObject(GameObject gameObject)
+        {
+            mask = gameObject.AddComponent<RectMask2D>();
+        }
+
+        public void Clear()
+        {
+            UnityEngine.Object.Destroy(mask);
+            mask = null;
         }
     }
 }

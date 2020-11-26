@@ -2,6 +2,8 @@
 
 namespace Flighter.Core
 {
+    public delegate Widget WidgetBuilder();
+
     public enum TextAlign
     {
         TopLeft, TopCenter, TopRight,
@@ -9,39 +11,38 @@ namespace Flighter.Core
         BottomLeft, BottomCenter, BottomRight
     }
 
-    public struct TextStyle
+    public enum FontStyle
     {
-        public string font;
-        public float size;
-        public float lineHeight;
-        public Color color;
+        Normal,
+        Bold,
+        Italic,
+        BoldAndItalic
     }
 
     public enum TextOverflow
     {
         Clip,
-        Ellipsis,
         Overflow
+    }
+
+    public interface IFontHandle { }
+
+    public struct TextStyle
+    {
+        public IFontHandle font;
+        public int size;
+        public float lineSpacing;
+        public TextAlign textAlign;
+        public FontStyle fontStyle;
+        public bool wrapLines;
+        public TextOverflow textOverflow;
+        public Color color;
     }
 
     public abstract class TextComponent : Component
     {
-        /// <summary>
-        /// The text to display.
-        /// </summary>
         public abstract string Data { get; set; }
-        /// <summary>
-        /// Style of the text.
-        /// </summary>
-        public abstract TextStyle Style { get; set; }
-        /// <summary>
-        /// Alignment of the text.
-        /// </summary>
-        public abstract TextAlign Alignment { get; set; }
-        /// <summary>
-        /// How the text handles overflowing.
-        /// </summary>
-        public abstract TextOverflow Overflow { get; set; }
+        public abstract TextStyle? Style { get; set; }
     }
 
     public struct Color
@@ -66,4 +67,36 @@ namespace Flighter.Core
     {
         public abstract Color Color { get; set; }
     }
+
+    public enum BoxFit
+    {
+        /// <summary>
+        /// As big as possible within the box, without distorting.
+        /// </summary>
+        Contain,
+        /// <summary>
+        /// Fill the entire frame, without distorting, cropping edges.
+        /// </summary>
+        Cover,
+        /// <summary>
+        /// Fill the entire frame, distorting.
+        /// </summary>
+        Fill,
+        /// <summary>
+        /// Top and bottom edges will be flush with edges.
+        /// </summary>
+        FitHeight,
+        /// <summary>
+        /// Left and right edges will be flush with edges.
+        /// </summary>
+        FitWidth
+    }
+
+    public abstract class ImageComponent : Component
+    {
+        public abstract IImageHandle ImageHandle { get; set; }
+        public abstract Color? Color { get; set; }
+    }
+
+    public abstract class ClipComponent : Component { }
 }

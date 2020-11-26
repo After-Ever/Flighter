@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 using UnityEngine;
-using Flighter.Input;
+using Flighter.Core;
 
 using UnityKeyCode = UnityEngine.KeyCode;
 using FlighterKeyCode = Flighter.Input.KeyCode;
@@ -304,9 +304,39 @@ namespace FlighterUnity
                 { 5, FlighterMouseButton.Mouse5 }
             };
 
+        static readonly Dictionary<TextAlign, TextAnchor> textAlignFlighterToUnity
+            = new Dictionary<TextAlign, TextAnchor>
+            {
+                { TextAlign.TopLeft, TextAnchor.UpperLeft },
+                { TextAlign.TopCenter, TextAnchor.UpperCenter },
+                { TextAlign.TopRight, TextAnchor.UpperRight },
+                { TextAlign.MiddleLeft, TextAnchor.MiddleLeft },
+                { TextAlign.MiddleCenter, TextAnchor.MiddleCenter },
+                { TextAlign.MiddleRight, TextAnchor.MiddleRight },
+                { TextAlign.BottomLeft, TextAnchor.LowerLeft },
+                { TextAlign.BottomCenter, TextAnchor.LowerCenter },
+                { TextAlign.BottomRight, TextAnchor.LowerRight },
+            };
+
+        static readonly Dictionary<TextAnchor, TextAlign> textAlignUnityToFlighter
+            = new Dictionary<TextAnchor, TextAlign>
+            {
+                { TextAnchor.UpperLeft, TextAlign.TopLeft },
+                { TextAnchor.UpperCenter, TextAlign.TopCenter },
+                { TextAnchor.UpperRight, TextAlign.TopRight },
+                { TextAnchor.MiddleLeft, TextAlign.MiddleLeft },
+                { TextAnchor.MiddleCenter, TextAlign.MiddleCenter },
+                { TextAnchor.MiddleRight, TextAlign.MiddleRight },
+                { TextAnchor.LowerLeft, TextAlign.BottomLeft },
+                { TextAnchor.LowerCenter, TextAlign.BottomCenter },
+                { TextAnchor.LowerRight, TextAlign.BottomRight },
+            };
+
         public static FlighterKeyCode ToFlighter(this UnityKeyCode keyCode) => keyUnityToFlighter[keyCode];
         public static UnityKeyCode ToUnity(this FlighterKeyCode keyCode) => keyFlighterToUnity[keyCode];
         public static FlighterMouseButton UnityMouseButtonToFlighter(int mouseButton) => mouseUnityToFlighter[mouseButton];
         public static int ToUnity(this FlighterMouseButton mouseButton) => mouseFlighterToUnity[mouseButton];
+        public static TextAlign ToFlighter(this TextAnchor textAnchor) => textAlignUnityToFlighter[textAnchor];
+        public static TextAnchor ToUnity(this TextAlign textAlign) => textAlignFlighterToUnity[textAlign];
     }
 }

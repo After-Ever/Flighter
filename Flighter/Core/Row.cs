@@ -4,76 +4,39 @@ using System.Text;
 
 namespace Flighter.Core
 {
-    public class Row : LayoutWidget
+    public class Row : StatelessWidget
     {
         public readonly List<Widget> children;
-
-        public Row(List<Widget> children)
+        public readonly HorizontalDirection horizontalDirection;
+        public readonly VerticalDirection verticalDirection;
+        public readonly MainAxisAlignment mainAxisAlignment;
+        public readonly CrossAxisAlignment crossAxisAlignment;
+        public readonly MainAxisSize mainAxisSize;
+        
+        public Row(
+            List<Widget> children,
+            HorizontalDirection horizontalDirection = HorizontalDirection.LeftToRight,
+            VerticalDirection verticalDirection = VerticalDirection.TopToBottom,
+            MainAxisAlignment mainAxisAlignment = MainAxisAlignment.Start,
+            CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.Start,
+            MainAxisSize mainAxisSize = MainAxisSize.Max)
         {
             this.children = children;
+            this.horizontalDirection = horizontalDirection;
+            this.verticalDirection = verticalDirection;
+            this.mainAxisAlignment = mainAxisAlignment;
+            this.crossAxisAlignment = crossAxisAlignment;
+            this.mainAxisSize = mainAxisSize;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
-        {
-            if (float.IsPositiveInfinity(context.constraints.maxWidth))
-                throw new Exception("Row cannot have unconstrained width.");
-
-            Dictionary<Widget, WidgetNodeBuilder> widgetNodes = new Dictionary<Widget, WidgetNodeBuilder>();
-
-            List<Widget> absoluteChildren = new List<Widget>();
-            List<Flex> flexChildren = new List<Flex>();
-
-            children.ForEach((c) =>
-            {
-                if (c is Flex f)
-                    flexChildren.Add(f);
-                else
-                    absoluteChildren.Add(c);
-            });
-
-            var absoluteBuildContext = new BuildContext(new BoxConstraints(
-                    minHeight: context.constraints.minHeight,
-                    maxHeight: context.constraints.maxHeight
-                ));
-
-            float totalAbsoluteWidth = 0;
-            absoluteChildren.ForEach((c) =>
-            {
-                var n = widgetNodes[c] = node.AddChildWidget(c, absoluteBuildContext);
-                totalAbsoluteWidth += n.size.width;
-            });
-
-            float remainingWidth = context.constraints.maxWidth - totalAbsoluteWidth;
-            float totalFlex = 0;
-            flexChildren.ForEach((f) => totalFlex += f.flexValue);
-
-            flexChildren.ForEach((f) =>
-            {
-                float width = (f.flexValue / totalFlex) * remainingWidth;
-                var constraint = new BoxConstraints(
-                    minWidth: width,// TODO: Could give children the option to not fill the full space?
-                    maxWidth: width,
-                    minHeight: context.constraints.minHeight,
-                    maxHeight: context.constraints.maxHeight); 
-
-                widgetNodes[f] = node.AddChildWidget(f, new BuildContext(constraint));
-            });
-
-            float runningWidthOffset = 0;
-            float maxHeight = 0;
-            // Now set all the offsets.
-            // TODO: Currently just drop all the widgets flush with the top edge, stacked one beside of the other.
-            //       There should be options to change the alignment and spacing.
-            children.ForEach((c) =>
-            {
-                var n = widgetNodes[c];
-                n.Offset = new Point(runningWidthOffset, 0);
-
-                runningWidthOffset += n.size.width;
-                maxHeight = Math.Max(maxHeight, n.size.height);
-            });
-
-            return new BuildResult(runningWidthOffset, maxHeight);
-        }
+        public override Widget Build(BuildContext context)
+            => new SequenceLayout(
+                children,
+                Axis.Horizontal,
+                horizontalDirection,
+                verticalDirection,
+                mainAxisAlignment,
+                crossAxisAlignment,
+                mainAxisSize);
     }
 }
