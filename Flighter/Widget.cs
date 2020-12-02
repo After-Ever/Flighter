@@ -3,15 +3,6 @@
     public abstract class Widget
     {
         /// <summary>
-        /// As far as the widget tree is concerned, is this the same as <paramref name="other"/>?
-        /// During replacement, if this returns true, the original is kept, 
-        /// and the new widget is dropped.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public virtual bool IsSame(Widget other) => this == other;
-
-        /// <summary>
         /// Can this replace <paramref name="other"/> in the tree.
         /// By default, this returns true if both types are equal.
         /// </summary>

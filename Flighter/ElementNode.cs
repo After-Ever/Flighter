@@ -23,50 +23,25 @@ namespace Flighter
             }
         }
 
-        /// <summary>
-        /// This node needs an update.
-        /// </summary>
-        public bool IsDirty { get; private set; } = true;
-        /// <summary>
-        /// This node has descendants which need updates.
-        /// </summary>
-        public bool HasDirtyChild { get; private set; } = false;
-
         public ElementNode(Element element, ElementNode parent, ComponentProvider componentProvider = null)
         {
             this.element = element ?? throw new ArgumentNullException();
             this.parent = parent;
             this._componentProvider = componentProvider;
-
-            this.element.SetDirtyCallback(() => SetDirty());
         }
 
-        public void Update()
+        /// <summary>
+        /// Update this node, but not children.
+        /// Called exclusively when a new WidgetNode is connected to this element.
+        /// </summary>
+        /// <param name="widgetNode">The WidgetNode this element is attached to.</param>
+        public void Update(WidgetNode widgetNode)
         {
-            if (!IsDirty && !HasDirtyChild) return;
+            if (!element.IsConnected)
+                InitOrConnectElement();
 
-            if (IsDirty)
-            {
-                if (!element.IsConnected)
-                {
-                    InitOrConnectElement();
-                }
-
-                // Set this first incase the elements update sets this dirty.
-                IsDirty = false;
-                element.Update();
-            }
-            if (HasDirtyChild)
-            {
-                var dirtyChildren = GetDirtyChildren();
-
-                foreach (var c in dirtyChildren)
-                {
-                    c.Update();
-                }
-
-                UpdateChildDirtyStatus();
-            }
+            element.UpdateWidgetNode(widgetNode);
+            element.Update();
         }
 
         public ElementNode AddChild(Element element)
@@ -79,8 +54,6 @@ namespace Flighter
             var node = new ElementNode(element, this, _componentProvider);
             children.Add(node);
 
-            SetChildDirty();
-
             return node;
         }
 
@@ -91,21 +64,10 @@ namespace Flighter
 
             children.Add(node);
             node.parent = this;
-            
-            SetChildDirty();
-        }
-
-        public void SetDirty()
-        {
-            if (IsDirty) return;
-
-            IsDirty = true;
-            parent?.SetChildDirty();
         }
 
         /// <summary>
         /// Remove this from its parent.
-        /// Sets this as dirty.
         /// </summary>
         public void Emancipate()
         {
@@ -114,11 +76,8 @@ namespace Flighter
 
             if (!parent.children.Remove(this))
                 throw new Exception("Node not in parent's child list.");
-
-            parent.UpdateChildDirtyStatus();
             
             parent = null;
-            SetDirty();
 
             element.Disconnect();
         }
@@ -136,42 +95,8 @@ namespace Flighter
             element.TearDown();
         }
 
-        void SetClean()
-        {
-            IsDirty = false;
-            HasDirtyChild = false;
-        }
-
-        void SetChildDirty()
-        {
-            if (HasDirtyChild) return;
-            HasDirtyChild = true;
-            if (IsDirty) return;
-
-            parent?.SetChildDirty();
-        }
-
-        /// <summary>
-        /// Checks the status of <see cref="HasDirtyChild"/>.
-        /// </summary>
-        void UpdateChildDirtyStatus()
-        {
-            var newStatus = children.Exists((n) => n.IsDirty || n.HasDirtyChild);
-
-            if (newStatus == HasDirtyChild)
-                return;
-
-            HasDirtyChild = newStatus;
-            if (HasDirtyChild)
-                parent?.SetChildDirty();
-        }
-
-        List<ElementNode> GetDirtyChildren()
-        {
-            return children.FindAll((n) => n.IsDirty || n.HasDirtyChild);
-        }
-
-        protected virtual void InitOrConnectElement()
+        // "internal" to allow RootElementNode to override.
+        internal virtual void InitOrConnectElement()
         {
             if (element.IsInitialized) return;
             if (parent == null || !parent.element.IsInitialized)

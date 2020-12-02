@@ -67,14 +67,6 @@ namespace Flighter.Core
             this.alignment = alignment;
         }
 
-        public override bool IsSame(Widget other)
-        {
-            return 
-                other is Align c && 
-                child == c.child && 
-                alignment.Equals(c.alignment);
-        }
-
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             var childNode = node.AddChildWidget(child, context);

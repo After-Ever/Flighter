@@ -36,22 +36,18 @@ namespace FlighterTest
             var c = r.AddChild(ce);
 
             Assert.IsFalse(r.IsDirty);
-            Assert.IsTrue(r.HasDirtyChild);
 
             r.Update();
 
-            Assert.IsFalse(r.HasDirtyChild);
             Assert.IsFalse(c.IsDirty);
 
             c.SetDirty();
 
             Assert.IsFalse(r.IsDirty);
-            Assert.IsTrue(r.HasDirtyChild);
             Assert.IsTrue(c.IsDirty);
 
             r.Update();
 
-            Assert.IsFalse(r.HasDirtyChild);
             Assert.IsFalse(c.IsDirty);
             
             var g = new ElementNode(new TestElement(), null);
@@ -59,8 +55,6 @@ namespace FlighterTest
 
             Assert.IsFalse(r.IsDirty);
             Assert.IsFalse(c.IsDirty);
-            Assert.IsTrue(r.HasDirtyChild);
-            Assert.IsTrue(c.HasDirtyChild);
             Assert.IsTrue(g.IsDirty);
         }
 
@@ -170,7 +164,6 @@ namespace FlighterTest
 
             c.Emancipate();
 
-            Assert.IsTrue(c.IsDirty && !c.HasDirtyChild);
             Assert.IsFalse(root.IsDirty);
         }
 
@@ -182,11 +175,9 @@ namespace FlighterTest
 
             var c = root.AddChild(new TestElement());
 
-            Assert.IsTrue(root.HasDirtyChild);
 
             c.Emancipate();
 
-            Assert.IsFalse(root.HasDirtyChild);
         }
 
         /// <summary>

@@ -75,14 +75,14 @@ namespace Flighter
 
             if (elementNode != null)
             {
-                elementNode.element.UpdateWidgetNode(this);
-
                 var nearestAncestor = GetNearestAncestorElementNode();
 
                 // Connect first so we don't connect to ourself!
                 // If there is no ancestor, that's fine! We'll just be a root.
                 GetNearestAncestorElementNode()?.ConnectNode(elementNode);
                 this.elementNode = elementNode;
+
+                elementNode.Update(this);
             }
 
             childrenBuilders.ConvertAll((c) => c.Build(this));
@@ -139,12 +139,6 @@ namespace Flighter
                     {
                         var toReplace = freeChildren.Dequeue();
                         
-                        if (context.Equals(toReplace.buildContext) && widget.IsSame(toReplace.widget))
-                        {
-                            toReplace.UpdateConnection(this);
-                            return;
-                        }
-
                         if (widget.CanReplace(toReplace.widget))
                         {
                             nodeToInherit = toReplace.TakeElementNode();
@@ -169,6 +163,11 @@ namespace Flighter
                 foreach (var c in freeChildren)
                     c.Dispose();
             }
+        }
+
+        public void Rebuild()
+        {
+            ReplaceChildren(children.ConvertAll((c) => (c.widget, c.buildContext)));
         }
         
         /// <summary>
@@ -232,6 +231,8 @@ namespace Flighter
             var e = elementNode;
             elementNode = null;
             e?.Emancipate();
+            // TODO Should we do this? It is technically correct, but it might be confusing to elements
+            //      when they briefly don't have a widget node. And these nodes should always end up reconnected within the frame or so...
             e?.element?.UpdateWidgetNode(null);
             return e;
         }

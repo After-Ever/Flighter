@@ -29,9 +29,14 @@ namespace Flighter
             this.state.SetStateElement(this);
         }
 
+        /// <summary>
+        /// Called by the state object anytime the state changes.
+        /// </summary>
         public void StateSet()
         {
-            setDirty?.Invoke();
+            // TODO: Should not rebuild unless state has been modified.
+            //       Currently just rebuilding every frame. This is THE location
+            //       modifications enter.
         }
         
         protected override void _Init()
@@ -41,18 +46,7 @@ namespace Flighter
 
         protected override void _Update()
         {
-            // Called when the state should be rebuilt.
-
-            // First we let State carry out updates.
             state.Updated();
-
-            // Then rebuild its widget.
-            var context = widgetNode.buildContext;
-            var widget = state.Build(context);
-
-            widgetNode.ReplaceChildren(new List<(Widget, BuildContext)> {
-                (widget, context)
-            });
         }
 
         protected override void _WidgetNodeChanged()

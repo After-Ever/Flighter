@@ -22,13 +22,5 @@ namespace Flighter.Core
         {
             return child;
         }
-
-        public override bool IsSame(Widget other)
-        {
-            return
-                other is Flex f &&
-                f.flexValue == flexValue &&
-                f.child.IsSame(child);
-        }
     }
 }

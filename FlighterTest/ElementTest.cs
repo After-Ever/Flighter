@@ -72,11 +72,9 @@ namespace FlighterTest
             var n = TestUtilities.MakeSimpleRootWidgetNode();
             var w = n.widget;
 
-            Assert.IsNull(e.GetWidget<RootWidget>());
 
             e.UpdateWidgetNode(n);
             
-            Assert.AreSame(w, e.GetWidget<RootWidget>());
         }
 
         [TestMethod]

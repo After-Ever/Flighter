@@ -48,14 +48,6 @@ namespace Flighter.Core
             this.edgetInsets = edgetInsets;
         }
 
-        public override bool IsSame(Widget other)
-        {
-            return 
-                other is Padding p && 
-                p.child == child && 
-                p.edgetInsets.Equals(edgetInsets);
-        }
-
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             var horizontal = edgetInsets.left + edgetInsets.right;

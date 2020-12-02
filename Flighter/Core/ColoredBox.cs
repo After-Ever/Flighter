@@ -13,11 +13,6 @@ namespace Flighter.Core
             this.color = color;
         }
 
-        public override bool IsSame(Widget other)
-        {
-            return other is ColoredBox c && c.color.Equals(color);
-        }
-
         public override Element CreateElement()
         {
             return new ColoredBoxElement();

@@ -99,6 +99,11 @@ namespace Flighter
             }
         }
 
+        /// <summary>
+        /// Allows an existing WidgetNode to be added back to a tree.
+        /// TODO: Not currently being used, maybe removed?
+        /// </summary>
+        /// <param name="builtNode"></param>
         public WidgetNodeBuilder(WidgetNode builtNode)
         {
             this.builtNode = builtNode;
@@ -150,13 +155,6 @@ namespace Flighter
             if (inheritedChildren?.Count > 0)
             {
                 var toReplace = inheritedChildren.Dequeue();
-
-                if (toReplace.buildContext.Equals(context) && widget.IsSame(toReplace.widget))
-                {
-                    var b = new WidgetNodeBuilder(toReplace);
-                    children.Add(b);
-                    return b;
-                }
 
                 // TODO This is the same code as in WidgetNode.ReplaceChildren...
                 //      Should probably consolidate.

@@ -14,12 +14,6 @@ namespace Flighter
         }
 
         /// <summary>
-        /// To be called when the element would like an update. Should
-        /// not be called manually... Probably...
-        /// </summary>
-        protected Action setDirty;
-
-        /// <summary>
         /// Whether the Element has been initialized.
         /// </summary>
         public bool IsInitialized { get; private set; } = false;
@@ -117,11 +111,6 @@ namespace Flighter
             IsInitialized = false;
             IsConnected = false;
             widgetNode = null;
-        }
-
-        public void SetDirtyCallback(Action setDirty)
-        {
-            this.setDirty = setDirty;
         }
 
         void SizeAndPositionRect()

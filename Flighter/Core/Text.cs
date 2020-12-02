@@ -17,13 +17,6 @@ namespace Flighter.Core
             this.style = style;
         }
 
-        public override bool IsSame(Widget other)
-        {
-            return other is Text t &&
-                data == t.data &&
-                style.Equals(t.style);
-        }
-
         public override Element CreateElement()
         {
             return new TextElement();

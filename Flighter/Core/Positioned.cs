@@ -15,11 +15,6 @@ namespace Flighter.Core
             this.offset = offset;
         }
 
-        public override bool IsSame(Widget other)
-        {
-            return base.IsSame(other);
-        }
-
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             var childNode = node.AddChildWidget(child, context);

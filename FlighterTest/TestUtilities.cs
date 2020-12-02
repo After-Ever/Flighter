@@ -6,8 +6,8 @@ namespace FlighterTest
 {
     public static class TestUtilities
     {
-        public static (WidgetNode, ElementNode) MakeTestRoot(Widget child)
-            => RootWidget.MakeRootWidgetNode(
+        public static Root MakeTestRoot(Widget child)
+            => new Root(
                 child,
                 new BuildContext(),
                 new TestDisplayRect(),
@@ -15,19 +15,16 @@ namespace FlighterTest
                 null);
 
         public static WidgetNode MakeSimpleRootWidgetNode()
-            => RootWidget.MakeRootWidgetNode(
+            => new Root(
                 new TestDisplayWidget(),
                 new BuildContext(),
                 new TestDisplayRect(),
                 new ComponentProvider(new Dictionary<Type, Type>()),
                 null)
-                    .Item1;
+                    .rootWidgetNode;
 
         public static ElementNode MakeSimpleRootElementNode()
-            => new RootElementNode(
-                new TestDisplayRect(), 
-                new ComponentProvider(
-                    new Dictionary<Type, Type>()));
+            => null;// TODO: Fix this
 
         public static ElementNode MakeSimpleElementNode()
             => new ElementNode(new TestElement(), null);

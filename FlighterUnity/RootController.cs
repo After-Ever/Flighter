@@ -8,34 +8,24 @@ namespace FlighterUnity
 {
     public class RootController : MonoBehaviour
     {
-        WidgetNode widgetRoot;
-        ElementNode elementRoot;
+        Root root;
 
-        public void SetRoot(WidgetNode widgetRoot, ElementNode elementRoot)
+        public void SetRoot(Root root)
         {
-            this.widgetRoot = widgetRoot;
-            this.elementRoot = elementRoot;
-        }
-
-        public void SetRoot((WidgetNode, ElementNode) root)
-        {
-            this.widgetRoot = root.Item1;
-            this.elementRoot = root.Item2;
+            this.root = root;
         }
 
         public void TearDown()
         {
-            widgetRoot?.Dispose();
-
-            widgetRoot = null;
-            elementRoot = null;
+            root?.Dispose();
+            root = null;
 
             Destroy(gameObject);
         }
 
         void Update()
         {
-            elementRoot?.Update();
+            root?.Update();
         }
     }
 }

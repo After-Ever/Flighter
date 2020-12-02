@@ -134,14 +134,14 @@ namespace FlighterUnity
             var size = rect.Size;
             var constraints = BoxConstraints.Tight(size);
 
-            var root = RootWidget.MakeRootWidgetNode(
+            var root = new Root(
                 widget,
                 new BuildContext(constraints),
                 rect,
                 componentProvider,
                 inputProvider?.GetInput() ?? NoInput.Input);
 
-            inputProvider?.AddRoot(root.Item1);
+            inputProvider?.AddRoot(root.rootWidgetNode);
 
             var rootController = rect.transform.gameObject.AddComponent<RootController>();
             rootController.SetRoot(root);
