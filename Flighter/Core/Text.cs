@@ -31,6 +31,8 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
+            // TODO: Currently just taking up as much space as possible.
+            //       Should take min space where possible.
             return new BuildResult(context.constraints.MaxSize);
         }
     }

@@ -44,6 +44,10 @@ namespace Flighter.Core
     public class AnimationController
     {
         public event AnimationUpdate ValueChanged;
+        /// <summary>
+        /// Emitted whenever the animation reaches its target.
+        /// </summary>
+        public event Action AnimationComplete;
 
         public float Value => curve?.Invoke(progress) ?? progress;
 
@@ -140,7 +144,9 @@ namespace Flighter.Core
                 if (progress <= target)
                     targetReached = true;
             }
-            
+
+
+            bool emitUpdate = true;
             if (targetReached)
             {
                 switch(behavior)
@@ -152,12 +158,14 @@ namespace Flighter.Core
                     case AnimationBehavior.OnceAndReset:
                         Stop();
                         Reset();
-                        // Return here to avoid emiting another update (Reset emits one).
-                        return;
+                        // Reset emits an update.
+                        emitUpdate = false;
+                        break;
                     case AnimationBehavior.Loop:
                         Reset();
-                        // Return here to avoid emiting another update (Reset emits one).
-                        return;
+                        // Reset emits an update.
+                        emitUpdate = false;
+                        break;
                     case AnimationBehavior.BackAndForth:
                         progress = target;
                         Reverse();
@@ -169,7 +177,10 @@ namespace Flighter.Core
                 }
             }
 
-            EmitUpdate();
+            if (emitUpdate)
+                EmitUpdate();
+            if (targetReached)
+                AnimationComplete?.Invoke();
         }
 
         void EmitUpdate()
