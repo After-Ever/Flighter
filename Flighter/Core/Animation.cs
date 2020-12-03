@@ -211,7 +211,6 @@ namespace Flighter.Core
         {
             
             subscribedController = GetWidget<Animation>().controller;
-            Console.WriteLine("Init animation" + subscribedController);
             subscribedController.ValueChanged += OnValueChanged;
         }
 
@@ -238,7 +237,6 @@ namespace Flighter.Core
 
         void OnValueChanged(float _)
         {
-            Console.WriteLine("Animation value changed");
             // Just set state to trigger an update and rebuild.
             SetState(null);
         }

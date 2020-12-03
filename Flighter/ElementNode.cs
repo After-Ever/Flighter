@@ -26,7 +26,7 @@ namespace Flighter
         /// <summary>
         /// This node needs an update.
         /// </summary>
-        public bool IsDirty { get; private set; } = true;
+        public bool IsDirty { get; private set; } = false;
         /// <summary>
         /// This node has descendants which need updates.
         /// </summary>
@@ -38,20 +38,20 @@ namespace Flighter
             this.parent = parent;
             this._componentProvider = componentProvider;
 
-            this.element.SetDirtyCallback(() => SetDirty());
+            this.element.SetDirtyCallback(SetDirty);
         }
 
         public void Inflate(WidgetNode widgetNode)
         {
-            EnsureInitiated();
+            element.UpdateWidgetNode(widgetNode);
+            InitOrConnectElement();
             
             // Set clean first incase the updates set it dirty again.
             SetClean();
-            element.UpdateWidgetNode(widgetNode);
             element.Update();
         }
 
-        public void Update()
+        public void Update(int d = 0)
         {
             if (!IsDirty && !HasDirtyChild) return;
 
@@ -63,23 +63,8 @@ namespace Flighter
             {
                 // Make a copy, as updates may change family hierarchy.
                 var toUpdate = new List<ElementNode>(children);
-                toUpdate.ForEach((c) => c.Update());
+                toUpdate.ForEach((c) => c.Update(d + 1));
             }
-        }
-
-        public ElementNode AddChild(Element element)
-        {
-            if (element.IsInitialized)
-                throw new Exception("Cannot add an initialized element!");
-
-            // Just pass the componentProvider field (instead of the property)
-            // because we don't care if it's null here; it can always search later.
-            var node = new ElementNode(element, this, _componentProvider);
-            children.Add(node);
-
-            SetChildDirty();
-
-            return node;
         }
 
         public void ConnectNode(ElementNode node)
@@ -89,8 +74,9 @@ namespace Flighter
 
             children.Add(node);
             node.parent = this;
-            
-            SetChildDirty();
+
+            if (node.IsDirty || node.HasDirtyChild)
+                SetChildDirty();
         }
 
         public void SetDirty()
@@ -103,7 +89,7 @@ namespace Flighter
 
         /// <summary>
         /// Remove this from its parent.
-        /// Sets this as dirty.
+        /// Does not change dirty status.
         /// </summary>
         public void Emancipate()
         {
@@ -113,10 +99,10 @@ namespace Flighter
             if (!parent.children.Remove(this))
                 throw new Exception("Node not in parent's child list.");
 
-            parent.UpdateChildDirtyStatus();
+            if (IsDirty || HasDirtyChild)
+                parent.UpdateChildDirtyStatus();
             
             parent = null;
-            SetDirty();
 
             element.Disconnect();
         }
@@ -153,16 +139,11 @@ namespace Flighter
 
             parent?.SetChildDirty();
         }
-
-        void EnsureInitiated()
-        {
-            if (!element.IsConnected)
-                InitOrConnectElement();
-        }
-
+        
         /// <summary>
         /// Checks the status of <see cref="HasDirtyChild"/>.
         /// </summary>
+        /// TODO: This one is a little wormy... Make sure everything is correct, and tested.
         void UpdateChildDirtyStatus()
         {
             var newStatus = children.Exists((n) => n.IsDirty || n.HasDirtyChild);
@@ -171,8 +152,15 @@ namespace Flighter
                 return;
 
             HasDirtyChild = newStatus;
+
+            // If this is dirty, no need to update parents, as they still have a dirty child.
+            if (IsDirty)
+                return;
+
             if (HasDirtyChild)
                 parent?.SetChildDirty();
+            else
+                parent?.UpdateChildDirtyStatus();
         }
 
         protected virtual void InitOrConnectElement()

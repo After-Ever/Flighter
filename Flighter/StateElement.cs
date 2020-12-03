@@ -14,7 +14,7 @@ namespace Flighter
         /// Provided so the state can perform an initial build.
         /// Otherwise, the state would have no way to access the widget.
         /// </summary>
-        public readonly WidgetNodeBuilder builder;
+        public WidgetNodeBuilder Builder;
 
         /// <summary>
         /// 
@@ -22,10 +22,9 @@ namespace Flighter
         /// <param name="state"></param>
         /// <param name="builder">Only needed when the state is being
         /// created from a <see cref="WidgetNodeBuilder"/></param>
-        public StateElement(State state, WidgetNodeBuilder builder = null)
+        public StateElement(State state)
         {
             this.state = state ?? throw new ArgumentNullException();
-            this.builder = builder;
             this.state.SetStateElement(this);
         }
 
@@ -34,18 +33,15 @@ namespace Flighter
             setDirty?.Invoke();
         }
         
-        protected override void _Init()
-        {
-            state.Init();
-        }
-
-        protected override void _Update()
-        {
-            state.InvokeUpdates();
-        }
+        // The state is initiated when built in WidgetNodeBuilder, so nothing to do here!
+        protected override void _Init() { }
+        
+        protected override void _Update() { }
 
         protected override void _WidgetNodeChanged()
         {
+            // Once the widget node has been changed by an ElementNode it is safe to forget the builder.
+            Builder = null;
             state.WidgetChanged();
         }
 

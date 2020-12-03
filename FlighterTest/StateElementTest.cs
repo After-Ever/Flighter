@@ -9,7 +9,7 @@ namespace FlighterTest
     class TestStateElement : StateElement
     {
         public TestStateElement(State state)
-            : base(state, null) { }
+            : base(state) { }
 
         public void WrapSetStateCallback(Action callFirst)
         {

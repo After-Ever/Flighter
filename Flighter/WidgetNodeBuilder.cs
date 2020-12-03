@@ -50,7 +50,6 @@ namespace Flighter
             else if (widget is StatefulWidget sfw)
             {
                 State state;
-
                 if (inheritedElementNode != null)
                 {
                     if (inheritedChildren == null || inheritedChildren.Count != 1)
@@ -58,20 +57,26 @@ namespace Flighter
 
                     elementNode = inheritedElementNode;
 
-                    state = (elementNode.element as StateElement)?.state
+                    var stateElement = elementNode.element as StateElement
                         ?? throw new Exception("StatefulWidget inherited nonStateElement!");
+                    stateElement.Builder = this;
 
-                    state.SetInitWidget(sfw);
+                    state = stateElement.state;
+                    // Manually call this to reflect the change to the builder.
+                    state.WidgetChanged();
+                    // This state has been around the block, and may have some scores to settle before rebuilding.
+                    state.InvokeUpdates();
                 }
                 else
                 {
                     state = sfw.CreateState();
-                    elementNode = new ElementNode(new StateElement(state, this), null);
-                    state.SetInitWidget(sfw);
+                    var stateElement = new StateElement(state);
+                    elementNode = new ElementNode(stateElement, null);
+
+                    stateElement.Builder = this;
                     state.Init();
                 }
-
-                state.InvokeUpdates();
+                
                 var child = state.Build(this.buildContext);
                 var childNode = AddChildWidget(child, this.buildContext);
 

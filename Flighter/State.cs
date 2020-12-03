@@ -11,13 +11,11 @@ namespace Flighter
         protected W GetWidget<W>() where W : Widget
         {
             return (stateElement?.GetWidget<W>() 
-                ?? stateElement?.builder?.widget 
-                ?? initWidget) as W
+                ?? stateElement?.Builder?.widget) as W
                 ?? throw new Exception("Could not get widget!");
         }
 
         StateElement stateElement;
-        Widget initWidget;
 
         readonly Queue<Action> updates = new Queue<Action>();
 
@@ -29,17 +27,7 @@ namespace Flighter
         }
 
         /// <summary>
-        /// Set this State's widget.
-        /// To be used when TODO: Finish doc
-        /// </summary>
-        /// <param name="widget"></param>
-        public void SetInitWidget(StatefulWidget widget)
-        {
-            initWidget = widget;
-        }
-
-        /// <summary>
-        /// Called once the state has been added to the element tree.
+        /// Called once when the state has been added to the element tree.
         /// The State's widget will be avalible at this point, but not before.
         /// </summary>
         public virtual void Init() { }
@@ -82,6 +70,8 @@ namespace Flighter
             {
                 if (stateElement == null)
                     throw new NullReferenceException("State's element cannot be null when setting state.");
+
+                stateElement.StateSet();
 
                 isDirty = true;
             }
