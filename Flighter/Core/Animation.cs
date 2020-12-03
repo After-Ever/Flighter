@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Flighter.Core
 {
     public delegate void AnimationUpdate(float value);
-    public delegate Widget AnimationBuilder(float t);
+    public delegate Widget AnimationBuilder(float t, BuildContext context);
     public delegate float Curve(float f);
 
     public enum AnimationDirection
@@ -232,7 +232,7 @@ namespace Flighter.Core
         {
             var w = GetWidget<Animation>();
 
-            return w.builder(w.controller.Value);
+            return w.builder(w.controller.Value, context);
         }
 
         void OnValueChanged(float _)

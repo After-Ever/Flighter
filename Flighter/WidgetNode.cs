@@ -120,8 +120,23 @@ namespace Flighter
         /// </summary>
         public void Rebuild()
         {
+            // TODO: I've cracked it! So this doesn't actually work:
+            //       Currently, we emancipate, create a copy, and add it back. All that IS working
+            //       as expected, except we always re add at the "bottom," so when we rebuild, the new widget will always
+            //       be at the end of it's parents list of children. To match our expectations,
+            //       this must be changed so the new widget node is placed in the same position.
+
+            //       ideally, we can actually keep the same widget node, and just apply the rebuild in place!
+            //       in reality, it might be more difficult.
+            
+
+            // The root widget may have a rebuild triggered if a child changed size,
+            // but the root should never be rebuilt.
+            if (widget is RootWidget)
+                return;
+
             // Local var because Emancipate sets this.parent null.
-            var parent = this.parent;
+            var parent = this.parent ?? throw new Exception("Cannot rebuild root node!");
             Emancipate();
             var b = new WidgetNodeBuilder(
                 forest,

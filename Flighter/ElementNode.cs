@@ -188,7 +188,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += element.Name + (IsDirty? "*\n" : "\n");
+            r += element.Name + (IsDirty? "*" : "") + (HasDirtyChild? "+\n" : "\n");
 
             foreach (var c in children)
                 r += c.Print(indent + 1);

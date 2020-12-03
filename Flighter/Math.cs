@@ -126,7 +126,7 @@ namespace Flighter
 
             CheckConstraints();
         }
-
+        
         /// <summary>
         /// The biggest size which satisfies the constrainst, if they are bounded.
         /// If a dimension is unbounded, the min will be returned.
@@ -141,6 +141,21 @@ namespace Flighter
                 return new Size(width, height);
             }
         }
+
+        /// <summary>
+        /// Create a new BoxConstraints based on this one, changing only those values which are provided.
+        /// </summary>
+        /// <returns></returns>
+        public BoxConstraints From(
+            float? minWidth = null,
+            float? maxWidth = null,
+            float? minHeight = null,
+            float? maxHeight = null)
+            => new BoxConstraints(
+                minWidth: minWidth ?? this.minWidth,
+                maxWidth: maxWidth ?? this.maxWidth,
+                minHeight: minHeight ?? this.minHeight,
+                maxHeight: maxHeight ?? this.maxHeight);
 
         public bool IsUnconstrained => float.IsPositiveInfinity(maxHeight) || float.IsPositiveInfinity(maxWidth);
 

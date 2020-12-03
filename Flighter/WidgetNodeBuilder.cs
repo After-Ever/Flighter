@@ -157,7 +157,8 @@ namespace Flighter
             {
                 var toReplace = inheritedChildren.Dequeue();
                 
-                if (toReplace.buildContext.Equals(context) && widget.IsSame(toReplace.widget))
+                // TODO: Figure out how to re-enable this.
+                if (false && toReplace.buildContext.Equals(context) && widget.IsSame(toReplace.widget))
                 {
                     var b = new WidgetNodeBuilder(toReplace);
                     children.Add(b);
@@ -169,7 +170,7 @@ namespace Flighter
                     childElementNode = toReplace.TakeElementNode();
                     orphans = toReplace.EmancipateChildren();
                 }
-
+                
                 toReplace.Dispose();
             }
 

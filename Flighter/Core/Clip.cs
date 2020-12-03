@@ -27,6 +27,8 @@ namespace Flighter.Core
 
     class ClipElement : Element
     {
+        public override string Name => "Clip";
+
         protected override void _Init()
         {
             var clipComponent = componentProvider.CreateComponent<ClipComponent>();
