@@ -205,16 +205,28 @@ namespace Flighter.Core
 
     class AnimationState : State
     {
+        AnimationController subscribedController;
+
         public override void Init()
         {
-            var w = GetWidget<Animation>();
+            
+            subscribedController = GetWidget<Animation>().controller;
+            Console.WriteLine("Init animation" + subscribedController);
+            subscribedController.ValueChanged += OnValueChanged;
+        }
 
-            w.controller.ValueChanged += OnValueChanged;
+        public override void WidgetChanged()
+        {
+            if (subscribedController != null)
+                subscribedController.ValueChanged -= OnValueChanged;
+            Init();
         }
 
         public override void Dispose()
         {
-            GetWidget<Animation>().controller.ValueChanged -= OnValueChanged;
+            if (subscribedController != null)
+                subscribedController.ValueChanged -= OnValueChanged;
+            subscribedController = null;
         }
 
         public override Widget Build(BuildContext context)
@@ -226,6 +238,7 @@ namespace Flighter.Core
 
         void OnValueChanged(float _)
         {
+            Console.WriteLine("Animation value changed");
             // Just set state to trigger an update and rebuild.
             SetState(null);
         }

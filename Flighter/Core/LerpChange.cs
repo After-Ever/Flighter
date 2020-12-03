@@ -76,12 +76,12 @@ namespace Flighter.Core
 
             var w = GetWidget<LerpChange<T>>();
 
-            if (w?.stopCondition(curValue, w.value) ?? false)
+            if (w.stopCondition?.Invoke(curValue, w.value) ?? false)
             {
                 isLerping = false;
                 return;
             }
-
+            
             SetState(() =>
             {
                 curValue = w.lerp(curValue, w.value, 1 - (float)Math.Pow(w.ratioPerSecond, delta));

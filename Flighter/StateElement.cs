@@ -41,18 +41,7 @@ namespace Flighter
 
         protected override void _Update()
         {
-            // Called when the state should be rebuilt.
-
-            // First we let State carry out updates.
-            state.Updated();
-
-            // Then rebuild its widget.
-            var context = widgetNode.buildContext;
-            var widget = state.Build(context);
-
-            widgetNode.ReplaceChildren(new List<(Widget, BuildContext)> {
-                (widget, context)
-            });
+            state.InvokeUpdates();
         }
 
         protected override void _WidgetNodeChanged()

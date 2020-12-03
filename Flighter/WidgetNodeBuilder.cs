@@ -71,6 +71,7 @@ namespace Flighter
                     state.Init();
                 }
 
+                state.InvokeUpdates();
                 var child = state.Build(this.buildContext);
                 var childNode = AddChildWidget(child, this.buildContext);
 
@@ -150,16 +151,14 @@ namespace Flighter
             if (inheritedChildren?.Count > 0)
             {
                 var toReplace = inheritedChildren.Dequeue();
-
+                
                 if (toReplace.buildContext.Equals(context) && widget.IsSame(toReplace.widget))
                 {
                     var b = new WidgetNodeBuilder(toReplace);
                     children.Add(b);
                     return b;
                 }
-
-                // TODO This is the same code as in WidgetNode.ReplaceChildren...
-                //      Should probably consolidate.
+                
                 if (widget.CanReplace(toReplace.widget))
                 {
                     childElementNode = toReplace.TakeElementNode();

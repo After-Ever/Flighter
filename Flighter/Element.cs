@@ -7,7 +7,7 @@ namespace Flighter
     /// </summary>
     public abstract class Element
     {
-        protected WidgetNode widgetNode;
+        public WidgetNode widgetNode { get; private set; }
         public W GetWidget<W>() where W : Widget
         {
             return widgetNode?.widget as W;

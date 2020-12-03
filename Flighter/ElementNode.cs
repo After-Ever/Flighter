@@ -41,31 +41,29 @@ namespace Flighter
             this.element.SetDirtyCallback(() => SetDirty());
         }
 
+        public void Inflate(WidgetNode widgetNode)
+        {
+            EnsureInitiated();
+            
+            // Set clean first incase the updates set it dirty again.
+            SetClean();
+            element.UpdateWidgetNode(widgetNode);
+            element.Update();
+        }
+
         public void Update()
         {
             if (!IsDirty && !HasDirtyChild) return;
 
             if (IsDirty)
             {
-                if (!element.IsConnected)
-                {
-                    InitOrConnectElement();
-                }
-
-                // Set this first incase the elements update sets this dirty.
-                IsDirty = false;
-                element.Update();
+                element.widgetNode.Rebuild();
             }
-            if (HasDirtyChild)
+            else
             {
-                var dirtyChildren = GetDirtyChildren();
-
-                foreach (var c in dirtyChildren)
-                {
-                    c.Update();
-                }
-
-                UpdateChildDirtyStatus();
+                // Make a copy, as updates may change family hierarchy.
+                var toUpdate = new List<ElementNode>(children);
+                toUpdate.ForEach((c) => c.Update());
             }
         }
 
@@ -138,8 +136,13 @@ namespace Flighter
 
         void SetClean()
         {
+            bool hasChanged = IsDirty || HasDirtyChild;
+
             IsDirty = false;
             HasDirtyChild = false;
+
+            if (hasChanged)
+                parent?.UpdateChildDirtyStatus();
         }
 
         void SetChildDirty()
@@ -149,6 +152,12 @@ namespace Flighter
             if (IsDirty) return;
 
             parent?.SetChildDirty();
+        }
+
+        void EnsureInitiated()
+        {
+            if (!element.IsConnected)
+                InitOrConnectElement();
         }
 
         /// <summary>
@@ -166,14 +175,9 @@ namespace Flighter
                 parent?.SetChildDirty();
         }
 
-        List<ElementNode> GetDirtyChildren()
-        {
-            return children.FindAll((n) => n.IsDirty || n.HasDirtyChild);
-        }
-
         protected virtual void InitOrConnectElement()
         {
-            if (element.IsInitialized) return;
+            if (element.IsInitialized && element.IsConnected) return;
             if (parent == null || !parent.element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
 
@@ -196,7 +200,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += element.Name + "\n";
+            r += element.Name + (IsDirty? "*\n" : "\n");
 
             foreach (var c in children)
                 r += c.Print(indent + 1);

@@ -30,7 +30,7 @@ namespace Flighter
 
         /// <summary>
         /// Set this State's widget.
-        /// To be used when 
+        /// To be used when TODO: Finish doc
         /// </summary>
         /// <param name="widget"></param>
         public void SetInitWidget(StatefulWidget widget)
@@ -52,8 +52,11 @@ namespace Flighter
         /// Called when the state's element is removed from the element tree.
         /// </summary>
         public virtual void Dispose() { }
-
-        public void Updated()
+        
+        /// <summary>
+        /// Call all the actions passed to <see cref="SetState(Action)"/> since the last time this was called.
+        /// </summary>
+        public void InvokeUpdates()
         {
             // Make a local copy incase updates queue new updates.
             var actions = updates.ToArray();
@@ -65,15 +68,22 @@ namespace Flighter
                 action();
         }
 
+        /// <summary>
+        /// Mark this widget as needing to be rebuilt.
+        /// </summary>
+        /// <param name="action">The state changing action. Will be invoked right before the State is rebuilt.
+        /// One can make changes outside this method, but the changes will not be displayed until the tree happens to rebuild.</param>
         protected void SetState(Action action)
         {
             if (action != null)
                 updates.Enqueue(action);
 
-            if (!isDirty && stateElement != null)
+            if (!isDirty)
             {
+                if (stateElement == null)
+                    throw new NullReferenceException("State's element cannot be null when setting state.");
+
                 isDirty = true;
-                stateElement?.StateSet();
             }
         }
     }
