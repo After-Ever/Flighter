@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace Flighter.Core
 {
     public delegate T Lerp<T>(T a, T b, float f);
+    public delegate bool StopCondition<T>(T current, T target);
     public delegate Widget ValueBuilder<T>(T value);
 
     public class LerpChange<T> : StatefulWidget
@@ -18,7 +19,7 @@ namespace Flighter.Core
         public readonly TickProvider tickProvider;
         public readonly float ratioPerSecond;
         public readonly Lerp<T> lerp;
-        public readonly Func<T, T, bool> stopCondition;
+        public readonly StopCondition<T> stopCondition;
 
         public LerpChange(
             T value, 
@@ -26,7 +27,7 @@ namespace Flighter.Core
             float ratioPerSecond, 
             TickProvider tickProvider, 
             Lerp<T> lerp,
-            Func<T, T, bool> stopCondition = null)
+            StopCondition<T> stopCondition = null)
         {
             this.value = value;
             this.builder = builder;
@@ -54,7 +55,11 @@ namespace Flighter.Core
 
         public override void WidgetChanged()
         {
+            var w = GetWidget<LerpChange<T>>();
+            
             isLerping = true;
+            if (curValue.Equals(w.value) || (w.stopCondition?.Invoke(curValue, w.value) ?? false))
+                isLerping = false;
         }
 
         public override void Dispose()
@@ -76,15 +81,13 @@ namespace Flighter.Core
 
             var w = GetWidget<LerpChange<T>>();
 
-            if (w.stopCondition?.Invoke(curValue, w.value) ?? false)
-            {
-                isLerping = false;
-                return;
-            }
             
             SetState(() =>
             {
                 curValue = w.lerp(curValue, w.value, 1 - (float)Math.Pow(w.ratioPerSecond, delta));
+
+                if (w.stopCondition?.Invoke(curValue, w.value) ?? false)
+                    isLerping = false;
             });
         }
     }

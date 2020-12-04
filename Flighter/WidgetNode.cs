@@ -42,6 +42,8 @@ namespace Flighter
         Point? cachedElementOffset;
         Point? cachedAbsoluteOffset;
 
+        bool rebuilding = false;
+
         /// <summary>
         /// Constructs a widget node.
         /// Adds this as a child of <paramref name="parent"/>.
@@ -64,7 +66,7 @@ namespace Flighter
         {
             this.forest = forest ?? throw new ArgumentNullException("Must belong to a WidgetTree.");
             this.parent = parent;
-            parent?.children?.Add(this);
+            parent?.AddChildNode(this);
 
             if (parent != null && parent.forest != forest)
                 throw new Exception("Tree must be the same as parent tree.");
@@ -101,7 +103,7 @@ namespace Flighter
             ClearCachedOffsets();
 
             this.parent = parent ?? throw new ArgumentNullException();
-            parent.children.Add(this);
+            parent.AddChildNode(this);
             if (parent.forest != forest)
                 throw new Exception("Tree must be the same as the parent tree.");
 
@@ -137,7 +139,7 @@ namespace Flighter
 
             // Local var because Emancipate sets this.parent null.
             var parent = this.parent ?? throw new Exception("Cannot rebuild root node!");
-            Emancipate();
+            rebuilding = true;
             var b = new WidgetNodeBuilder(
                 forest,
                 widget,
@@ -303,6 +305,18 @@ namespace Flighter
                 condition: (w) => w.widget is InputWidget i
                                 && i.onlyWhileHovering)
             .ConvertAll((w) => w as InputWidget);
+
+        void AddChildNode(WidgetNode childNode)
+        {
+            var toReplace = children.FindIndex((w) => w.rebuilding);
+            if (toReplace != -1)
+            {
+                children.RemoveAt(toReplace);
+                children.Insert(toReplace, childNode);
+            }
+            else
+                children.Add(childNode);
+        }
 
         /// <summary>
         /// Get all element nodes that would attach to an ancestor.
