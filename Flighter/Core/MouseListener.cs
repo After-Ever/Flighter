@@ -21,6 +21,16 @@ namespace Flighter.Core
             this.onMouseEvent = onMouseEvent;
         }
 
+        public override bool Equals(object obj) => false;
+
+        public override int GetHashCode()
+        {
+            var hashCode = 446973263;
+            hashCode = hashCode * -1521134295 + base.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<MouseEventCallback>.Default.GetHashCode(onMouseEvent);
+            return hashCode;
+        }
+
         public override void OnMouseEvent(MouseEventFilter filter, IInputPoller inputPoller)
         {
             onMouseEvent?.Invoke(filter, inputPoller);

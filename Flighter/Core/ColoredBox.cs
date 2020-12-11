@@ -13,14 +13,21 @@ namespace Flighter.Core
             this.color = color;
         }
 
-        public override bool IsSame(Widget other)
-        {
-            return other is ColoredBox c && c.color.Equals(color);
-        }
-
         public override Element CreateElement()
         {
             return new ColoredBoxElement();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var box = obj as ColoredBox;
+            return box != null &&
+                   EqualityComparer<Color>.Default.Equals(color, box.color);
+        }
+
+        public override int GetHashCode()
+        {
+            return 790427672 + EqualityComparer<Color>.Default.GetHashCode(color);
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)

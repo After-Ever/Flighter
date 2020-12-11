@@ -4,15 +4,8 @@ using System.Text;
 
 namespace Flighter.Core
 {
-    public class Column : StatelessWidget
+    public class Column : SequenceLayout
     {
-        public readonly List<Widget> children;
-        public readonly HorizontalDirection horizontalDirection;
-        public readonly VerticalDirection verticalDirection;
-        public readonly MainAxisAlignment mainAxisAlignment;
-        public readonly CrossAxisAlignment crossAxisAlignment;
-        public readonly MainAxisSize mainAxisSize;
-
         public Column(
             List<Widget> children,
             HorizontalDirection horizontalDirection = HorizontalDirection.LeftToRight,
@@ -20,23 +13,24 @@ namespace Flighter.Core
             MainAxisAlignment mainAxisAlignment = MainAxisAlignment.Start,
             CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.Start,
             MainAxisSize mainAxisSize = MainAxisSize.Max)
+            : base(
+                  children,
+                  Axis.Vertical,
+                  horizontalDirection,
+                  verticalDirection,
+                  mainAxisAlignment,
+                  crossAxisAlignment,
+                  mainAxisSize)
+        { }
+
+        public override bool Equals(object obj)
         {
-            this.children = children;
-            this.horizontalDirection = horizontalDirection;
-            this.verticalDirection = verticalDirection;
-            this.mainAxisAlignment = mainAxisAlignment;
-            this.crossAxisAlignment = crossAxisAlignment;
-            this.mainAxisSize = mainAxisSize;
+            return base.Equals(obj);
         }
 
-        public override Widget Build(BuildContext context)
-            => new SequenceLayout(
-                children,
-                Axis.Vertical,
-                horizontalDirection,
-                verticalDirection,
-                mainAxisAlignment,
-                crossAxisAlignment,
-                mainAxisSize);
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

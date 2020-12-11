@@ -37,58 +37,70 @@ namespace Flighter
             this.buildContext = buildContext;
             this.inheritedChildren = inheritedChildren;
 
-            if (widget is StatelessWidget slw)
+            switch (widget)
             {
-                if (inheritedElementNode != null)
-                    throw new Exception("StatelessWidget cannot inherit an element node!");
+                case StatelessWidget slw:
+                    {
+                        if (inheritedElementNode != null)
+                            throw new Exception("StatelessWidget cannot inherit an element node!");
 
-                var child = slw.Build(this.buildContext);
-                var childNode = AddChildWidget(child, this.buildContext);
+                        var child = slw.Build(this.buildContext);
+                        var childNode = AddChildWidget(child, this.buildContext);
 
-                size = childNode.size;
+                        size = childNode.size;
+                        break;
+                    }
+                case StatefulWidget sfw:
+                    {
+                        State state;
+                        if (inheritedElementNode != null)
+                        {
+                            if (inheritedChildren == null || inheritedChildren.Count != 1)
+                                throw new Exception("When StatefulWidgets inherit an element node, they must inherit exactly one child.");
+
+                            elementNode = inheritedElementNode;
+
+                            var stateElement = elementNode.element as StateElement
+                                ?? throw new Exception("StatefulWidget inherited nonStateElement!");
+                            stateElement.Builder = this;
+
+                            state = stateElement.state;
+                            // Manually call this to reflect the change to the builder.
+                            state.WidgetChanged();
+                            // This state has been around the block, and may have some scores to settle before rebuilding.
+                            state.InvokeUpdates();
+                        }
+                        else
+                        {
+                            state = sfw.CreateState();
+                            var stateElement = new StateElement(state);
+                            elementNode = new ElementNode(stateElement, null);
+
+                            stateElement.Builder = this;
+                            state.Init();
+                        }
+
+                        var child = state.Build(this.buildContext);
+                        var childNode = AddChildWidget(child, this.buildContext);
+
+                        size = childNode.size;
+                        break;
+                    }
+                case LayoutWidget lw:
+                    {
+                        if (lw is DisplayWidget dw)
+                        {
+                            elementNode = inheritedElementNode ?? new ElementNode(dw.CreateElement(), null);
+                        }
+                        else if (inheritedElementNode != null)
+                            throw new Exception("Pure layout widget cannot inherit element!");
+
+                        size = lw.Layout(buildContext, this).size;
+                        break;
+                    }
+                default:
+                    throw new Exception("Widget type \"" + widget.GetType() + "\" not handled!");
             }
-            else if (widget is StatefulWidget sfw)
-            {
-                State state;
-
-                if (inheritedElementNode != null)
-                {
-                    if (inheritedChildren == null || inheritedChildren.Count != 1)
-                        throw new Exception("When StatefulWidgets inherit an element node, they must inherit exactly one child.");
-
-                    elementNode = inheritedElementNode;
-
-                    state = (elementNode.element as StateElement)?.state
-                        ?? throw new Exception("StatefulWidget inherited nonStateElement!");
-
-                    state.SetInitWidget(sfw);
-                }
-                else
-                {
-                    state = sfw.CreateState();
-                    elementNode = new ElementNode(new StateElement(state, this), null);
-                    state.SetInitWidget(sfw);
-                    state.Init();
-                }
-
-                var child = state.Build(this.buildContext);
-                var childNode = AddChildWidget(child, this.buildContext);
-
-                size = childNode.size;
-            }
-            else if (widget is LayoutWidget lw)
-            {
-                if (lw is DisplayWidget dw)
-                {
-                    elementNode = inheritedElementNode ?? new ElementNode(dw.CreateElement(), null);
-                }
-                else if (inheritedElementNode != null)
-                    throw new Exception("Pure layout widget cannot inherit element!");
-
-                size = lw.Layout(buildContext, this).size;
-            }
-            else
-                throw new Exception("Widget type \"" + widget.GetType() + "\" not handled!");
 
             if (inheritedChildren != null)
             {
@@ -150,22 +162,24 @@ namespace Flighter
             if (inheritedChildren?.Count > 0)
             {
                 var toReplace = inheritedChildren.Dequeue();
+                
+                // TODO: Figure out how to re-enable this.
+                // Getting there! So the offsets update correctly, but with the drops, it seems the state isn't updating properly, but only with this enabled.
+                // On another note, some herristic anylis testing failed to show signifigant performance improvement... Need to see if this is even worth the effort...
 
-                if (toReplace.buildContext.Equals(context) && widget.IsSame(toReplace.widget))
-                {
-                    var b = new WidgetNodeBuilder(toReplace);
-                    children.Add(b);
-                    return b;
-                }
-
-                // TODO This is the same code as in WidgetNode.ReplaceChildren...
-                //      Should probably consolidate.
+                //if (toReplace.buildContext.Equals(context) && widget.Equals(toReplace.widget))
+                //{
+                //    var b = new WidgetNodeBuilder(toReplace);
+                //    children.Add(b);
+                //    return b;
+                //}
+                
                 if (widget.CanReplace(toReplace.widget))
                 {
                     childElementNode = toReplace.TakeElementNode();
                     orphans = toReplace.EmancipateChildren();
                 }
-
+                
                 toReplace.Dispose();
             }
 

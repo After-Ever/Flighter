@@ -15,6 +15,22 @@ namespace Flighter.Core
             this.constraints = constraints;
         }
 
+        public override bool Equals(object obj)
+        {
+            var constrained = obj as BoxConstrained;
+            return constrained != null &&
+                   EqualityComparer<Widget>.Default.Equals(child, constrained.child) &&
+                   EqualityComparer<BoxConstraints>.Default.Equals(constraints, constrained.constraints);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1456531856;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Widget>.Default.GetHashCode(child);
+            hashCode = hashCode * -1521134295 + EqualityComparer<BoxConstraints>.Default.GetHashCode(constraints);
+            return hashCode;
+        }
+
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             var childNode = node.AddChildWidget(child, new BuildContext(constraints));

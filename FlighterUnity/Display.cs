@@ -138,8 +138,7 @@ namespace FlighterUnity
                 widget,
                 new BuildContext(constraints),
                 rect,
-                componentProvider,
-                inputProvider?.GetInput() ?? NoInput.Input);
+                componentProvider);
 
             inputProvider?.AddRoot(root.Item1);
 

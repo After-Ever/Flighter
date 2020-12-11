@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Flighter.Core
 {
     public delegate void AnimationUpdate(float value);
-    public delegate Widget AnimationBuilder(float t);
+    public delegate Widget AnimationBuilder(float t, BuildContext context);
     public delegate float Curve(float f);
 
     public enum AnimationDirection
@@ -44,6 +44,10 @@ namespace Flighter.Core
     public class AnimationController
     {
         public event AnimationUpdate ValueChanged;
+        /// <summary>
+        /// Emitted whenever the animation reaches its target.
+        /// </summary>
+        public event Action AnimationComplete;
 
         public float Value => curve?.Invoke(progress) ?? progress;
 
@@ -140,7 +144,9 @@ namespace Flighter.Core
                 if (progress <= target)
                     targetReached = true;
             }
-            
+
+
+            bool emitUpdate = true;
             if (targetReached)
             {
                 switch(behavior)
@@ -152,12 +158,14 @@ namespace Flighter.Core
                     case AnimationBehavior.OnceAndReset:
                         Stop();
                         Reset();
-                        // Return here to avoid emiting another update (Reset emits one).
-                        return;
+                        // Reset emits an update.
+                        emitUpdate = false;
+                        break;
                     case AnimationBehavior.Loop:
                         Reset();
-                        // Return here to avoid emiting another update (Reset emits one).
-                        return;
+                        // Reset emits an update.
+                        emitUpdate = false;
+                        break;
                     case AnimationBehavior.BackAndForth:
                         progress = target;
                         Reverse();
@@ -169,7 +177,10 @@ namespace Flighter.Core
                 }
             }
 
-            EmitUpdate();
+            if (emitUpdate)
+                EmitUpdate();
+            if (targetReached)
+                AnimationComplete?.Invoke();
         }
 
         void EmitUpdate()
@@ -190,27 +201,54 @@ namespace Flighter.Core
         }
 
         public override State CreateState() => new AnimationState();
+
+        public override bool Equals(object obj)
+        {
+            var animation = obj as Animation;
+            return animation != null &&
+                   EqualityComparer<AnimationBuilder>.Default.Equals(builder, animation.builder) &&
+                   EqualityComparer<AnimationController>.Default.Equals(controller, animation.controller);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -639548479;
+            hashCode = hashCode * -1521134295 + EqualityComparer<AnimationBuilder>.Default.GetHashCode(builder);
+            hashCode = hashCode * -1521134295 + EqualityComparer<AnimationController>.Default.GetHashCode(controller);
+            return hashCode;
+        }
     }
 
     class AnimationState : State
     {
+        AnimationController subscribedController;
+
         public override void Init()
         {
-            var w = GetWidget<Animation>();
+            
+            subscribedController = GetWidget<Animation>().controller;
+            subscribedController.ValueChanged += OnValueChanged;
+        }
 
-            w.controller.ValueChanged += OnValueChanged;
+        public override void WidgetChanged()
+        {
+            if (subscribedController != null)
+                subscribedController.ValueChanged -= OnValueChanged;
+            Init();
         }
 
         public override void Dispose()
         {
-            GetWidget<Animation>().controller.ValueChanged -= OnValueChanged;
+            if (subscribedController != null)
+                subscribedController.ValueChanged -= OnValueChanged;
+            subscribedController = null;
         }
 
         public override Widget Build(BuildContext context)
         {
             var w = GetWidget<Animation>();
 
-            return w.builder(w.controller.Value);
+            return w.builder(w.controller.Value, context);
         }
 
         void OnValueChanged(float _)

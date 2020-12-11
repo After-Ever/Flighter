@@ -85,10 +85,10 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            if (float.IsPositiveInfinity(MaxOnMain(context)))
-                throw new Exception("Main axis cannot be unbounded.");
-
-            Dictionary<Widget, WidgetNodeBuilder> widgetNodes = new Dictionary<Widget, WidgetNodeBuilder>();
+            if (float.IsPositiveInfinity(MaxOnMain(context)) && mainAxisSize != MainAxisSize.Min)
+                throw new Exception("Main axis must be bound.");
+            
+            Dictionary<Widget, WidgetNodeBuilder> widgetNodes = new Dictionary<Widget, WidgetNodeBuilder>(new WidgetEquality());
 
             List<Widget> absoluteChildren = new List<Widget>();
             List<Flex> flexChildren = new List<Flex>();
@@ -128,8 +128,7 @@ namespace Flighter.Core
                 });
             }
 
-            float maxMainSize = MaxOnMain(context);
-            float freeSpaceOnMain = maxMainSize - totalMainSize;
+            float freeSpaceOnMain = RemainingOnMain(context, totalMainSize);
             float runningMainOffset = StartOffsetOnMain(freeSpaceOnMain, children.Count);
             float mainSpace = SpaceOnMain(freeSpaceOnMain, children.Count);
 
@@ -140,7 +139,7 @@ namespace Flighter.Core
                 runningMainOffset += SizeOnMain(n) + mainSpace;
             });
 
-            return new BuildResult(FinalSize(maxMainSize, crossAxisSize));
+            return new BuildResult(FinalSize(context, totalMainSize, crossAxisSize));
         }
 
         List<Widget> LayoutOrder()
@@ -155,15 +154,25 @@ namespace Flighter.Core
 
             return children;
         }
-
-        Size FinalSize(float mainMax, float crossTotal)
+        
+        /// <param name="context"></param>
+        /// <param name="mainTotal">Without added space.</param>
+        /// <param name="crossTotal"></param>
+        /// <returns></returns>
+        Size FinalSize(BuildContext context, float mainTotal, float crossTotal)
         {
             switch (axis)
             {
                 case Axis.Horizontal:
-                    return new Size(mainMax, crossTotal);
+                    if (mainAxisSize == MainAxisSize.Max)
+                        return new Size(context.constraints.maxWidth, crossTotal);
+                    else
+                        return new Size(mainTotal, crossTotal);
                 case Axis.Vertical:
-                    return new Size(crossTotal, mainMax);
+                    if (mainAxisSize == MainAxisSize.Max)
+                        return new Size(crossTotal, context.constraints.maxHeight);
+                    else
+                        return new Size(crossTotal, mainTotal);
                 default:
                     throw new NotSupportedException();
             }
@@ -286,12 +295,12 @@ namespace Flighter.Core
             {
                 case Axis.Horizontal:
                     return new BuildContext(new BoxConstraints(
-                        minWidth: context.constraints.minWidth,
-                        maxWidth: context.constraints.maxWidth));
-                case Axis.Vertical:
-                    return new BuildContext(new BoxConstraints(
                         minHeight: context.constraints.minHeight,
                         maxHeight: context.constraints.maxHeight));
+                case Axis.Vertical:
+                    return new BuildContext(new BoxConstraints(
+                        minWidth: context.constraints.minWidth,
+                        maxWidth: context.constraints.maxWidth));
                 default:
                     throw new NotSupportedException();
             }
@@ -381,6 +390,32 @@ namespace Flighter.Core
                 default:
                     throw new NotSupportedException();
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            var layout = obj as SequenceLayout;
+            return layout != null &&
+                   EqualityComparer<List<Widget>>.Default.Equals(children, layout.children) &&
+                   axis == layout.axis &&
+                   horizontalDirection == layout.horizontalDirection &&
+                   verticalDirection == layout.verticalDirection &&
+                   mainAxisAlignment == layout.mainAxisAlignment &&
+                   crossAxisAlignment == layout.crossAxisAlignment &&
+                   mainAxisSize == layout.mainAxisSize;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1852071883;
+            hashCode = hashCode * -1521134295 + EqualityComparer<List<Widget>>.Default.GetHashCode(children);
+            hashCode = hashCode * -1521134295 + axis.GetHashCode();
+            hashCode = hashCode * -1521134295 + horizontalDirection.GetHashCode();
+            hashCode = hashCode * -1521134295 + verticalDirection.GetHashCode();
+            hashCode = hashCode * -1521134295 + mainAxisAlignment.GetHashCode();
+            hashCode = hashCode * -1521134295 + crossAxisAlignment.GetHashCode();
+            hashCode = hashCode * -1521134295 + mainAxisSize.GetHashCode();
+            return hashCode;
         }
     }
 }

@@ -18,11 +18,28 @@ namespace Flighter
             this.offset = offset;
         }
 
-        public NodeLayout(float width, float height, float x = 0, float y = 0)
+        public override bool Equals(object obj)
         {
-            size = new Size(width, height);
-            offset = new Point(x, y);
+            if (!(obj is NodeLayout))
+            {
+                return false;
+            }
+
+            var layout = (NodeLayout)obj;
+            return EqualityComparer<Size>.Default.Equals(size, layout.size) &&
+                   EqualityComparer<Point>.Default.Equals(offset, layout.offset);
         }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1455214714;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Size>.Default.GetHashCode(size);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Point>.Default.GetHashCode(offset);
+            return hashCode;
+        }
+
+        public override string ToString()
+            => "Size: " + size + ", Offset:" + offset;
     }
     
     public class WidgetNode
@@ -42,6 +59,8 @@ namespace Flighter
         Point? cachedElementOffset;
         Point? cachedAbsoluteOffset;
 
+        bool rebuilding = false;
+
         /// <summary>
         /// Constructs a widget node.
         /// Adds this as a child of <paramref name="parent"/>.
@@ -53,7 +72,7 @@ namespace Flighter
         /// <param name="parent"></param>
         /// <param name="childrenBuilders"></param>
         /// <param name="elementNode"></param>
-        public WidgetNode(
+        internal WidgetNode(
             WidgetForest forest,
             Widget widget,
             BuildContext buildContext,
@@ -64,7 +83,7 @@ namespace Flighter
         {
             this.forest = forest ?? throw new ArgumentNullException("Must belong to a WidgetTree.");
             this.parent = parent;
-            parent?.children?.Add(this);
+            parent?.AddChildNode(this);
 
             if (parent != null && parent.forest != forest)
                 throw new Exception("Tree must be the same as parent tree.");
@@ -75,14 +94,12 @@ namespace Flighter
 
             if (elementNode != null)
             {
-                elementNode.element.UpdateWidgetNode(this);
-
-                var nearestAncestor = GetNearestAncestorElementNode();
-
                 // Connect first so we don't connect to ourself!
                 // If there is no ancestor, that's fine! We'll just be a root.
                 GetNearestAncestorElementNode()?.ConnectNode(elementNode);
                 this.elementNode = elementNode;
+                
+                elementNode.Inflate(this);
             }
 
             childrenBuilders.ConvertAll((c) => c.Build(this));
@@ -95,20 +112,21 @@ namespace Flighter
         /// </summary>
         /// <param name="parent"></param>
         /// <param name="layout">Optionally provide a new layout value for the widget.</param>
-        public void UpdateConnection(WidgetNode parent, NodeLayout? layout = null)
+        internal void UpdateConnection(WidgetNode parent, NodeLayout? layout = null)
         {
             if (this.parent != null)
                 throw new Exception("Node must not have parent to update the connection.");
 
+            // TODO: Is this needed here?
             ClearCachedOffsets();
 
             this.parent = parent ?? throw new ArgumentNullException();
-            parent.children.Add(this);
+            parent.AddChildNode(this);
             if (parent.forest != forest)
                 throw new Exception("Tree must be the same as the parent tree.");
-            
-            if (layout != null)
-                this.layout = layout.Value;
+
+            // Update the layout value, if provided.
+            this.layout = layout ?? this.layout;
 
             var elementParent = parent.GetNearestAncestorElementNode();
             GetElementSurface().ForEach((e) => elementParent.ConnectNode(e));
@@ -117,65 +135,39 @@ namespace Flighter
         }
 
         /// <summary>
-        /// Use <paramref name="newKids"/> to replace the current set of children,
-        /// if there are any. The same replacement rules will apply as when inheriting
-        /// children.
-        /// Old children will be disposed if not re-adopted.
+        /// Rebuild this widget, creating a new WidgetNode.
+        /// The new node will replace this one in the tree.
         /// </summary>
-        /// <param name="newKids"></param>
-        public void ReplaceChildren(List<(Widget, BuildContext)> newKids)
+        internal void Rebuild()
         {
-            var freeChildren = EmancipateChildren();
+            // The root widget may have a rebuild triggered if a child changed size,
+            // but the root should never be rebuilt.
+            if (widget is RootWidget)
+                return;
 
-            newKids.ForEach(
-                (c) =>
-                {
-                    (var widget, var context) = c;
+            // Local var because Emancipate sets this.parent null.
+            var parent = this.parent ?? throw new Exception("Cannot rebuild root node!");
+            // TODO: This feels a bit sloppy... We are just marking this and trusting other places to respect it...
+            rebuilding = true;
+            var b = new WidgetNodeBuilder(
+                forest,
+                widget,
+                buildContext,
+                TakeElementNode(),
+                EmancipateChildren());
+            b.Offset = Offset;
+            var node = b.Build(parent);
 
-                    ElementNode nodeToInherit = null;
-                    Queue<WidgetNode> childrenToInherit = null;
-
-                    if (freeChildren?.Count > 0)
-                    {
-                        var toReplace = freeChildren.Dequeue();
-                        
-                        if (context.Equals(toReplace.buildContext) && widget.IsSame(toReplace.widget))
-                        {
-                            toReplace.UpdateConnection(this);
-                            return;
-                        }
-
-                        if (widget.CanReplace(toReplace.widget))
-                        {
-                            nodeToInherit = toReplace.TakeElementNode();
-                            childrenToInherit = toReplace.EmancipateChildren();
-                        }
-
-                        toReplace.Dispose();
-                    }
-
-                    new WidgetNodeBuilder(
-                        forest,
-                        widget, 
-                        context,
-                        nodeToInherit,
-                        childrenToInherit
-                      ).Build(this);
-                });
-
-            // Clear any remaining emancipated children.
-            if (freeChildren != null)
-            {
-                foreach (var c in freeChildren)
-                    c.Dispose();
-            }
+            // If the size is different, need to notify our parent incase they need to rebuild.
+            if (!Size.Equals(node.Size))
+                node.parent?.ChildResized(node);
         }
         
         /// <summary>
         /// Remove this from its parent.
         /// Also disconnects any attached elements from the element tree.
         /// </summary>
-        public void Emancipate()
+        internal void Emancipate()
         {
             parent?.children?.Remove(this);
             parent = null;
@@ -186,7 +178,7 @@ namespace Flighter
             forest.WidgetRemoved(widget);
         }
 
-        public Queue<WidgetNode> EmancipateChildren()
+        internal Queue<WidgetNode> EmancipateChildren()
         {
             // Take out all the children.
             Queue<WidgetNode> emancipatedChildren = new Queue<WidgetNode>(children);
@@ -217,7 +209,7 @@ namespace Flighter
         /// This node's elements will be deconstructed, but children will be left alone.
         /// </summary>
         /// <returns></returns>
-        public Queue<WidgetNode> EmancipateChildrenAndDispose()
+        internal Queue<WidgetNode> EmancipateChildrenAndDispose()
         {
             // Emancipate the children...
             var emancipatedChildren = EmancipateChildren();
@@ -227,16 +219,15 @@ namespace Flighter
             return emancipatedChildren;
         }
         
-        public ElementNode TakeElementNode()
+        internal ElementNode TakeElementNode()
         {
             var e = elementNode;
             elementNode = null;
             e?.Emancipate();
-            e?.element?.UpdateWidgetNode(null);
             return e;
         }
-        
-        public Point GetElementOffset()
+
+        internal Point GetElementOffset()
         {
             if (cachedElementOffset != null) return cachedElementOffset.Value;
 
@@ -249,7 +240,7 @@ namespace Flighter
             return cachedElementOffset.Value;
         }
 
-        public Point GetAbsoluteOffset()
+        internal Point GetAbsoluteOffset()
         {
             if (cachedAbsoluteOffset != null) return cachedAbsoluteOffset.Value;
 
@@ -322,32 +313,64 @@ namespace Flighter
                                 && i.onlyWhileHovering)
             .ConvertAll((w) => w as InputWidget);
 
+        void AddChildNode(WidgetNode childNode)
+        {
+            var toReplace = children.FindIndex((w) => w.rebuilding);
+            if (toReplace != -1)
+            {
+                children.RemoveAt(toReplace);
+                children.Insert(toReplace, childNode);
+            }
+            else
+                children.Add(childNode);
+        }
+
+        void ChildResized(WidgetNode changedNode)
+        {
+            if (widget is StatefulWidget || widget is StatelessWidget)
+            {
+                if (changedNode != children[0])
+                    throw new Exception("Changed node is not the child node!");
+
+                layout.size = changedNode.Size;
+                parent?.ChildResized(this);
+            }
+            else
+                Rebuild();
+        }
+
         /// <summary>
         /// Get all element nodes that would attach to an ancestor.
         /// </summary>
         /// <returns></returns>
-        List<ElementNode> GetElementSurface()
+        List<ElementNode> GetElementSurface(List<ElementNode> baseList = null)
         {
+            baseList = baseList ?? new List<ElementNode>();
+
             if (elementNode != null)
-                return new List<ElementNode> { elementNode };
+                baseList.Add(elementNode);
+            else
+                children.ForEach((c) => c.GetElementSurface(baseList));
 
-            var r = new List<ElementNode>();
-            children.ForEach((c) => r.AddRange(c.GetElementSurface()));
-
-            return r;
+            return baseList;
         }
-        
+
         /// <summary>
         /// Find the nearest ancestor with an attached
         /// element node. Returns attached element node if this has one.
         /// </summary>
         /// <returns>The found node if one exists, null otherwise.</returns>
         ElementNode GetNearestAncestorElementNode()
-        {
-            if (elementNode != null)
-                return elementNode;
+            => GetFirstAncestorWhere(
+                includeSelf: true,
+                condition: (w) => w.elementNode != null)?.elementNode;
 
-            return parent?.GetNearestAncestorElementNode();
+        WidgetNode GetFirstAncestorWhere(WidgetNodeCondition condition, bool includeSelf = false)
+        {
+            if (includeSelf && condition(this))
+                return this;
+
+            return parent?.GetFirstAncestorWhere(condition, true);
         }
 
         void ClearCachedOffsets()
@@ -367,7 +390,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += widget.GetType() + "\n";
+            r += widget.GetType() + ", layout: " + layout + "\n";
 
             foreach (var c in children)
                 r += c.Print(indent + 1);

@@ -18,6 +18,18 @@ namespace Flighter.Core
 
         public override Element CreateElement() => new ClipElement();
 
+        public override bool Equals(object obj)
+        {
+            var clip = obj as Clip;
+            return clip != null &&
+                   EqualityComparer<Widget>.Default.Equals(child, clip.child);
+        }
+
+        public override int GetHashCode()
+        {
+            return -1589309467 + EqualityComparer<Widget>.Default.GetHashCode(child);
+        }
+
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             var childNode = node.AddChildWidget(child, context);
@@ -27,6 +39,8 @@ namespace Flighter.Core
 
     class ClipElement : Element
     {
+        public override string Name => "Clip";
+
         protected override void _Init()
         {
             var clipComponent = componentProvider.CreateComponent<ClipComponent>();

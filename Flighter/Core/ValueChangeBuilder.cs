@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Flighter.Core
 {
@@ -34,6 +35,22 @@ namespace Flighter.Core
         }
 
         public override State CreateState() => new ValueChangeBuliderState<T>();
+
+        public override bool Equals(object obj)
+        {
+            var builder = obj as ValueChangeBuilder<T>;
+            return builder != null &&
+                   EqualityComparer<ValueBuilder<T>>.Default.Equals(this.builder, builder.builder) &&
+                   EqualityComparer<ValueChangeNotifier<T>>.Default.Equals(notifier, builder.notifier);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -746545925;
+            hashCode = hashCode * -1521134295 + EqualityComparer<ValueBuilder<T>>.Default.GetHashCode(builder);
+            hashCode = hashCode * -1521134295 + EqualityComparer<ValueChangeNotifier<T>>.Default.GetHashCode(notifier);
+            return hashCode;
+        }
     }
 
     class ValueChangeBuliderState<T> : State

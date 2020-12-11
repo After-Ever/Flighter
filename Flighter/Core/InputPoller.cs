@@ -21,9 +21,27 @@ namespace Flighter.Core
             this.callback = callback;
         }
 
+        public override bool Equals(object obj)
+        {
+            var poller = obj as InputPoller;
+            return poller != null &&
+                   base.Equals(obj) &&
+                   EqualityComparer<InputUpdateCallback>.Default.Equals(callback, poller.callback);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1390279012;
+            hashCode = hashCode * -1521134295 + base.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<InputUpdateCallback>.Default.GetHashCode(callback);
+            return hashCode;
+        }
+
         public override void OnUpdate(IInputPoller inputPoller)
         {
             callback?.Invoke(inputPoller);
         }
+
+
     }
 }

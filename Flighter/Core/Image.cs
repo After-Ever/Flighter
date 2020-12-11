@@ -101,6 +101,26 @@ namespace Flighter.Core
                 ? new Clip(widget) as Widget
                 : widget;
         }
+
+        public override bool Equals(object obj)
+        {
+            var image = obj as Image;
+            return image != null &&
+                   EqualityComparer<IImageHandle>.Default.Equals(imageHandle, image.imageHandle) &&
+                   EqualityComparer<Color?>.Default.Equals(color, image.color) &&
+                   fit == image.fit &&
+                   EqualityComparer<Alignment>.Default.Equals(alignment, image.alignment);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1833654010;
+            hashCode = hashCode * -1521134295 + EqualityComparer<IImageHandle>.Default.GetHashCode(imageHandle);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Color?>.Default.GetHashCode(color);
+            hashCode = hashCode * -1521134295 + fit.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<Alignment>.Default.GetHashCode(alignment);
+            return hashCode;
+        }
     }
 
     class _Image : DisplayWidget
@@ -113,6 +133,18 @@ namespace Flighter.Core
         }
 
         public override Element CreateElement() => new _ImageElement();
+
+        public override bool Equals(object obj)
+        {
+            var image = obj as _Image;
+            return image != null &&
+                   EqualityComparer<Image>.Default.Equals(this.image, image.image);
+        }
+
+        public override int GetHashCode()
+        {
+            return -1125144822 + EqualityComparer<Image>.Default.GetHashCode(image);
+        }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {

@@ -35,5 +35,17 @@ namespace Flighter.Input
         public virtual void OnMouseEvent(MouseEventFilter filter, IInputPoller inputPoller) { }
 
         public virtual void OnUpdate(IInputPoller inputPoller) { }
+
+        public override bool Equals(object obj) => false;
+
+        public override int GetHashCode()
+        {
+            var hashCode = 387291533;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Widget>.Default.GetHashCode(child);
+            hashCode = hashCode * -1521134295 + EqualityComparer<IEnumerable<KeyEventFilter>>.Default.GetHashCode(KeyEventsToReceive);
+            hashCode = hashCode * -1521134295 + EqualityComparer<IEnumerable<MouseEventFilter>>.Default.GetHashCode(MouseEventsToReceive);
+            hashCode = hashCode * -1521134295 + onlyWhileHovering.GetHashCode();
+            return hashCode;
+        }
     }
 }

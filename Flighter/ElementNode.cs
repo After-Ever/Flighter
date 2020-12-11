@@ -10,6 +10,9 @@ namespace Flighter
         ElementNode parent;
         List<ElementNode> children = new List<ElementNode>();
 
+        WidgetNode currentWidgetNode;
+        bool changedWidgetNode = false;
+
         ComponentProvider _componentProvider;
         ComponentProvider ComponentProvider
         {
@@ -23,14 +26,10 @@ namespace Flighter
             }
         }
 
-        /// <summary>
-        /// This node needs an update.
-        /// </summary>
-        public bool IsDirty { get; private set; } = true;
-        /// <summary>
-        /// This node has descendants which need updates.
-        /// </summary>
-        public bool HasDirtyChild { get; private set; } = false;
+        bool needsRebuild = false;
+        int childrenNeedingRebuild = 0;
+
+        bool TreeNeedsRebuild => needsRebuild || childrenNeedingRebuild > 0;
 
         public ElementNode(Element element, ElementNode parent, ComponentProvider componentProvider = null)
         {
@@ -38,76 +37,83 @@ namespace Flighter
             this.parent = parent;
             this._componentProvider = componentProvider;
 
-            this.element.SetDirtyCallback(() => SetDirty());
+            this.element.SetElementNode(this);
+        }
+
+        public void DoRebuilds()
+        {
+            if (needsRebuild)
+            {
+                // Rebuilding should call Infalte, setting this as no longer needing a rebuild,
+                // and updating the parent.
+                currentWidgetNode.Rebuild();
+            }
+
+            while (childrenNeedingRebuild > 0)
+            {
+                children.Find((e) => e.TreeNeedsRebuild).DoRebuilds();
+            }
         }
 
         public void Update()
         {
-            if (!IsDirty && !HasDirtyChild) return;
-
-            if (IsDirty)
+            if (changedWidgetNode)
             {
-                if (!element.IsConnected)
-                {
-                    InitOrConnectElement();
-                }
-
-                // Set this first incase the elements update sets this dirty.
-                IsDirty = false;
-                element.Update();
+                changedWidgetNode = false;
+                element.UpdateWidgetNode(currentWidgetNode);
             }
-            if (HasDirtyChild)
-            {
-                var dirtyChildren = GetDirtyChildren();
 
-                foreach (var c in dirtyChildren)
-                {
-                    c.Update();
-                }
+            InitOrConnectElement();
 
-                UpdateChildDirtyStatus();
-            }
+            element.Update();
+            children.ForEach((e) => e.Update());
         }
 
-        public ElementNode AddChild(Element element)
+        /// <summary>
+        /// Called when the connected WidgetNode changes.
+        /// This method does not trigger any updates on the underlying Element.
+        /// <see cref="Update()"/> Triggers the Element updates.
+        /// </summary>
+        /// <param name="widgetNode"></param>
+        internal void Inflate(WidgetNode widgetNode)
         {
-            if (element.IsInitialized)
-                throw new Exception("Cannot add an initialized element!");
+            changedWidgetNode = changedWidgetNode || widgetNode != currentWidgetNode;
+            currentWidgetNode = widgetNode;
 
-            // Just pass the componentProvider field (instead of the property)
-            // because we don't care if it's null here; it can always search later.
-            var node = new ElementNode(element, this, _componentProvider);
-            children.Add(node);
+            var treeNeededRebuild = TreeNeedsRebuild;
+            needsRebuild = false;
 
-            SetChildDirty();
-
-            return node;
+            if (TreeNeedsRebuild != treeNeededRebuild)
+                parent?.ChildRebuilt();
         }
 
-        public void ConnectNode(ElementNode node)
+        internal void ConnectNode(ElementNode node)
         {
             if (node.parent != null)
                 throw new Exception("Cannot add a node with a parent.");
 
             children.Add(node);
             node.parent = this;
-            
-            SetChildDirty();
+
+            if (node.TreeNeedsRebuild)
+                ChildRequestedRebuild();
         }
 
-        public void SetDirty()
+        internal void RequestRebuild()
         {
-            if (IsDirty) return;
+            if (needsRebuild) return;
 
-            IsDirty = true;
-            parent?.SetChildDirty();
+            var treeNeededRebuild = TreeNeedsRebuild;
+            needsRebuild = true;
+
+            if (!treeNeededRebuild)
+                parent?.ChildRequestedRebuild();
         }
 
         /// <summary>
         /// Remove this from its parent.
-        /// Sets this as dirty.
         /// </summary>
-        public void Emancipate()
+        internal void Emancipate()
         {
             if (parent == null)
                 return;
@@ -115,10 +121,10 @@ namespace Flighter
             if (!parent.children.Remove(this))
                 throw new Exception("Node not in parent's child list.");
 
-            parent.UpdateChildDirtyStatus();
+            if (TreeNeedsRebuild)
+                parent.ChildRebuilt();
             
             parent = null;
-            SetDirty();
 
             element.Disconnect();
         }
@@ -136,44 +142,29 @@ namespace Flighter
             element.TearDown();
         }
 
-        void SetClean()
+        void ChildRequestedRebuild()
         {
-            IsDirty = false;
-            HasDirtyChild = false;
+            bool treeNeededRebuild = TreeNeedsRebuild;
+            childrenNeedingRebuild++;
+
+            if (!treeNeededRebuild)
+                parent?.ChildRequestedRebuild();
         }
 
-        void SetChildDirty()
+        void ChildRebuilt()
         {
-            if (HasDirtyChild) return;
-            HasDirtyChild = true;
-            if (IsDirty) return;
 
-            parent?.SetChildDirty();
+            bool treeNeededRebuild = TreeNeedsRebuild;
+            childrenNeedingRebuild--;
+
+            if (TreeNeedsRebuild != treeNeededRebuild)
+                parent?.ChildRebuilt();
         }
 
-        /// <summary>
-        /// Checks the status of <see cref="HasDirtyChild"/>.
-        /// </summary>
-        void UpdateChildDirtyStatus()
-        {
-            var newStatus = children.Exists((n) => n.IsDirty || n.HasDirtyChild);
-
-            if (newStatus == HasDirtyChild)
-                return;
-
-            HasDirtyChild = newStatus;
-            if (HasDirtyChild)
-                parent?.SetChildDirty();
-        }
-
-        List<ElementNode> GetDirtyChildren()
-        {
-            return children.FindAll((n) => n.IsDirty || n.HasDirtyChild);
-        }
-
+        // TODO: Come up with a better name...
         protected virtual void InitOrConnectElement()
         {
-            if (element.IsInitialized) return;
+            if (element.IsInitialized && element.IsConnected) return;
             if (parent == null || !parent.element.IsInitialized)
                 throw new Exception("Cannot initialize an element without an initialized parent.");
 
@@ -196,7 +187,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += element.Name + "\n";
+            r += element.Name + (needsRebuild? "*" : "") + childrenNeedingRebuild + "\n";
 
             foreach (var c in children)
                 r += c.Print(indent + 1);

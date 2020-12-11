@@ -19,7 +19,7 @@ namespace FlighterTest
 
             Assert.IsFalse(called);
 
-            s.Updated();
+            s.InvokeUpdates();
 
             Assert.IsTrue(called);
         }
@@ -38,10 +38,10 @@ namespace FlighterTest
             };
 
             s.SetState(ss);
-            s.Updated();
+            s.InvokeUpdates();
 
             Assert.AreEqual(1, timesRun);
-            s.Updated();
+            s.InvokeUpdates();
             Assert.AreEqual(2, timesRun);
         }
 

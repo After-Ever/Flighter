@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Flighter
 {
-    public class StateElement : Element
+    internal class StateElement : Element
     {
         public override string Name => "State";
 
@@ -14,7 +14,7 @@ namespace Flighter
         /// Provided so the state can perform an initial build.
         /// Otherwise, the state would have no way to access the widget.
         /// </summary>
-        public readonly WidgetNodeBuilder builder;
+        public WidgetNodeBuilder Builder;
 
         /// <summary>
         /// 
@@ -22,41 +22,23 @@ namespace Flighter
         /// <param name="state"></param>
         /// <param name="builder">Only needed when the state is being
         /// created from a <see cref="WidgetNodeBuilder"/></param>
-        public StateElement(State state, WidgetNodeBuilder builder = null)
+        public StateElement(State state)
         {
             this.state = state ?? throw new ArgumentNullException();
-            this.builder = builder;
             this.state.SetStateElement(this);
         }
 
-        public void StateSet()
-        {
-            setDirty?.Invoke();
-        }
+        internal void StateSet() => RequestRebuild();
         
-        protected override void _Init()
+        // The state is initiated when built in WidgetNodeBuilder, so nothing to do here!
+        protected override void _Init() { }
+        
+        protected override void _Update() { }
+
+        protected override void _WidgetNodeChanged(WidgetNode oldNode)
         {
-            state.Init();
-        }
-
-        protected override void _Update()
-        {
-            // Called when the state should be rebuilt.
-
-            // First we let State carry out updates.
-            state.Updated();
-
-            // Then rebuild its widget.
-            var context = widgetNode.buildContext;
-            var widget = state.Build(context);
-
-            widgetNode.ReplaceChildren(new List<(Widget, BuildContext)> {
-                (widget, context)
-            });
-        }
-
-        protected override void _WidgetNodeChanged()
-        {
+            // Once the widget node has been changed by an ElementNode it is safe to forget the builder.
+            Builder = null;
             state.WidgetChanged();
         }
 

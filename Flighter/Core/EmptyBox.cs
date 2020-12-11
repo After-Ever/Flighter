@@ -13,5 +13,9 @@ namespace Flighter.Core
         {
             return new BuildResult(context.constraints.MaxSize);
         }
+
+        public override bool Equals(object obj) => obj is EmptyBox;
+
+        public override int GetHashCode() => 0;
     }
 }

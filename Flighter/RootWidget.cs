@@ -11,8 +11,7 @@ namespace Flighter
             Widget child,
             BuildContext initialBuildContext,
             IDisplayRect parentRect,
-            ComponentProvider componentProvider,
-            Input.Input input)
+            ComponentProvider componentProvider)
         {
             var rootWidget = new RootWidget(child);
             var rootElementNode = new RootElementNode(parentRect, componentProvider);
@@ -40,8 +39,11 @@ namespace Flighter
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
+            if (context.constraints.IsUnconstrained)
+                throw new Exception("Root constraints much be constrained.");
+
             var childNode = node.AddChildWidget(child, context);
-            return new BuildResult(childNode.size);
+            return new BuildResult(context.constraints.MaxSize);
         }
     }
 }

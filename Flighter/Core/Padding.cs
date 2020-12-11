@@ -48,12 +48,20 @@ namespace Flighter.Core
             this.edgetInsets = edgetInsets;
         }
 
-        public override bool IsSame(Widget other)
+        public override bool Equals(object obj)
         {
-            return 
-                other is Padding p && 
-                p.child == child && 
-                p.edgetInsets.Equals(edgetInsets);
+            var padding = obj as Padding;
+            return padding != null &&
+                   EqualityComparer<Widget>.Default.Equals(child, padding.child) &&
+                   EqualityComparer<EdgetInsets>.Default.Equals(edgetInsets, padding.edgetInsets);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -867541505;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Widget>.Default.GetHashCode(child);
+            hashCode = hashCode * -1521134295 + EqualityComparer<EdgetInsets>.Default.GetHashCode(edgetInsets);
+            return hashCode;
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)

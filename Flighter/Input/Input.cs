@@ -53,8 +53,6 @@ namespace Flighter.Input
 
         public void DistributeUpdates(IEnumerable<IInputSubscriber> subscribers)
         {
-            // TODO: Need to give updates to widgets that don't care about mouse hovering...
-            //       Don't currently have a good way to gather those.
             foreach (var s in subscribers)
             {
                 if (s.KeyEventsToReceive != null)
