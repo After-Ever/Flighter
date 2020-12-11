@@ -167,12 +167,12 @@ namespace Flighter
                 // Getting there! So the offsets update correctly, but with the drops, it seems the state isn't updating properly, but only with this enabled.
                 // On another note, some herristic anylis testing failed to show signifigant performance improvement... Need to see if this is even worth the effort...
 
-                if (toReplace.buildContext.Equals(context) && widget.Equals(toReplace.widget))
-                {
-                    var b = new WidgetNodeBuilder(toReplace);
-                    children.Add(b);
-                    return b;
-                }
+                //if (toReplace.buildContext.Equals(context) && widget.Equals(toReplace.widget))
+                //{
+                //    var b = new WidgetNodeBuilder(toReplace);
+                //    children.Add(b);
+                //    return b;
+                //}
                 
                 if (widget.CanReplace(toReplace.widget))
                 {

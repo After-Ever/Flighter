@@ -31,7 +31,9 @@ namespace Flighter.Core
         {
             this.value = value;
             this.builder = builder;
-            // TODO: Put restrictions on the value of this.
+
+            if (ratioPerSecond <= 0 || ratioPerSecond >= 1)
+                throw new ArgumentOutOfRangeException("ratioPerSecond");
             this.ratioPerSecond = ratioPerSecond;
             this.tickProvider = tickProvider;
             this.lerp = lerp;
