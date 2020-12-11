@@ -87,6 +87,26 @@ namespace Flighter
         {
             return "Width: " + width + ", Height:" + height;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Size))
+            {
+                return false;
+            }
+
+            var size = (Size)obj;
+            return width == size.width &&
+                   height == size.height;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1263118649;
+            hashCode = hashCode * -1521134295 + width.GetHashCode();
+            hashCode = hashCode * -1521134295 + height.GetHashCode();
+            return hashCode;
+        }
     }
 
     public struct BoxConstraints
@@ -126,7 +146,7 @@ namespace Flighter
 
             CheckConstraints();
         }
-        
+
         /// <summary>
         /// The biggest size which satisfies the constrainst, if they are bounded.
         /// If a dimension is unbounded, the min will be returned.
@@ -169,6 +189,36 @@ namespace Flighter
                 minWidth < 0 || maxWidth < minWidth)
                 throw new BoxConstrainstException();
         }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is BoxConstraints))
+            {
+                return false;
+            }
+
+            var constraints = (BoxConstraints)obj;
+            return minHeight == constraints.minHeight &&
+                   maxHeight == constraints.maxHeight &&
+                   minWidth == constraints.minWidth &&
+                   maxWidth == constraints.maxWidth;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 467709450;
+            hashCode = hashCode * -1521134295 + minHeight.GetHashCode();
+            hashCode = hashCode * -1521134295 + maxHeight.GetHashCode();
+            hashCode = hashCode * -1521134295 + minWidth.GetHashCode();
+            hashCode = hashCode * -1521134295 + maxWidth.GetHashCode();
+            return hashCode;
+        }
+
+        public override string ToString()
+            => "Min width:" + minWidth
+            + ", Max width:" + maxWidth
+            + ", Min height:" + minHeight
+            + ", Max height:" + maxHeight;
     }
 
     public class BoxConstrainstException : Exception { }

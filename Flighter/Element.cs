@@ -14,12 +14,6 @@ namespace Flighter
         }
 
         /// <summary>
-        /// To be called when the element would like an update. Should
-        /// not be called manually... Probably...
-        /// </summary>
-        protected Action setDirty;
-
-        /// <summary>
         /// Whether the Element has been initialized.
         /// </summary>
         public bool IsInitialized { get; private set; } = false;
@@ -42,19 +36,21 @@ namespace Flighter
 
         protected ComponentProvider componentProvider;
 
+        ElementNode elementNode;
+
         // The following are for the subclass implementations.
 
         protected abstract void _Init();
         protected abstract void _Update();
         protected virtual void _TearDown() { }
-        protected virtual void _WidgetNodeChanged() { }
+        protected virtual void _WidgetNodeChanged(WidgetNode oldNode) { }
 
         /// <summary>
         /// Instrument the element. Element not guaranteed to display correctly until
         /// after <see cref="Update()"/> is called.
         /// </summary>
         /// <param name="rectTransform"></param>
-        public void Init(IDisplayRect displayRect, ComponentProvider componentProvider)
+        internal void Init(IDisplayRect displayRect, ComponentProvider componentProvider)
         {
             if (IsInitialized) return;
 
@@ -68,7 +64,7 @@ namespace Flighter
             IsConnected = true;
         }
 
-        public void Disconnect()
+        internal void Disconnect()
         {
             IsConnected = false;
             // We don't actually disconnect the parent rect, as
@@ -76,7 +72,7 @@ namespace Flighter
             // been reconnected, or be torn down.
         }
 
-        public void Reconnect(IDisplayRect parentRect)
+        internal void Reconnect(IDisplayRect parentRect)
         {
             if (!IsInitialized)
                 throw new ElementUninitializedException();
@@ -87,10 +83,11 @@ namespace Flighter
             IsConnected = true;
         }
 
-        public void UpdateWidgetNode(WidgetNode newWidgetNode)
+        internal void UpdateWidgetNode(WidgetNode newWidgetNode)
         {
+            var oldNode = widgetNode;
             widgetNode = newWidgetNode;
-            _WidgetNodeChanged();
+            _WidgetNodeChanged(oldNode);
         }
         
         /// <summary>
@@ -99,7 +96,7 @@ namespace Flighter
         /// for instance, if a parent size or position changes, or the base widget changes.
         /// Must not be called before <see cref="Init(RectTransform)"/>.
         /// </summary>
-        public void Update()
+        internal void Update()
         {
             if (!IsInitialized)
                 throw new ElementUninitializedException("Element must be initialized before calling update.");
@@ -108,8 +105,9 @@ namespace Flighter
             _Update();
         }
 
-        public virtual void TearDown()
+        internal virtual void TearDown()
         {
+            // TODO Probably don't need to tear down if not initialized?
             _TearDown();
             DisplayRect?.TearDown();
 
@@ -119,9 +117,14 @@ namespace Flighter
             widgetNode = null;
         }
 
-        public void SetDirtyCallback(Action setDirty)
+        internal void SetElementNode(ElementNode node)
         {
-            this.setDirty = setDirty;
+            elementNode = node;
+        }
+
+        protected void RequestRebuild()
+        {
+            elementNode?.RequestRebuild();
         }
 
         void SizeAndPositionRect()

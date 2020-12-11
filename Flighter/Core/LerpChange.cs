@@ -31,13 +31,38 @@ namespace Flighter.Core
         {
             this.value = value;
             this.builder = builder;
+            // TODO: Put restrictions on the value of this.
             this.ratioPerSecond = ratioPerSecond;
             this.tickProvider = tickProvider;
             this.lerp = lerp;
             this.stopCondition = stopCondition;
         }
-
+        
         public override State CreateState() => new LerpChangeSatate<T>();
+
+        public override bool Equals(object obj)
+        {
+            var change = obj as LerpChange<T>;
+            return change != null &&
+                   EqualityComparer<T>.Default.Equals(value, change.value) &&
+                   EqualityComparer<ValueBuilder<T>>.Default.Equals(builder, change.builder) &&
+                   EqualityComparer<TickProvider>.Default.Equals(tickProvider, change.tickProvider) &&
+                   ratioPerSecond == change.ratioPerSecond &&
+                   EqualityComparer<Lerp<T>>.Default.Equals(lerp, change.lerp) &&
+                   EqualityComparer<StopCondition<T>>.Default.Equals(stopCondition, change.stopCondition);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1708436396;
+            hashCode = hashCode * -1521134295 + EqualityComparer<T>.Default.GetHashCode(value);
+            hashCode = hashCode * -1521134295 + EqualityComparer<ValueBuilder<T>>.Default.GetHashCode(builder);
+            hashCode = hashCode * -1521134295 + EqualityComparer<TickProvider>.Default.GetHashCode(tickProvider);
+            hashCode = hashCode * -1521134295 + ratioPerSecond.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<Lerp<T>>.Default.GetHashCode(lerp);
+            hashCode = hashCode * -1521134295 + EqualityComparer<StopCondition<T>>.Default.GetHashCode(stopCondition);
+            return hashCode;
+        }
     }
 
     class LerpChangeSatate<T> : State
@@ -78,13 +103,12 @@ namespace Flighter.Core
         {
             if (!isLerping)
                 return;
-
-            var w = GetWidget<LerpChange<T>>();
-
             
             SetState(() =>
             {
-                curValue = w.lerp(curValue, w.value, 1 - (float)Math.Pow(w.ratioPerSecond, delta));
+                var w = GetWidget<LerpChange<T>>();
+
+                curValue = w.lerp(curValue, w.value, 1 - (float)Math.Pow(1 - w.ratioPerSecond, delta));
 
                 if (w.stopCondition?.Invoke(curValue, w.value) ?? false)
                     isLerping = false;

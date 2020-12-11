@@ -17,5 +17,21 @@ namespace Flighter
         {
             this.size = size;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is BuildResult))
+            {
+                return false;
+            }
+
+            var result = (BuildResult)obj;
+            return EqualityComparer<Size>.Default.Equals(size, result.size);
+        }
+
+        public override int GetHashCode()
+        {
+            return -1803920452 + EqualityComparer<Size>.Default.GetHashCode(size);
+        }
     }
 }

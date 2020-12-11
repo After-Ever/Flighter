@@ -15,9 +15,20 @@ namespace Flighter.Core
             this.offset = offset;
         }
 
-        public override bool IsSame(Widget other)
+        public override bool Equals(object obj)
         {
-            return base.IsSame(other);
+            var positioned = obj as Positioned;
+            return positioned != null &&
+                   EqualityComparer<Widget>.Default.Equals(child, positioned.child) &&
+                   EqualityComparer<Point>.Default.Equals(offset, positioned.offset);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1240603729;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Widget>.Default.GetHashCode(child);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Point>.Default.GetHashCode(offset);
+            return hashCode;
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)

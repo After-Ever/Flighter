@@ -23,12 +23,20 @@ namespace Flighter.Core
             return child;
         }
 
-        public override bool IsSame(Widget other)
+        public override bool Equals(object obj)
         {
-            return
-                other is Flex f &&
-                f.flexValue == flexValue &&
-                f.child.IsSame(child);
+            var flex = obj as Flex;
+            return flex != null &&
+                   EqualityComparer<Widget>.Default.Equals(child, flex.child) &&
+                   flexValue == flex.flexValue;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1614855968;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Widget>.Default.GetHashCode(child);
+            hashCode = hashCode * -1521134295 + flexValue.GetHashCode();
+            return hashCode;
         }
     }
 }

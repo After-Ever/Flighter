@@ -21,7 +21,7 @@ namespace Flighter
 
         bool isDirty = false;
 
-        public void SetStateElement(StateElement stateElement)
+        internal void SetStateElement(StateElement stateElement)
         {
             this.stateElement = stateElement;
         }
@@ -44,7 +44,7 @@ namespace Flighter
         /// <summary>
         /// Call all the actions passed to <see cref="SetState(Action)"/> since the last time this was called.
         /// </summary>
-        public void InvokeUpdates()
+        internal void InvokeUpdates()
         {
             // Make a local copy incase updates queue new updates.
             var actions = updates.ToArray();

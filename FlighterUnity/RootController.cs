@@ -35,6 +35,7 @@ namespace FlighterUnity
 
         void Update()
         {
+            elementRoot?.DoRebuilds();
             elementRoot?.Update();
         }
     }

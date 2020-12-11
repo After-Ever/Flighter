@@ -16,17 +16,26 @@ namespace Flighter.Core
             this.data = data;
             this.style = style;
         }
-
-        public override bool IsSame(Widget other)
-        {
-            return other is Text t &&
-                data == t.data &&
-                style.Equals(t.style);
-        }
-
+        
         public override Element CreateElement()
         {
             return new TextElement();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var text = obj as Text;
+            return text != null &&
+                   data == text.data &&
+                   EqualityComparer<TextStyle?>.Default.Equals(style, text.style);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 362845251;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(data);
+            hashCode = hashCode * -1521134295 + EqualityComparer<TextStyle?>.Default.GetHashCode(style);
+            return hashCode;
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)

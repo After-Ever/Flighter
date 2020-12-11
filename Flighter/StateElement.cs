@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Flighter
 {
-    public class StateElement : Element
+    internal class StateElement : Element
     {
         public override string Name => "State";
 
@@ -28,17 +28,14 @@ namespace Flighter
             this.state.SetStateElement(this);
         }
 
-        public void StateSet()
-        {
-            setDirty?.Invoke();
-        }
+        internal void StateSet() => RequestRebuild();
         
         // The state is initiated when built in WidgetNodeBuilder, so nothing to do here!
         protected override void _Init() { }
         
         protected override void _Update() { }
 
-        protected override void _WidgetNodeChanged()
+        protected override void _WidgetNodeChanged(WidgetNode oldNode)
         {
             // Once the widget node has been changed by an ElementNode it is safe to forget the builder.
             Builder = null;

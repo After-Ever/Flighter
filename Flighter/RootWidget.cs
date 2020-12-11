@@ -42,12 +42,6 @@ namespace Flighter
             if (context.constraints.IsUnconstrained)
                 throw new Exception("Root constraints much be constrained.");
 
-            // TODO: We don't want to rebuild the root widget, as it could mess up special root connections.
-            //       ; root should be persistent.
-            //       So, the size returned cannot change. In reality, the size reported by root shouldn't matter too much,
-            //       but still ought to be accurate. So really, here we should return the max size possible.l
-            //       Currently returning the constraints max size, which above is required to be constrained.
-            //       This is *probably* fine, but should double check.
             var childNode = node.AddChildWidget(child, context);
             return new BuildResult(context.constraints.MaxSize);
         }

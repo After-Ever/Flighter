@@ -87,8 +87,8 @@ namespace Flighter.Core
         {
             if (float.IsPositiveInfinity(MaxOnMain(context)) && mainAxisSize != MainAxisSize.Min)
                 throw new Exception("Main axis must be bound.");
-
-            Dictionary<Widget, WidgetNodeBuilder> widgetNodes = new Dictionary<Widget, WidgetNodeBuilder>();
+            
+            Dictionary<Widget, WidgetNodeBuilder> widgetNodes = new Dictionary<Widget, WidgetNodeBuilder>(new WidgetEquality());
 
             List<Widget> absoluteChildren = new List<Widget>();
             List<Flex> flexChildren = new List<Flex>();
@@ -390,6 +390,32 @@ namespace Flighter.Core
                 default:
                     throw new NotSupportedException();
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            var layout = obj as SequenceLayout;
+            return layout != null &&
+                   EqualityComparer<List<Widget>>.Default.Equals(children, layout.children) &&
+                   axis == layout.axis &&
+                   horizontalDirection == layout.horizontalDirection &&
+                   verticalDirection == layout.verticalDirection &&
+                   mainAxisAlignment == layout.mainAxisAlignment &&
+                   crossAxisAlignment == layout.crossAxisAlignment &&
+                   mainAxisSize == layout.mainAxisSize;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1852071883;
+            hashCode = hashCode * -1521134295 + EqualityComparer<List<Widget>>.Default.GetHashCode(children);
+            hashCode = hashCode * -1521134295 + axis.GetHashCode();
+            hashCode = hashCode * -1521134295 + horizontalDirection.GetHashCode();
+            hashCode = hashCode * -1521134295 + verticalDirection.GetHashCode();
+            hashCode = hashCode * -1521134295 + mainAxisAlignment.GetHashCode();
+            hashCode = hashCode * -1521134295 + crossAxisAlignment.GetHashCode();
+            hashCode = hashCode * -1521134295 + mainAxisSize.GetHashCode();
+            return hashCode;
         }
     }
 }

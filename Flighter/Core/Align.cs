@@ -54,6 +54,40 @@ namespace Flighter.Core
             if (value < 0 || value > 1)
                 throw new ArgumentOutOfRangeException("Alignment value must be between 0.0 and 1.0.");
         }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Alignment))
+            {
+                return false;
+            }
+
+            var alignment = (Alignment)obj;
+            return Horizontal == alignment.Horizontal &&
+                   horizontal == alignment.horizontal &&
+                   Vertical == alignment.Vertical &&
+                   vertical == alignment.vertical;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 801727432;
+            hashCode = hashCode * -1521134295 + Horizontal.GetHashCode();
+            hashCode = hashCode * -1521134295 + horizontal.GetHashCode();
+            hashCode = hashCode * -1521134295 + Vertical.GetHashCode();
+            hashCode = hashCode * -1521134295 + vertical.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(Alignment alignment1, Alignment alignment2)
+        {
+            return alignment1.Equals(alignment2);
+        }
+
+        public static bool operator !=(Alignment alignment1, Alignment alignment2)
+        {
+            return !(alignment1 == alignment2);
+        }
     }
 
     public class Align : LayoutWidget
@@ -67,12 +101,20 @@ namespace Flighter.Core
             this.alignment = alignment;
         }
 
-        public override bool IsSame(Widget other)
+        public override bool Equals(object obj)
         {
-            return 
-                other is Align c && 
-                child == c.child && 
-                alignment.Equals(c.alignment);
+            var align = obj as Align;
+            return align != null &&
+                   child.Equals(align.child) &&
+                   alignment == align.alignment;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1394767171;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Widget>.Default.GetHashCode(child);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Alignment>.Default.GetHashCode(alignment);
+            return hashCode;
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)

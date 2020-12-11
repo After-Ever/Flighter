@@ -201,6 +201,22 @@ namespace Flighter.Core
         }
 
         public override State CreateState() => new AnimationState();
+
+        public override bool Equals(object obj)
+        {
+            var animation = obj as Animation;
+            return animation != null &&
+                   EqualityComparer<AnimationBuilder>.Default.Equals(builder, animation.builder) &&
+                   EqualityComparer<AnimationController>.Default.Equals(controller, animation.controller);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -639548479;
+            hashCode = hashCode * -1521134295 + EqualityComparer<AnimationBuilder>.Default.GetHashCode(builder);
+            hashCode = hashCode * -1521134295 + EqualityComparer<AnimationController>.Default.GetHashCode(controller);
+            return hashCode;
+        }
     }
 
     class AnimationState : State

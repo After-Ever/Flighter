@@ -13,6 +13,13 @@ namespace Flighter.Core
             this.children = children;
         }
 
+        public override bool Equals(object obj) => false;
+
+        public override int GetHashCode()
+        {
+            return 1458441378 + EqualityComparer<List<Widget>>.Default.GetHashCode(children);
+        }
+
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             float maxWidth, maxHeight;
