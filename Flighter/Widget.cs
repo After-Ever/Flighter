@@ -2,6 +2,7 @@
 
 namespace Flighter
 {
+    // TODO: Name this something better, and describe it! 
     public class WidgetEquality : IEqualityComparer<Widget>
     {
         public bool Equals(Widget x, Widget y) => ReferenceEquals(x, y);

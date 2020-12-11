@@ -13,7 +13,12 @@ namespace Flighter.Core
             this.children = children;
         }
 
-        public override bool Equals(object obj) => false;
+        public override bool Equals(object obj)
+        {
+            var stack = obj as Stack;
+            return stack != null &&
+                   EqualityComparer<List<Widget>>.Default.Equals(children, stack.children);
+        }
 
         public override int GetHashCode()
         {

@@ -57,6 +57,9 @@ namespace Flighter
 
         public void Update()
         {
+            // TODO: Currently updating every node in the tree, but that not nearly always required!
+            //       Need to check if the node needs an update...
+
             if (changedWidgetNode)
             {
                 changedWidgetNode = false;
@@ -187,7 +190,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += element.Name + (needsRebuild? "*" : "") + childrenNeedingRebuild + "\n";
+            r += element.Name + (needsRebuild? "*" : "") + "\n";
 
             foreach (var c in children)
                 r += c.Print(indent + 1);

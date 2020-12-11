@@ -21,7 +21,13 @@ namespace Flighter.Core
             this.onMouseEvent = onMouseEvent;
         }
 
-        public override bool Equals(object obj) => false;
+        public override bool Equals(object obj)
+        {
+            var listener = obj as MouseListener;
+            return listener != null &&
+                   base.Equals(obj) &&
+                   EqualityComparer<MouseEventCallback>.Default.Equals(onMouseEvent, listener.onMouseEvent);
+        }
 
         public override int GetHashCode()
         {

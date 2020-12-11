@@ -36,7 +36,15 @@ namespace Flighter.Input
 
         public virtual void OnUpdate(IInputPoller inputPoller) { }
 
-        public override bool Equals(object obj) => false;
+        public override bool Equals(object obj)
+        {
+            var widget = obj as InputWidget;
+            return widget != null &&
+                   EqualityComparer<Widget>.Default.Equals(child, widget.child) &&
+                   EqualityComparer<IEnumerable<KeyEventFilter>>.Default.Equals(KeyEventsToReceive, widget.KeyEventsToReceive) &&
+                   EqualityComparer<IEnumerable<MouseEventFilter>>.Default.Equals(MouseEventsToReceive, widget.MouseEventsToReceive) &&
+                   onlyWhileHovering == widget.onlyWhileHovering;
+        }
 
         public override int GetHashCode()
         {

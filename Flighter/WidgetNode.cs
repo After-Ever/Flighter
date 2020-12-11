@@ -390,7 +390,7 @@ namespace Flighter
             for (int i = 0; i < indent; ++i)
                 r += "-";
 
-            r += widget.GetType() + ", layout: " + layout + "\n";
+            r += widget.GetType() + "\n";
 
             foreach (var c in children)
                 r += c.Print(indent + 1);
