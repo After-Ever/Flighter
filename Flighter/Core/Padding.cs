@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Flighter.Core
@@ -80,7 +81,7 @@ namespace Flighter.Core
                 this.child, 
                 new BuildContext(childConstraints));
 
-            child.Offset = new Point(edgetInsets.left, edgetInsets.top);
+            child.Offset = new Vector2(edgetInsets.left, edgetInsets.top);
             var childSize = child.size;
 
             return new BuildResult(childSize.width + horizontal, childSize.height + vertical);

@@ -4,23 +4,25 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
+using FlighterVec = System.Numerics.Vector2;
+
 namespace FlighterUnity
 {
     public static class Math
     {
-        public static Vector2 ToVector2(this Point point)
+        public static Vector2 ToUnity(this FlighterVec point)
         {
-            return new Vector2(point.x, point.y);
+            return new UnityEngine.Vector2(point.X, point.Y);
         }
 
-        public static Point ToPoint(this Vector2 vector2)
+        public static FlighterVec ToFlighter(this Vector2 vector2)
         {
-            return new Point(vector2.x, vector2.y);
+            return new FlighterVec(vector2.x, vector2.y);
         }
 
-        public static Point ToPoint(this Vector3 vector3)
+        public static FlighterVec ToFlighter(this Vector3 vector3)
         {
-            return new Point(vector3.x, vector3.y);
+            return new FlighterVec(vector3.x, vector3.y);
         }
 
         public static Color ToUnity(this Flighter.Core.Color color)

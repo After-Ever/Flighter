@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Numerics;
 using Flighter.Input;
 
 namespace Flighter
@@ -10,9 +10,9 @@ namespace Flighter
     public struct NodeLayout
     {
         public Size size;
-        public Point offset;
+        public Vector2 offset;
 
-        public NodeLayout(Size size, Point offset)
+        public NodeLayout(Size size, Vector2 offset)
         {
             this.size = size;
             this.offset = offset;
@@ -27,14 +27,14 @@ namespace Flighter
 
             var layout = (NodeLayout)obj;
             return EqualityComparer<Size>.Default.Equals(size, layout.size) &&
-                   EqualityComparer<Point>.Default.Equals(offset, layout.offset);
+                   EqualityComparer<Vector2>.Default.Equals(offset, layout.offset);
         }
 
         public override int GetHashCode()
         {
             var hashCode = -1455214714;
             hashCode = hashCode * -1521134295 + EqualityComparer<Size>.Default.GetHashCode(size);
-            hashCode = hashCode * -1521134295 + EqualityComparer<Point>.Default.GetHashCode(offset);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Vector2>.Default.GetHashCode(offset);
             return hashCode;
         }
 
@@ -54,10 +54,10 @@ namespace Flighter
         ElementNode elementNode;
 
         public Size Size => layout.size;
-        public Point Offset => layout.offset;
+        public Vector2 Offset => layout.offset;
 
-        Point? cachedElementOffset;
-        Point? cachedAbsoluteOffset;
+        Vector2? cachedElementOffset;
+        Vector2? cachedAbsoluteOffset;
 
         bool rebuilding = false;
 
@@ -227,7 +227,7 @@ namespace Flighter
             return e;
         }
 
-        internal Point GetElementOffset()
+        internal Vector2 GetElementOffset()
         {
             if (cachedElementOffset != null) return cachedElementOffset.Value;
 
@@ -235,12 +235,12 @@ namespace Flighter
                 cachedElementOffset = Offset;
             else
                 cachedElementOffset = layout.offset + parent?.GetElementOffset()
-                    ?? Point.Zero;
+                    ?? Vector2.Zero;
 
             return cachedElementOffset.Value;
         }
 
-        internal Point GetAbsoluteOffset()
+        internal Vector2 GetAbsoluteOffset()
         {
             if (cachedAbsoluteOffset != null) return cachedAbsoluteOffset.Value;
 
@@ -252,16 +252,16 @@ namespace Flighter
             return cachedAbsoluteOffset.Value;
         }
 
-        public bool IsHovering(Point p)
+        public bool IsHovering(Vector2 p)
         {
             var absOffset = GetAbsoluteOffset();
 
-            if (p.x < absOffset.x || p.y < absOffset.y)
+            if (p.X < absOffset.X || p.Y < absOffset.Y)
                 return false;
             
             p -= absOffset;
             
-            return p.x <= Size.width && p.y <= Size.height;
+            return p.X <= Size.width && p.Y <= Size.height;
         }
 
         /// <summary>

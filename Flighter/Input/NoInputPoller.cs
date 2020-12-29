@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Flighter.Input
@@ -26,9 +27,9 @@ namespace Flighter.Input
 
         public float ScrollDelta => throw new NotImplementedException();
 
-        public Point PositionDelta => throw new NotImplementedException();
+        public Vector2 PositionDelta => throw new NotImplementedException();
 
-        public Point Position => throw new NotImplementedException();
+        public Vector2 Position => throw new NotImplementedException();
 
         public bool GetButton(MouseButton button)
         {

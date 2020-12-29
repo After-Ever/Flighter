@@ -9,7 +9,7 @@ namespace FlighterUnity
 {
     public class ImageHandle : IImageHandle
     {
-        public Size size => sprite.rect.size.ToPoint().ToSize();
+        public Size size => sprite.rect.size.ToFlighter().ToSize();
 
         public readonly Sprite sprite;
 

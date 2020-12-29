@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Flighter
 {
     public class WidgetNodeBuilder
     {
-        public Point Offset;
+        public Vector2 Offset;
 
         public readonly WidgetForest forest;
         public readonly Widget widget;

@@ -2,9 +2,11 @@
 
 using Flighter;
 using Flighter.Input;
+using UnityEngine;
+
+using FlighterVec = System.Numerics.Vector2;
 using KeyCode = Flighter.Input.KeyCode;
 using Input = UnityEngine.Input;
-using UnityEngine;
 
 namespace FlighterUnity
 {
@@ -13,7 +15,7 @@ namespace FlighterUnity
         readonly RectTransform rootRect;
         readonly float pixelsPerUnit;
 
-        Point lastPosition = Point.Zero;
+        FlighterVec lastPosition = FlighterVec.Zero;
 
         // TODO make explicit what changes when root rect is supplied.
         public InputPoller(RectTransform rootRect = null, float pixelsPerUnit = 1)
@@ -43,8 +45,8 @@ namespace FlighterUnity
         // IMouseInputPoller
 
         public float ScrollDelta => Input.mouseScrollDelta.y;
-        public Point PositionDelta => Position - lastPosition;
-        public Point Position => ScreenPosToDisplayRectPos(Input.mousePosition);
+        public FlighterVec PositionDelta => Position - lastPosition;
+        public FlighterVec Position => ScreenPosToDisplayRectPos(Input.mousePosition);
 
         public bool GetButton(MouseButton button)
         {
@@ -83,14 +85,14 @@ namespace FlighterUnity
         /// </summary>
         /// <param name="screenPos"></param>
         /// <returns></returns>
-        Point ScreenPosToDisplayRectPos(Vector3 screenPos)
+        FlighterVec ScreenPosToDisplayRectPos(Vector3 screenPos)
         {
             var cam = Camera.main;
 
             if (rootRect == null || cam == null)
             {
-                var point = screenPos.ToPoint();
-                point.y = cam.pixelHeight - point.y;
+                var point = screenPos.ToFlighter();
+                point.Y = cam.pixelHeight - point.Y;
                 return point;
             }
             
@@ -105,7 +107,7 @@ namespace FlighterUnity
 
             // Not actually pointing at the rect's plane.
             if (inDirection <= 0)
-                return new Point(-1, -1);
+                return new FlighterVec(-1, -1);
 
             var d = Vector3.Dot(rectNormal, rectOrigin - pointerRay.origin) / inDirection;
 
@@ -115,7 +117,7 @@ namespace FlighterUnity
             var x = Vector3.Dot(pointOnRect, rectRight);
             var y = Vector3.Dot(pointOnRect, rectDown);
             
-            return new Point(x, y);
+            return new FlighterVec(x, y);
         }
     }
 }

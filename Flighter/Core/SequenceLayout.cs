@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Flighter.Core
@@ -279,10 +280,10 @@ namespace Flighter.Core
             switch (axis)
             {
                 case Axis.Horizontal:
-                    node.Offset = new Point(offsetOnMain, crossOffset);
+                    node.Offset = new Vector2(offsetOnMain, crossOffset);
                     break;
                 case Axis.Vertical:
-                    node.Offset = new Point(crossOffset, offsetOnMain);
+                    node.Offset = new Vector2(crossOffset, offsetOnMain);
                     break;
                 default:
                     throw new NotSupportedException();

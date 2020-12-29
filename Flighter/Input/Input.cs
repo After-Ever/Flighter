@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Flighter.Input
 {
@@ -39,7 +40,7 @@ namespace Flighter.Input
 
     public struct InputContext
     {
-        public Point mousePosition;
+        public Vector2 mousePosition;
     }
 
     public class Input

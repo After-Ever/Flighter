@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Flighter.Core
@@ -38,7 +39,7 @@ namespace Flighter.Core
         }
         float vertical;
 
-        public Point AsPoint() => new Point(horizontal, vertical);
+        public Vector2 AsPoint() => new Vector2(horizontal, vertical);
 
         public Alignment(float horizontal = 0, float vertical = 0)
         {
@@ -122,29 +123,29 @@ namespace Flighter.Core
             var childNode = node.AddChildWidget(child, context);
             var childSize = childNode.size;
 
-            var extraSpace = new Point();
+            var extraSpace = new Vector2();
             if (float.IsPositiveInfinity(context.constraints.maxWidth))
             {
-                extraSpace.x = 0;
+                extraSpace.X = 0;
             }
             else
             {
-                extraSpace.x = context.constraints.maxWidth - childSize.width;
+                extraSpace.X = context.constraints.maxWidth - childSize.width;
             }
 
             if (float.IsPositiveInfinity(context.constraints.maxHeight))
             {
-                extraSpace.y = 0;
+                extraSpace.Y = 0;
             }
             else
             {
-                extraSpace.y = context.constraints.maxHeight - childSize.height;
+                extraSpace.Y = context.constraints.maxHeight - childSize.height;
             }
 
-            var offset = new Point(extraSpace.x * alignment.Horizontal, extraSpace.y * alignment.Vertical);
+            var offset = new Vector2(extraSpace.X * alignment.Horizontal, extraSpace.Y * alignment.Vertical);
 
             childNode.Offset = offset;
-            return new BuildResult((childSize.ToPoint() + extraSpace).ToSize());
+            return new BuildResult((childSize.ToVector2() + extraSpace).ToSize());
         }
     }
 }

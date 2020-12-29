@@ -4,7 +4,9 @@ using System.Text;
 
 using Flighter;
 using UnityEngine;
+
 using Component = Flighter.Component;
+using FlighterVec = System.Numerics.Vector2;
 
 namespace FlighterUnity
 {
@@ -23,7 +25,7 @@ namespace FlighterUnity
         {
             get
             {
-                return (transform.sizeDelta.ToPoint() * pixelsPerUnit).ToSize();
+                return (transform.sizeDelta.ToFlighter() * pixelsPerUnit).ToSize();
             }
             set
             {
@@ -32,16 +34,16 @@ namespace FlighterUnity
             }
         }
 
-        public Point Offset
+        public FlighterVec Offset
         {
             get
             {
                 var unityOffset = transform.anchoredPosition * pixelsPerUnit;
-                return new Point(unityOffset.x, -unityOffset.y);
+                return new FlighterVec(unityOffset.x, -unityOffset.y);
             }
             set
             {
-                var pixelOffset = new Vector2(value.x, -value.y);
+                var pixelOffset = new Vector2(value.X, -value.Y);
                 transform.anchoredPosition = pixelOffset / pixelsPerUnit;
             }
         }

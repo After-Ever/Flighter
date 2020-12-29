@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Flighter.Input
@@ -20,8 +21,8 @@ namespace Flighter.Input
     public interface IMouseInputPoller
     {
         float ScrollDelta { get; }
-        Point PositionDelta { get; }
-        Point Position { get; }
+        Vector2 PositionDelta { get; }
+        Vector2 Position { get; }
 
         bool GetButton(MouseButton button);
         bool GetButtonDown(MouseButton button);
@@ -56,7 +57,7 @@ namespace Flighter.Input
                 case MouseEventType.Up:
                     return inputPoller.MousePoller.GetButtonUp(filter.button);
                 case MouseEventType.Move:
-                    return !inputPoller.MousePoller.PositionDelta.Equals(Point.Zero);
+                    return !inputPoller.MousePoller.PositionDelta.Equals(Vector2.Zero);
                 case MouseEventType.Scroll:
                     return inputPoller.MousePoller.ScrollDelta != 0;
                 default:

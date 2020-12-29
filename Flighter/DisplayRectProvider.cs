@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace Flighter
@@ -12,7 +13,7 @@ namespace Flighter
         string Name { get; set; }
 
         Size Size { get; set; }
-        Point Offset { get; set; }
+        Vector2 Offset { get; set; }
 
         IDisplayRect CreateChild();
         void SetParent(IDisplayRect rect);
