@@ -11,6 +11,8 @@ namespace FlighterUnity
         WidgetNode widgetRoot;
         ElementNode elementRoot;
 
+        public event Action TornDown;
+
         public void SetRoot(WidgetNode widgetRoot, ElementNode elementRoot)
         {
             this.widgetRoot = widgetRoot;
@@ -31,6 +33,8 @@ namespace FlighterUnity
             elementRoot = null;
 
             Destroy(gameObject);
+
+            TornDown?.Invoke();
         }
 
         void Update()

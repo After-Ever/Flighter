@@ -140,10 +140,16 @@ namespace FlighterUnity
                 rect,
                 componentProvider);
 
-            inputProvider?.AddRoot(root.Item1);
 
             var rootController = rect.transform.gameObject.AddComponent<RootController>();
             rootController.SetRoot(root);
+
+            if (inputProvider != null)
+            {
+                inputProvider.AddRoot(root.Item1);
+                rootController.TornDown += () => inputProvider.RemoveRoot(root.Item1);
+            }
+
 
             return new DisplayHandle(rootController);
         }

@@ -13,7 +13,7 @@ namespace FlighterUnity
         public Input GetInput() => input;
         
         Input input;
-        readonly HashSet<WidgetNode> roots = new HashSet<WidgetNode>();
+        readonly List<WidgetNode> roots = new List<WidgetNode>();
         readonly Dictionary<WidgetForest, int> forests = new Dictionary<WidgetForest, int>();
 
         public void SetPoller(InputPoller poller)
@@ -28,9 +28,7 @@ namespace FlighterUnity
 
         public void AddRoot(WidgetNode node)
         {
-            if (!roots.Add(node))
-                return;
-
+            roots.Add(node);
             var f = node.forest;
             if (forests.ContainsKey(f))
             {
@@ -64,13 +62,17 @@ namespace FlighterUnity
             var context = new InputContext
             { mousePosition = poller.MousePoller.Position };
 
-            foreach(var n in roots)
+            // Make copies incase the collections change durring iteration.
+            var rootsToUpdate = new List<WidgetNode>(roots);
+            var forestsToUpdate = new List<WidgetForest>(forests.Keys);
+
+            foreach(var n in rootsToUpdate)
             {
                 var inputWidgets = n.GetContextDependentInputWidgets(context);
                 input.DistributeUpdates(inputWidgets);
             }
 
-            foreach (var f in forests.Keys)
+            foreach (var f in forestsToUpdate)
                 input.DistributeUpdates(f.ContextFreeInputWidgets);
 
             poller.FramePassed();
