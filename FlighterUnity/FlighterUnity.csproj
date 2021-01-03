@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <SignAssembly>false</SignAssembly>
+    <DelaySign>true</DelaySign>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -36,7 +38,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cp $(TargetPath) N:\game_development\unity_projects\flighter_setup\Assets\Libs\" />
+    <Exec Command="cp $(TargetPath) N:\game_development\LibraryCollection\$(TargetFileName)&#xD;&#xA;" />
   </Target>
 
 </Project>
