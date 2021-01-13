@@ -10,7 +10,7 @@ namespace Flighter.Core
 {
     public delegate T Lerp<T>(T a, T b, float f);
     public delegate bool StopCondition<T>(T current, T target);
-    public delegate Widget ValueBuilder<T>(T value);
+    public delegate Widget ValueBuilder<T>(T value, BuildContext context);
 
     public class LerpChange<T> : StatefulWidget
     {
@@ -98,7 +98,7 @@ namespace Flighter.Core
         public override Widget Build(BuildContext context)
         {
             var w = GetWidget<LerpChange<T>>();
-            return w.builder(curValue);
+            return w.builder(curValue, context);
         }
 
         void TakeLerpStep(float time, float delta)

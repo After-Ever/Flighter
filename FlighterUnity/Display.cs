@@ -70,6 +70,15 @@ namespace FlighterUnity
             return OnTransform(widget, size, obj.transform, pixelsPerUnit);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="widget"></param>
+        /// <param name="size">The size of the display in world units.</param>
+        /// <param name="transform">The transform on which this display will be mounted.
+        /// The display will extend down and to the right.</param>
+        /// <param name="pixelsPerUnit">How many pixels per world unit.</param>
+        /// <returns></returns>
         public static DisplayHandle OnTransform(
             Widget widget, 
             Size size, 
@@ -173,15 +182,18 @@ namespace FlighterUnity
 
         static (RectTransform, InputProvider) CreateRootWorldObject(float pixelPerUnit, Size size)
         {
-            var rect = BaseRect(size);
+            var rect = BaseRect(new Size(size.width * pixelPerUnit, size.height * pixelPerUnit));
             var obj = rect.gameObject;
+
+            rect.localScale = new Vector3(1 / pixelPerUnit, 1 / pixelPerUnit, 1);
 
             var canvas = obj.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.WorldSpace;
 
+            // TODO: Is the canvas scaler necessary?
             var scalar = obj.AddComponent<CanvasScaler>();
-            scalar.referencePixelsPerUnit = pixelPerUnit;
-            scalar.dynamicPixelsPerUnit = pixelPerUnit;
+            scalar.referencePixelsPerUnit = 1;
+            scalar.dynamicPixelsPerUnit = 1;
 
             var inputProvider = obj.AddComponent<InputProvider>();
             inputProvider.SetPoller(new InputPoller(rect, pixelPerUnit));

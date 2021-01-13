@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Flighter.Core
 {
-    public delegate Widget WidgetBuilder();
+    public delegate Widget WidgetBuilder(BuildContext context);
 
     public enum TextAlign
     {
@@ -31,6 +31,7 @@ namespace Flighter.Core
 
     public struct TextStyle
     {
+        // TODO: Define all these.
         public IFontHandle font;
         public int size;
         public float lineSpacing;
@@ -39,6 +40,34 @@ namespace Flighter.Core
         public bool wrapLines;
         public TextOverflow textOverflow;
         public Color color;
+
+        /// <summary>
+        /// Create a new <see cref="TextStyle"/> with the values specified.
+        /// Values left null will be copied from this.
+        /// </summary>
+        /// <returns></returns>
+        public TextStyle From(
+            IFontHandle font = null,
+            int? size = null,
+            float? lineSpacing = null,
+            TextAlign? textAlign = null,
+            FontStyle? fontStyle = null,
+            bool? wrapLines = null,
+            TextOverflow? textOverflow = null,
+            Color? color = null)
+        {
+            return new TextStyle
+            {
+                font = font ?? this.font,
+                size = size ?? this.size,
+                lineSpacing = lineSpacing ?? this.lineSpacing,
+                textAlign = textAlign ?? this.textAlign,
+                fontStyle = fontStyle ?? this.fontStyle,
+                wrapLines = wrapLines ?? this.wrapLines,
+                textOverflow = textOverflow ?? this.textOverflow,
+                color = color ?? this.color,
+            };
+        }
 
         public override bool Equals(object obj)
         {

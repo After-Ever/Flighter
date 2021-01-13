@@ -6,7 +6,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>false</Optimize>
-    <OutputPath>N:\game_development\Flighter\Build\</OutputPath>
+    <OutputPath></OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
   </PropertyGroup>
 
@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cp $(TargetPath) N:\game_development\LibraryCollection\$(TargetFileName)&#xD;&#xA;" />
+    <Exec Command="cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp /n/game_development/LibraryCollection/* /n/game_development/unity_projects/azure_rain_mvp/Assets/Libs/" />
   </Target>
 
   <ItemGroup>

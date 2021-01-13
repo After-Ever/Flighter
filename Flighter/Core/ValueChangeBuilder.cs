@@ -68,7 +68,7 @@ namespace Flighter.Core
         public override Widget Build(BuildContext context)
         {
             var w = GetWidget<ValueChangeBuilder<T>>();
-            return w.builder(w.notifier.Value);
+            return w.builder(w.notifier.Value, context);
         }
 
         void OnValueChanged(T _)

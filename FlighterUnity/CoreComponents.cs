@@ -15,15 +15,18 @@ namespace FlighterUnity
 {
     public class UnityTextComponent : TextComponent, IUnityFlighterComponent
     {
-        static readonly TextStyle defaultStyle = new TextStyle
+        public static readonly TextStyle defaultStyle = new TextStyle
         {
-            color = new Color(0,0,0),
-            fontStyle = FontStyle.Normal,
-            textAlign = TextAlign.TopLeft,
-            textOverflow = TextOverflow.Clip,
             // TODO: This is an imporntant idea! It must be well and clearly documented.
             //       Is there a more reliable way to load a default font?
-            font = new FontHandle(Resources.Load<Font>("default_font"))
+            font = new FontHandle(Resources.Load<Font>("default_font")),
+            size = 12,
+            lineSpacing = 1,
+            textAlign = TextAlign.TopLeft,
+            fontStyle = FontStyle.Normal,
+            wrapLines = true,
+            textOverflow = TextOverflow.Clip,
+            color = new Color(0,0,0),
         };
 
         string data;
