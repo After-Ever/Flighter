@@ -107,7 +107,10 @@ namespace Flighter
 
         internal virtual void TearDown()
         {
-            // TODO Probably don't need to tear down if not initialized?
+            // No need to tear down if not yet initialized.
+            if (!IsInitialized)
+                return;
+
             _TearDown();
             DisplayRect?.TearDown();
 

@@ -66,7 +66,7 @@ namespace Flighter
                 element.UpdateWidgetNode(currentWidgetNode);
             }
 
-            InitOrConnectElement();
+            EnsureElementConnected();
 
             element.Update();
             children.ForEach((e) => e.Update());
@@ -164,8 +164,7 @@ namespace Flighter
                 parent?.ChildRebuilt();
         }
 
-        // TODO: Come up with a better name...
-        protected virtual void InitOrConnectElement()
+        internal virtual void EnsureElementConnected()
         {
             if (element.IsInitialized && element.IsConnected) return;
             if (parent == null || !parent.element.IsInitialized)

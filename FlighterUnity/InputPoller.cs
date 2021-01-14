@@ -81,7 +81,8 @@ namespace FlighterUnity
         }
 
         /// <summary>
-        /// Returns (-1, -1) when bad! TODO, make better description.
+        /// Determine the UI position from a position on the screen.
+        /// Throws an <see cref="Exception"/> if the screen ray is parallel to the display rect.
         /// </summary>
         /// <param name="screenPos"></param>
         /// <returns></returns>
@@ -107,7 +108,7 @@ namespace FlighterUnity
 
             // Not actually pointing at the rect's plane.
             if (inDirection <= 0)
-                return new FlighterVec(-1, -1);
+                throw new Exception("The screen point does not intersect with the UI");
 
             var d = Vector3.Dot(rectNormal, rectOrigin - pointerRay.origin) / inDirection;
 

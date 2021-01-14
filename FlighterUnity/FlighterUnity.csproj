@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp /n/game_development/LibraryCollection/* /n/game_development/unity_projects/azure_rain_mvp/Assets/Libs/" />
+    <Exec Command="cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;" />
   </Target>
 
 </Project>

@@ -36,8 +36,7 @@ namespace Flighter.Core
         {
             var childNode = node.AddChildWidget(child, context);
             childNode.Offset = offset;
-            
-            // TODO: Better doc
+
             // If the offset is negative, we will end up returning a size less than that of the child.
             // This is *mostly* the expectation. Really, the expectation is for children to stay within 
             // the bounds of their parent, and we cannot account for when it goes outside.

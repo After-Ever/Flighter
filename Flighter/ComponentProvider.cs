@@ -22,7 +22,7 @@ namespace Flighter
 
         public C CreateComponent<C>() where C : Component
         {
-            // TODO: What if they request a more precise type? We should return any type that "is" the requested type. 
+            // TODO: What if they request a more generic type? We should return any type that "is" the requested type. 
             componentImplementations.TryGetValue(typeof(C), out Type imp);
 
             return imp

@@ -31,7 +31,7 @@ namespace Flighter
 
         // Overriding lets us avoid not having a parent,
         // by manually passing the rectTransform.
-        protected override void InitOrConnectElement()
+        internal override void EnsureElementConnected()
         {
             element.Init(parent, componentProvider);
         }

@@ -59,7 +59,11 @@ namespace Flighter
         Vector2? cachedElementOffset;
         Vector2? cachedAbsoluteOffset;
 
-        bool rebuilding = false;
+        /// <summary>
+        /// When not null, the specified node is currently rebuilding.
+        /// Some operations will fail when a child is rebuilding.
+        /// </summary>
+        WidgetNode rebuildingChild;
 
         /// <summary>
         /// Constructs a widget node.
@@ -117,7 +121,6 @@ namespace Flighter
             if (this.parent != null)
                 throw new Exception("Node must not have parent to update the connection.");
 
-            // TODO: Is this needed here?
             ClearCachedOffsets();
 
             this.parent = parent ?? throw new ArgumentNullException();
@@ -147,8 +150,9 @@ namespace Flighter
 
             // Local var because Emancipate sets this.parent null.
             var parent = this.parent ?? throw new Exception("Cannot rebuild root node!");
-            // TODO: This feels a bit sloppy... We are just marking this and trusting other places to respect it...
-            rebuilding = true;
+
+            // Let our parent know we are rebuilding.
+            parent.ChildRebuilding(this);
             var b = new WidgetNodeBuilder(
                 forest,
                 widget,
@@ -315,14 +319,21 @@ namespace Flighter
 
         void AddChildNode(WidgetNode childNode)
         {
-            var toReplace = children.FindIndex((w) => w.rebuilding);
-            if (toReplace != -1)
+            if (rebuildingChild != null)
             {
-                children.RemoveAt(toReplace);
-                children.Insert(toReplace, childNode);
+                var replaceIndex = children.IndexOf(rebuildingChild);
+                if (replaceIndex == -1)
+                    throw new Exception("rebuildingChild not found in children.");
+
+                children.RemoveAt(replaceIndex);
+                children.Insert(replaceIndex, childNode);
+
+                rebuildingChild = null;
             }
             else
+            {
                 children.Add(childNode);
+            }
         }
 
         void ChildResized(WidgetNode changedNode)
@@ -337,6 +348,14 @@ namespace Flighter
             }
             else
                 Rebuild();
+        }
+
+        void ChildRebuilding(WidgetNode child)
+        {
+            if (rebuildingChild != null)
+                throw new Exception("Already rebuilding a child.");
+
+            rebuildingChild = child;
         }
 
         /// <summary>

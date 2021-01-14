@@ -41,7 +41,9 @@ namespace Flighter.Core
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
             // TODO: Currently just taking up as much space as possible.
-            //       Should take min space where possible.
+            //       Should take min space where possible. This is not trivial, 
+            //       as the size is dependent on the font... Need to get
+            //       IFontHandle to hint the actual size...
             return new BuildResult(context.constraints.MaxSize);
         }
     }
