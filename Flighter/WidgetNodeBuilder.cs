@@ -18,11 +18,6 @@ namespace Flighter
         readonly Queue<WidgetNode> inheritedChildren;
 
         bool hasBuilt = false;
-        /// <summary>
-        /// If not null when <see cref="Build(WidgetNode)"/> is called,
-        /// this will be returned instead of actually building.
-        /// </summary>
-        WidgetNode builtNode = null;
 
         public WidgetNodeBuilder(
             WidgetForest forest,
@@ -112,41 +107,21 @@ namespace Flighter
             }
         }
 
-        public WidgetNodeBuilder(WidgetNode builtNode)
-        {
-            this.builtNode = builtNode;
-
-            // Inherit size and offset. Size will stay the same, buy offset could change.
-            size = builtNode.Size;
-            Offset = builtNode.Offset;
-        }
-
         public WidgetNode Build(WidgetNode parent)
         {
             if (hasBuilt)
                 throw new HasBuiltException();
 
-            WidgetNode node;
-
-            if (builtNode != null)
-            {
-                builtNode.UpdateConnection(parent, new NodeLayout(size, Offset));
-                node = builtNode;
-            }
-            else
-            {
-                node = new WidgetNode(
-                    forest,
-                    widget,
-                    buildContext,
-                    new NodeLayout(size, Offset),
-                    parent,
-                    children,
-                    elementNode);
-            }
+            WidgetNode node = new WidgetNode(
+                forest,
+                widget,
+                buildContext,
+                new NodeLayout(size, Offset),
+                parent,
+                children,
+                elementNode);
 
             children.Clear();
-            builtNode = null;
             hasBuilt = true;
 
             return node;
@@ -163,18 +138,7 @@ namespace Flighter
             if (inheritedChildren?.Count > 0)
             {
                 var toReplace = inheritedChildren.Dequeue();
-                
-                // TODO: Figure out how to re-enable this.
-                // Getting there! So the offsets update correctly, but with the drops, it seems the state isn't updating properly, but only with this enabled.
-                // On another note, some herristic anylis testing failed to show signifigant performance improvement... Need to see if this is even worth the effort...
 
-                //if (toReplace.buildContext.Equals(context) && widget.Equals(toReplace.widget))
-                //{
-                //    var b = new WidgetNodeBuilder(toReplace);
-                //    children.Add(b);
-                //    return b;
-                //}
-                
                 if (widget.CanReplace(toReplace.widget))
                 {
                     childElementNode = toReplace.TakeElementNode();
