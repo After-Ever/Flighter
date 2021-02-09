@@ -94,6 +94,17 @@ namespace Flighter
                         size = lw.Layout(buildContext, this).size;
                         break;
                     }
+                case InheritedWidget iw:
+                    {
+                        this.buildContext = buildContext.Copy();
+                        this.buildContext.AddInheritedWidget(iw, iw.GetType());
+
+                        var child = iw.child;
+                        var childNode = AddChildWidget(child, this.buildContext);
+
+                        size = childNode.size;
+                        break;
+                    }
                 default:
                     throw new Exception("Widget type \"" + widget.GetType() + "\" not handled!");
             }
@@ -127,7 +138,13 @@ namespace Flighter
             return node;
         }
 
-        public WidgetNodeBuilder AddChildWidget(Widget widget, BuildContext context)
+        public WidgetNodeBuilder LayoutChild(Widget child, BoxConstraints constraints)
+        {
+            var childBuildContext = buildContext.Copy(constraints);
+            return AddChildWidget(child, childBuildContext);
+        }
+
+        WidgetNodeBuilder AddChildWidget(Widget widget, BuildContext context)
         {
             if (hasBuilt)
                 throw new HasBuiltException();
@@ -148,7 +165,12 @@ namespace Flighter
                 toReplace.Dispose();
             }
 
-            var childBuilder = new WidgetNodeBuilder(forest, widget, context, childElementNode, orphans);
+            var childBuilder = new WidgetNodeBuilder(
+                forest, 
+                widget,
+                context, 
+                childElementNode,
+                orphans);
             children.Add(childBuilder);
             return childBuilder;
         }

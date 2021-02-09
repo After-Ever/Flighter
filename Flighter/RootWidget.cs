@@ -42,7 +42,7 @@ namespace Flighter
             if (context.constraints.IsUnconstrained)
                 throw new Exception("Root constraints much be constrained.");
 
-            var childNode = node.AddChildWidget(child, context);
+            var childNode = node.LayoutChild(child, context.constraints);
             return new BuildResult(context.constraints.MaxSize);
         }
     }

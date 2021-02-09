@@ -8,27 +8,43 @@ namespace Flighter
     {
         public readonly BoxConstraints constraints;
 
+        readonly Dictionary<Type, InheritedWidget> inheritedWidgets;
+
         public BuildContext(BoxConstraints constraints)
         {
             this.constraints = constraints;
+
+            inheritedWidgets = new Dictionary<Type, InheritedWidget>();
         }
 
-        public override bool Equals(object obj)
+        BuildContext(BoxConstraints constraints, Dictionary<Type, InheritedWidget> inheritedWidgets)
         {
-            if (!(obj is BuildContext))
-            {
-                return false;
-            }
-
-            var context = (BuildContext)obj;
-            return EqualityComparer<BoxConstraints>.Default.Equals(constraints, context.constraints);
+            this.constraints = constraints;
+            this.inheritedWidgets = inheritedWidgets;
         }
 
-        public override int GetHashCode()
+        /// <summary>
+        /// Return the nearest <see cref="InheritedWidget"/> with type <typeparamref name="T"/>,
+        /// or null if there is no such widget.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public T GetInheritedWidgetOfExactType<T>() where T : InheritedWidget
         {
-            return -1144114365 + EqualityComparer<BoxConstraints>.Default.GetHashCode(constraints);
+            if (inheritedWidgets.TryGetValue(typeof(T), out var val))
+                return val as T;
+            return null;
         }
 
-        public override string ToString() => "Constraints: " + constraints;
+        internal void AddInheritedWidget(InheritedWidget widget, Type type)
+        {
+            inheritedWidgets[type] = widget;
+        }
+
+        public BuildContext Copy(BoxConstraints? constraints = null)
+        {
+            var inheritedInheritedWidgets = new Dictionary<Type, InheritedWidget>(inheritedWidgets);
+            return new BuildContext(constraints ?? this.constraints, inheritedInheritedWidgets);
+        }
     }
 }

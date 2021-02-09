@@ -40,4 +40,14 @@ namespace Flighter
     {
         public abstract Element CreateElement();
     }
+
+    public abstract class InheritedWidget : Widget
+    {
+        public readonly Widget child;
+
+        public InheritedWidget(Widget child)
+        {
+            this.child = child;
+        }
+    }
 }
