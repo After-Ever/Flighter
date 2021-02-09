@@ -14,9 +14,11 @@ namespace Flighter.Core
             get => value;
             set
             {
-                if (!this.value.Equals(value))
-                    ValueChanged?.Invoke(value);
+                if (this.value?.Equals(value) ?? value == null)
+                    return;
+
                 this.value = value;
+                ValueChanged?.Invoke(value);
             }
         }
 

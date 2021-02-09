@@ -49,6 +49,8 @@ namespace Flighter
                 currentWidgetNode.Rebuild();
             }
 
+            // TODO: I'm pretty sure this is not needed... Rebuilding a parent
+            // should implicitly rebuild the children...
             while (childrenNeedingRebuild > 0)
             {
                 children.Find((e) => e.TreeNeedsRebuild).DoRebuilds();

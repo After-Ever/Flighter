@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Flighter.Core
 {
-    public struct EdgetInsets
+    public struct EdgeInsets
     {
         public float left, top, right, bottom;
 
@@ -13,7 +13,7 @@ namespace Flighter.Core
         /// Set all the edges with the same value.
         /// </summary>
         /// <param name="all"></param>
-        public EdgetInsets(float all)
+        public EdgeInsets(float all)
         {
             left = top = right = bottom = all;
         }
@@ -25,7 +25,7 @@ namespace Flighter.Core
         /// <param name="right"></param>
         /// <param name="bottom"></param>
         /// <param name="left"></param>
-        public EdgetInsets(
+        public EdgeInsets(
             float left = 0,
             float top = 0, 
             float right = 0, 
@@ -41,12 +41,12 @@ namespace Flighter.Core
     public class Padding : LayoutWidget
     {
         public readonly Widget child;
-        public readonly EdgetInsets edgetInsets;
+        public readonly EdgeInsets edgeInsets;
 
-        public Padding(Widget child, EdgetInsets edgetInsets)
+        public Padding(Widget child, EdgeInsets edgeInsets)
         {
             this.child = child ?? throw new ArgumentNullException("Padding must have child.");
-            this.edgetInsets = edgetInsets;
+            this.edgeInsets = edgeInsets;
         }
 
         public override bool Equals(object obj)
@@ -54,21 +54,21 @@ namespace Flighter.Core
             var padding = obj as Padding;
             return padding != null &&
                    EqualityComparer<Widget>.Default.Equals(child, padding.child) &&
-                   EqualityComparer<EdgetInsets>.Default.Equals(edgetInsets, padding.edgetInsets);
+                   EqualityComparer<EdgeInsets>.Default.Equals(edgeInsets, padding.edgeInsets);
         }
 
         public override int GetHashCode()
         {
             var hashCode = -867541505;
             hashCode = hashCode * -1521134295 + EqualityComparer<Widget>.Default.GetHashCode(child);
-            hashCode = hashCode * -1521134295 + EqualityComparer<EdgetInsets>.Default.GetHashCode(edgetInsets);
+            hashCode = hashCode * -1521134295 + EqualityComparer<EdgeInsets>.Default.GetHashCode(edgeInsets);
             return hashCode;
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            var horizontal = edgetInsets.left + edgetInsets.right;
-            var vertical = edgetInsets.top + edgetInsets.bottom;
+            var horizontal = edgeInsets.left + edgeInsets.right;
+            var vertical = edgeInsets.top + edgeInsets.bottom;
 
             var constraints = context.constraints;
             var childConstraints = new BoxConstraints(
@@ -81,7 +81,7 @@ namespace Flighter.Core
                 this.child, 
                 new BuildContext(childConstraints));
 
-            child.Offset = new Vector2(edgetInsets.left, edgetInsets.top);
+            child.Offset = new Vector2(edgeInsets.left, edgeInsets.top);
             var childSize = child.size;
 
             return new BuildResult(childSize.width + horizontal, childSize.height + vertical);

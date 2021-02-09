@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;" />
+    <Exec Command="cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/azure_rain/azure_rain/Assets/Libs&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/azure_rain/azure_rain/Assets/Libs" />
   </Target>
 
   <ItemGroup>
