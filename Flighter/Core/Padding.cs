@@ -77,9 +77,9 @@ namespace Flighter.Core
                 maxWidth: constraints.maxWidth - horizontal,
                 maxHeight: constraints.maxHeight - vertical);
 
-            var child = node.AddChildWidget(
+            var child = node.LayoutChild(
                 this.child, 
-                new BuildContext(childConstraints));
+                childConstraints);
 
             child.Offset = new Vector2(edgeInsets.left, edgeInsets.top);
             var childSize = child.size;

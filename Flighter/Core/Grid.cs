@@ -80,11 +80,10 @@ namespace Flighter.Core
                 cellConstraints.maxHeight = context.constraints.maxHeight / mainAxisCount;
             }
 
-            var cellContext = new BuildContext(cellConstraints);
             int onMain = 0, onCross = 0;
             foreach (var c in children)
             {
-                var childNode = node.AddChildWidget(c, cellContext);
+                var childNode = node.LayoutChild(c, cellConstraints);
                 childNode.Offset = GetOffset(ref onMain, ref onCross, cellConstraints);
             }
 

@@ -33,7 +33,7 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            var childNode = node.AddChildWidget(child, new BuildContext(constraints));
+            var childNode = node.LayoutChild(child, constraints);
             return new BuildResult(childNode.size);
         }
     }

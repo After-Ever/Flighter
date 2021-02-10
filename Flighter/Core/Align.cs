@@ -120,7 +120,7 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            var childNode = node.AddChildWidget(child, context);
+            var childNode = node.LayoutChild(child, context.constraints);
             var childSize = childNode.size;
 
             var extraSpace = new Vector2();

@@ -102,13 +102,13 @@ namespace Flighter.Core
                     absoluteChildren.Add(c);
             });
 
-            BuildContext absoluteContext = MakeAbsoluteContext(context);
+            BoxConstraints absoluteConstraints = MakeAbsoluteConstraints(context.constraints);
 
             float totalMainSize = 0;
             float crossAxisSize = 0;
             absoluteChildren.ForEach((w) =>
             {
-                var n = widgetNodes[w] = node.AddChildWidget(w, absoluteContext);
+                var n = widgetNodes[w] = node.LayoutChild(w, absoluteConstraints);
                 totalMainSize += SizeOnMain(n);
                 crossAxisSize = Math.Max(crossAxisSize, SizeOnCross(n));
             });
@@ -123,7 +123,7 @@ namespace Flighter.Core
                 flexChildren.ForEach((w) =>
                 {
                     float mainSize = (w.flexValue / totalFlex) * remainingOnMain;
-                    var n = widgetNodes[w] = node.AddChildWidget(w, MakeFlexContent(context, mainSize));
+                    var n = widgetNodes[w] = node.LayoutChild(w, MakeFlexConstraints(context.constraints, mainSize));
                     totalMainSize += SizeOnMain(n);
                     crossAxisSize = Math.Max(crossAxisSize, SizeOnCross(n));
                 });
@@ -290,39 +290,39 @@ namespace Flighter.Core
             }
         }
 
-        BuildContext MakeAbsoluteContext(BuildContext context)
+        BoxConstraints MakeAbsoluteConstraints(BoxConstraints constraints)
         {
             switch (axis)
             {
                 case Axis.Horizontal:
-                    return new BuildContext(new BoxConstraints(
-                        minHeight: context.constraints.minHeight,
-                        maxHeight: context.constraints.maxHeight));
+                    return new BoxConstraints(
+                        minHeight: constraints.minHeight,
+                        maxHeight: constraints.maxHeight);
                 case Axis.Vertical:
-                    return new BuildContext(new BoxConstraints(
-                        minWidth: context.constraints.minWidth,
-                        maxWidth: context.constraints.maxWidth));
+                    return new BoxConstraints(
+                        minWidth: constraints.minWidth,
+                        maxWidth: constraints.maxWidth);
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        BuildContext MakeFlexContent(BuildContext context, float mainAxisSize)
+        BoxConstraints MakeFlexConstraints(BoxConstraints constraints, float mainAxisSize)
         {
             switch (axis)
             {
                 case Axis.Horizontal:
-                    return new BuildContext(new BoxConstraints(
+                    return new BoxConstraints(
                         minWidth: mainAxisSize,
                         maxWidth: mainAxisSize,
-                        minHeight: context.constraints.minHeight,
-                        maxHeight: context.constraints.maxHeight));
+                        minHeight: constraints.minHeight,
+                        maxHeight: constraints.maxHeight);
                 case Axis.Vertical:
-                    return new BuildContext(new BoxConstraints(
+                    return new BoxConstraints(
                         minHeight: mainAxisSize,
                         maxHeight: mainAxisSize,
-                        minWidth: context.constraints.minWidth,
-                        maxWidth: context.constraints.maxWidth));
+                        minWidth: constraints.minWidth,
+                        maxWidth: constraints.maxWidth);
                 default:
                     throw new NotSupportedException();
             }

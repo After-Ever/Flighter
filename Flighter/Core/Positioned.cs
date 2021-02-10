@@ -34,7 +34,7 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            var childNode = node.AddChildWidget(child, context);
+            var childNode = node.LayoutChild(child, context.constraints);
             childNode.Offset = offset;
 
             // If the offset is negative, we will end up returning a size less than that of the child.

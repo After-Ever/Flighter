@@ -32,7 +32,7 @@ namespace Flighter.Core
 
             children?.ForEach((c) =>
             {
-                var childSize = node.AddChildWidget(c, context).size;
+                var childSize = node.LayoutChild(c, context.constraints).size;
                 maxWidth = Math.Max(childSize.width, maxWidth);
                 maxHeight = Math.Max(childSize.height, maxHeight);
             });
