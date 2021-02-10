@@ -6,8 +6,6 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-using Input = Flighter.Input.Input;
-
 namespace FlighterUnity
 {
     public class DisplayHandle

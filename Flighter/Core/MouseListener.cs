@@ -6,7 +6,7 @@ using Flighter.Input;
 
 namespace Flighter.Core
 {
-    public delegate void MouseEventCallback(MouseEventFilter filter, IInputPoller poller);
+    public delegate void MouseEventCallback(MouseEventFilter filter);
 
     /// <summary>
     /// Widget which listens for mouse events.
@@ -15,8 +15,14 @@ namespace Flighter.Core
     {
         readonly MouseEventCallback onMouseEvent;
 
-        public MouseListener(Widget child, List<MouseEventFilter> mouseEvents, MouseEventCallback onMouseEvent, bool onlyWhileHovering = true)
-            : base(child, onlyWhileHovering, mouseEventsToReceive: mouseEvents)
+        public MouseListener(
+            Widget child, 
+            List<MouseEventFilter> mouseEvents,
+            MouseEventCallback onMouseEvent,
+            bool absorbEvents = true,
+            bool absorbWholeEvent = false,
+            bool onlyWhileHovering = true)
+            : base(child, onlyWhileHovering, absorbEvents, absorbWholeEvent, mouseEventsToReceive: mouseEvents)
         {
             this.onMouseEvent = onMouseEvent;
         }
@@ -37,9 +43,9 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override void OnMouseEvent(MouseEventFilter filter, IInputPoller inputPoller)
+        public override void OnMouseEvent(MouseEventFilter filter)
         {
-            onMouseEvent?.Invoke(filter, inputPoller);
+            onMouseEvent?.Invoke(filter);
         }
     }
 }

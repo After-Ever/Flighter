@@ -14,6 +14,7 @@ namespace Flighter
                 ?? stateElement?.Builder?.widget) as W
                 ?? throw new Exception("Could not get widget!");
         }
+        protected BuildContext context { get; private set; }
 
         StateElement stateElement;
 
@@ -24,6 +25,11 @@ namespace Flighter
         internal void SetStateElement(StateElement stateElement)
         {
             this.stateElement = stateElement;
+        }
+
+        internal void SetBuildContext(BuildContext context)
+        {
+            this.context = context;
         }
 
         /// <summary>

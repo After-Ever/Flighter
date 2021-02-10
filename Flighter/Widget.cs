@@ -2,6 +2,8 @@
 
 namespace Flighter
 {
+    public delegate Widget WidgetBuilder(BuildContext context);
+
     // TODO: Name this something better, and describe it! 
     public class WidgetEquality : IEqualityComparer<Widget>
     {

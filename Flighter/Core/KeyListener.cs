@@ -6,7 +6,7 @@ using Flighter.Input;
 
 namespace Flighter.Core
 {
-    public delegate void KeyEventCallback(KeyEventFilter filter, IInputPoller inputPoller);
+    public delegate void KeyEventCallback(KeyEventFilter filter);
 
     /// <summary>
     /// Widget that triggers callbacks when
@@ -16,8 +16,14 @@ namespace Flighter.Core
     {
         readonly KeyEventCallback onKeyEvent;
 
-        public KeyListener(Widget child, List<KeyEventFilter> keyEvents, KeyEventCallback onKeyEvent, bool onlyWhileHovering = false)
-            : base(child, onlyWhileHovering, keyEvents)
+        public KeyListener(
+            Widget child, 
+            List<KeyEventFilter> keyEvents, 
+            KeyEventCallback onKeyEvent,
+            bool absorbEvents = true,
+            bool absorbWholeEvent = false,
+            bool onlyWhileHovering = false)
+            : base(child, onlyWhileHovering, absorbEvents, absorbWholeEvent, keyEvents)
         {
             this.onKeyEvent = onKeyEvent;
         }
@@ -38,9 +44,9 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override void OnKeyEvent(KeyEventFilter filter, IInputPoller inputPoller)
+        public override void OnKeyEvent(KeyEventFilter filter)
         {
-            onKeyEvent?.Invoke(filter, inputPoller);
+            onKeyEvent?.Invoke(filter);
         }
     }
 }

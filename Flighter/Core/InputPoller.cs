@@ -41,7 +41,5 @@ namespace Flighter.Core
         {
             callback?.Invoke(inputPoller);
         }
-
-
     }
 }

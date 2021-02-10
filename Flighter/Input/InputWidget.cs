@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace Flighter.Input
 {
@@ -10,19 +11,27 @@ namespace Flighter.Input
 
         public IEnumerable<KeyEventFilter> KeyEventsToReceive { get; private set; }
         public IEnumerable<MouseEventFilter> MouseEventsToReceive { get; private set; }
+        public bool AbsorbEvents { get; private set; }
+        public bool AbsorbWholeEvent { get; private set; }
 
         public readonly bool onlyWhileHovering;
 
         public InputWidget(
             Widget child,
             bool onlyWhileHovering = true,
+            bool absorbEvents = true,
+            bool absorbWholeEvent = false,
             List<KeyEventFilter> keyEventsToReceive = null,
             List<MouseEventFilter> mouseEventsToReceive = null)
         {
             this.child = child;
             this.onlyWhileHovering = onlyWhileHovering;
-            this.KeyEventsToReceive = keyEventsToReceive;
-            this.MouseEventsToReceive = mouseEventsToReceive;
+            this.AbsorbEvents = absorbEvents;
+            this.AbsorbWholeEvent = absorbWholeEvent;
+            this.KeyEventsToReceive = keyEventsToReceive
+                ?? Enumerable.Empty<KeyEventFilter>();
+            this.MouseEventsToReceive = mouseEventsToReceive
+                ?? Enumerable.Empty<MouseEventFilter>();
         }
 
         public sealed override Widget Build(BuildContext context)
@@ -30,9 +39,9 @@ namespace Flighter.Input
             return child;
         }
 
-        public virtual void OnKeyEvent(KeyEventFilter filter, IInputPoller inputPoller) { }
+        public virtual void OnKeyEvent(KeyEventFilter filter) { }
 
-        public virtual void OnMouseEvent(MouseEventFilter filter, IInputPoller inputPoller) { }
+        public virtual void OnMouseEvent(MouseEventFilter filter) { }
 
         public virtual void OnUpdate(IInputPoller inputPoller) { }
 

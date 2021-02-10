@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Flighter
 {
-    public class ElementNode
+    public class ElementNode : TreeNode
     {
         public readonly Element element;
 
-        ElementNode parent;
-        List<ElementNode> children = new List<ElementNode>();
+        ElementNode parent => Parent as ElementNode;
 
         WidgetNode currentWidgetNode;
         bool changedWidgetNode = false;
@@ -27,14 +27,11 @@ namespace Flighter
         }
 
         bool needsRebuild = false;
-        int childrenNeedingRebuild = 0;
-
-        bool TreeNeedsRebuild => needsRebuild || childrenNeedingRebuild > 0;
 
         public ElementNode(Element element, ElementNode parent, ComponentProvider componentProvider = null)
         {
             this.element = element ?? throw new ArgumentNullException();
-            this.parent = parent;
+            parent?.AddChild(this);
             this._componentProvider = componentProvider;
 
             this.element.SetElementNode(this);
@@ -47,13 +44,16 @@ namespace Flighter
                 // Rebuilding should call Infalte, setting this as no longer needing a rebuild,
                 // and updating the parent.
                 currentWidgetNode.Rebuild();
-            }
 
-            // TODO: I'm pretty sure this is not needed... Rebuilding a parent
-            // should implicitly rebuild the children...
-            while (childrenNeedingRebuild > 0)
+                if (needsRebuild)
+                    throw new Exception("Rebuild did not inflate rebuilt element.");
+            }
+            else
             {
-                children.Find((e) => e.TreeNeedsRebuild).DoRebuilds();
+                // Make a copy, as they will be removed and readded durring rebuilds.
+                var childrenToRebuild = Children.Select(node => node as ElementNode).ToList();
+                foreach (var child in childrenToRebuild)
+                    child.DoRebuilds();
             }
         }
 
@@ -71,7 +71,9 @@ namespace Flighter
             EnsureElementConnected();
 
             element.Update();
-            children.ForEach((e) => e.Update());
+
+            foreach (var e in Children)
+                (e as ElementNode).Update();
         }
 
         /// <summary>
@@ -85,55 +87,19 @@ namespace Flighter
             changedWidgetNode = changedWidgetNode || widgetNode != currentWidgetNode;
             currentWidgetNode = widgetNode;
 
-            var treeNeededRebuild = TreeNeedsRebuild;
             needsRebuild = false;
-
-            if (TreeNeedsRebuild != treeNeededRebuild)
-                parent?.ChildRebuilt();
-        }
-
-        internal void ConnectNode(ElementNode node)
-        {
-            if (node.parent != null)
-                throw new Exception("Cannot add a node with a parent.");
-
-            children.Add(node);
-            node.parent = this;
-
-            if (node.TreeNeedsRebuild)
-                ChildRequestedRebuild();
         }
 
         internal void RequestRebuild()
         {
-            if (needsRebuild) return;
-
-            var treeNeededRebuild = TreeNeedsRebuild;
             needsRebuild = true;
-
-            if (!treeNeededRebuild)
-                parent?.ChildRequestedRebuild();
         }
 
-        /// <summary>
-        /// Remove this from its parent.
-        /// </summary>
-        internal void Emancipate()
+        protected override void WasEmancipated()
         {
-            if (parent == null)
-                return;
-
-            if (!parent.children.Remove(this))
-                throw new Exception("Node not in parent's child list.");
-
-            if (TreeNeedsRebuild)
-                parent.ChildRebuilt();
-            
-            parent = null;
-
             element.Disconnect();
         }
-        
+
         /// <summary>
         /// Remove and destroy this node, and any children.
         /// </summary>
@@ -141,29 +107,11 @@ namespace Flighter
         {
             if (emancipate)
                 Emancipate();
-            
-            children.ForEach((c) => c.Dispose(false));
+
+            foreach (var c in Children)
+                (c as ElementNode).Dispose(false);
 
             element.TearDown();
-        }
-
-        void ChildRequestedRebuild()
-        {
-            bool treeNeededRebuild = TreeNeedsRebuild;
-            childrenNeedingRebuild++;
-
-            if (!treeNeededRebuild)
-                parent?.ChildRequestedRebuild();
-        }
-
-        void ChildRebuilt()
-        {
-
-            bool treeNeededRebuild = TreeNeedsRebuild;
-            childrenNeedingRebuild--;
-
-            if (TreeNeedsRebuild != treeNeededRebuild)
-                parent?.ChildRebuilt();
         }
 
         internal virtual void EnsureElementConnected()
@@ -193,8 +141,8 @@ namespace Flighter
 
             r += element.Name + (needsRebuild? "*" : "") + "\n";
 
-            foreach (var c in children)
-                r += c.Print(indent + 1);
+            foreach (var c in Children)
+                r += (c as ElementNode).Print(indent + 1);
 
             return r;
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Linq;
 
 namespace Flighter
 {
@@ -61,6 +62,7 @@ namespace Flighter
                             stateElement.Builder = this;
 
                             state = stateElement.state;
+                            state.SetBuildContext(this.buildContext);
                             // Manually call this to reflect the change to the builder.
                             state.WidgetChanged();
                             // This state has been around the block, and may have some scores to settle before rebuilding.
@@ -73,6 +75,7 @@ namespace Flighter
                             elementNode = new ElementNode(stateElement, null);
 
                             stateElement.Builder = this;
+                            state.SetBuildContext(this.buildContext);
                             state.Init();
                         }
 
@@ -96,8 +99,7 @@ namespace Flighter
                     }
                 case InheritedWidget iw:
                     {
-                        this.buildContext = buildContext.Copy();
-                        this.buildContext.AddInheritedWidget(iw, iw.GetType());
+                        this.buildContext = buildContext.AddInheritedWidget(iw, iw.GetType());
 
                         var child = iw.child;
                         var childNode = AddChildWidget(child, this.buildContext);
@@ -140,7 +142,7 @@ namespace Flighter
 
         public WidgetNodeBuilder LayoutChild(Widget child, BoxConstraints constraints)
         {
-            var childBuildContext = buildContext.Copy(constraints);
+            var childBuildContext = buildContext.WithNewConstraints(constraints);
             return AddChildWidget(child, childBuildContext);
         }
 
@@ -159,7 +161,8 @@ namespace Flighter
                 if (widget.CanReplace(toReplace.widget))
                 {
                     childElementNode = toReplace.TakeElementNode();
-                    orphans = toReplace.EmancipateChildren();
+                    orphans = new Queue<WidgetNode>(
+                        toReplace.EmancipateChildren().Select(node => node as WidgetNode));
                 }
                 
                 toReplace.Dispose();

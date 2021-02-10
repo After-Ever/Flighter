@@ -4,8 +4,6 @@ using System.Collections.Generic;
 
 namespace Flighter.Core
 {
-    public delegate Widget WidgetBuilder(BuildContext context);
-
     public enum TextAlign
     {
         TopLeft, TopCenter, TopRight,

@@ -4,28 +4,44 @@ using System.Text;
 using Flighter;
 using Flighter.Input;
 using UnityEngine;
-using Input = Flighter.Input.Input;
 
 namespace FlighterUnity
 {
     public class InputProvider : MonoBehaviour
     {
-        public Input GetInput() => input;
-        
-        Input input;
+        InputPoller poller;
         readonly List<WidgetNode> roots = new List<WidgetNode>();
         readonly Dictionary<WidgetForest, int> forests = new Dictionary<WidgetForest, int>();
+
+        /// <summary>
+        /// Stores the last <see cref="InputEvent"/> this processed.
+        /// 
+        /// It is recommended to set this Script's execution order before
+        /// anything else so this can be used for the current frame of input.
+        /// This can be done following: https://docs.unity3d.com/Manual/class-MonoManager.html
+        /// 
+        /// If on a frame a script accesses this before this runs <see cref="Update"/>,
+        /// the values will represent the last frame.
+        /// </summary>
+        public InputEvent lastEventProcessed { get; private set; }
 
         public void SetPoller(InputPoller poller)
         {
             if (poller == null)
                 throw new ArgumentNullException("Poller cannot be null");
-            if (input != null)
+            if (this.poller != null)
                 throw new Exception("Cannot set the input poller more than once.");
 
-            input = new Input(poller);
+            this.poller = poller;
         }
 
+        /// <summary>
+        /// Add a root.
+        /// 
+        /// Newly added roots recieve events, and can absorb them, before
+        /// older roots.
+        /// </summary>
+        /// <param name="node"></param>
         public void AddRoot(WidgetNode node)
         {
             roots.Add(node);
@@ -55,27 +71,39 @@ namespace FlighterUnity
         /// </summary>
         void Update()
         {
-            if (input == null)
+            if (poller == null)
                 throw new Exception("No poller has been set!");
-
-            var poller = input.inputPoller as InputPoller;
-            var context = new InputContext
-            { mousePosition = poller.MousePoller.Position };
 
             // Make copies incase the collections change durring iteration.
             var rootsToUpdate = new List<WidgetNode>(roots);
             var forestsToUpdate = new List<WidgetForest>(forests.Keys);
 
-            foreach(var n in rootsToUpdate)
-            {
-                var inputWidgets = n.GetContextDependentInputWidgets(context);
-                input.DistributeUpdates(inputWidgets);
-            }
+            var inputEvent = new InputEvent(poller);
+
+            for(int i = rootsToUpdate.Count - 1; i >= 0; --i)
+                rootsToUpdate[i].DistributeInputEvent(inputEvent);
 
             foreach (var f in forestsToUpdate)
-                input.DistributeUpdates(f.ContextFreeInputWidgets);
+            {
+                foreach (var w in f.ContextFreeInputWidgets)
+                {
+                    foreach (var k in w.KeyEventsToReceive)
+                    {
+                        if (poller.CheckForKeyEvent(k))
+                            w.OnKeyEvent(k);
+                    }
+
+                    foreach (var m in w.MouseEventsToReceive)
+                    {
+                        if (poller.CheckForMouseEvent(m))
+                            w.OnMouseEvent(m);
+                    }
+                }
+            }
 
             poller.FramePassed();
+
+            lastEventProcessed = inputEvent;
         }
     }
 }

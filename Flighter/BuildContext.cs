@@ -36,15 +36,17 @@ namespace Flighter
             return null;
         }
 
-        internal void AddInheritedWidget(InheritedWidget widget, Type type)
+        internal BuildContext AddInheritedWidget(InheritedWidget widget, Type type)
         {
-            inheritedWidgets[type] = widget;
+            var with = new Dictionary<Type, InheritedWidget>(inheritedWidgets);
+            with[type] = widget;
+
+            return new BuildContext(constraints, with);
         }
 
-        public BuildContext Copy(BoxConstraints? constraints = null)
+        public BuildContext WithNewConstraints(BoxConstraints constraints)
         {
-            var inheritedInheritedWidgets = new Dictionary<Type, InheritedWidget>(inheritedWidgets);
-            return new BuildContext(constraints ?? this.constraints, inheritedInheritedWidgets);
+            return new BuildContext(constraints, inheritedWidgets);
         }
     }
 }
