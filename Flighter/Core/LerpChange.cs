@@ -16,7 +16,6 @@ namespace Flighter.Core
     {
         public readonly T value;
         public readonly ValueBuilder<T> builder;
-        public readonly TickProvider tickProvider;
         public readonly float ratioPerSecond;
         public readonly Lerp<T> lerp;
         public readonly StopCondition<T> stopCondition;
@@ -25,7 +24,6 @@ namespace Flighter.Core
             T value, 
             ValueBuilder<T> builder, 
             float ratioPerSecond, 
-            TickProvider tickProvider, 
             Lerp<T> lerp,
             StopCondition<T> stopCondition = null)
         {
@@ -35,7 +33,6 @@ namespace Flighter.Core
             if (ratioPerSecond <= 0 || ratioPerSecond >= 1)
                 throw new ArgumentOutOfRangeException("ratioPerSecond");
             this.ratioPerSecond = ratioPerSecond;
-            this.tickProvider = tickProvider;
             this.lerp = lerp;
             this.stopCondition = stopCondition;
         }
@@ -48,7 +45,6 @@ namespace Flighter.Core
             return change != null &&
                    EqualityComparer<T>.Default.Equals(value, change.value) &&
                    EqualityComparer<ValueBuilder<T>>.Default.Equals(builder, change.builder) &&
-                   EqualityComparer<TickProvider>.Default.Equals(tickProvider, change.tickProvider) &&
                    ratioPerSecond == change.ratioPerSecond &&
                    EqualityComparer<Lerp<T>>.Default.Equals(lerp, change.lerp) &&
                    EqualityComparer<StopCondition<T>>.Default.Equals(stopCondition, change.stopCondition);
@@ -59,7 +55,6 @@ namespace Flighter.Core
             var hashCode = 1708436396;
             hashCode = hashCode * -1521134295 + EqualityComparer<T>.Default.GetHashCode(value);
             hashCode = hashCode * -1521134295 + EqualityComparer<ValueBuilder<T>>.Default.GetHashCode(builder);
-            hashCode = hashCode * -1521134295 + EqualityComparer<TickProvider>.Default.GetHashCode(tickProvider);
             hashCode = hashCode * -1521134295 + ratioPerSecond.GetHashCode();
             hashCode = hashCode * -1521134295 + EqualityComparer<Lerp<T>>.Default.GetHashCode(lerp);
             hashCode = hashCode * -1521134295 + EqualityComparer<StopCondition<T>>.Default.GetHashCode(stopCondition);
@@ -72,12 +67,17 @@ namespace Flighter.Core
         T curValue;
         bool isLerping;
 
+        TickSource lastTickSource;
+
         public override void Init()
         {
             var w = GetWidget<LerpChange<T>>();
             curValue = w.value;
 
-            w.tickProvider.Tick += TakeLerpStep;
+            lastTickSource = TickSource.Of(context)
+                ?? throw new Exception("LerpChange must inherit from a TickerSource!");
+
+            lastTickSource += TakeLerpStep;
         }
 
         public override void WidgetChanged()
@@ -87,12 +87,23 @@ namespace Flighter.Core
             isLerping = true;
             if (curValue.Equals(w.value) || (w.stopCondition?.Invoke(curValue, w.value) ?? false))
                 isLerping = false;
+
+            var tickSource = TickSource.Of(context)
+                ?? throw new Exception("LerpChange must inherit from a TickerSource!");
+
+            if (tickSource != lastTickSource)
+            {
+                lastTickSource -= TakeLerpStep;
+                tickSource += TakeLerpStep;
+                lastTickSource = tickSource;
+            }
         }
 
         public override void Dispose()
         {
             var w = GetWidget<LerpChange<T>>();
-            w.tickProvider.Tick -= TakeLerpStep;
+            if (lastTickSource != null)
+                lastTickSource -= TakeLerpStep;
         }
 
         public override Widget Build(BuildContext context)
