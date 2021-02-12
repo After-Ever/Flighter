@@ -10,8 +10,8 @@ namespace Flighter
 
         protected W GetWidget<W>() where W : Widget
         {
-            return (stateElement?.GetWidget<W>() 
-                ?? stateElement?.Builder?.widget) as W
+            return (stateElement?.Builder?.widget) as W
+                ?? stateElement?.GetWidget<W>()
                 ?? throw new Exception("Could not get widget!");
         }
         protected BuildContext context { get; private set; }

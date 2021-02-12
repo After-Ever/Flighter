@@ -58,6 +58,8 @@ namespace Flighter.Input
                     return inputPoller.MousePoller.GetButtonUp(filter.button);
                 case MouseEventType.Move:
                     return !inputPoller.MousePoller.PositionDelta.Equals(Vector2.Zero);
+                case MouseEventType.Hover:
+                    return inputPoller.MousePoller.PositionDelta.Equals(Vector2.Zero);
                 case MouseEventType.Scroll:
                     return inputPoller.MousePoller.ScrollDelta != 0;
                 default:

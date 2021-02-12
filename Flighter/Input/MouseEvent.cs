@@ -22,6 +22,10 @@ namespace Flighter.Input
         /// </summary>
         Move,
         /// <summary>
+        /// The pointer is not moving.
+        /// </summary>
+        Hover,
+        /// <summary>
         /// A mouse button was pressed.
         /// </summary>
         Down,
@@ -30,7 +34,7 @@ namespace Flighter.Input
         /// </summary>
         Up,
         /// <summary>
-        /// The key is being held.
+        /// The button is being held.
         /// </summary>
         Active,
         /// <summary>

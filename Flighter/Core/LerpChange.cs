@@ -101,7 +101,6 @@ namespace Flighter.Core
 
         public override void Dispose()
         {
-            var w = GetWidget<LerpChange<T>>();
             if (lastTickSource != null)
                 lastTickSource -= TakeLerpStep;
         }
