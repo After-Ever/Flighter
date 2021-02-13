@@ -64,7 +64,7 @@ namespace Flighter
         /// <summary>
         /// Create a new <see cref="BoxConstraints"/> with no constraints.
         /// </summary>
-        public static BoxConstraints Free => new BoxConstraints();
+        public static BoxConstraints Free => new BoxConstraints(0);
         /// <summary>
         /// Create a new <see cref="BoxConstraints"/> fully constrained.
         /// </summary>

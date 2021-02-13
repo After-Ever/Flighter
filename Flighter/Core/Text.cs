@@ -7,11 +7,11 @@ namespace Flighter.Core
     public class Text : DisplayWidget
     {
         public readonly string data;
-        public readonly TextStyle? style;
+        public readonly TextStyle style;
 
         public Text(
             string data,
-            TextStyle? style = null)
+            TextStyle style)
         {
             this.data = data;
             this.style = style;
@@ -40,11 +40,7 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            // TODO: Currently just taking up as much space as possible.
-            //       Should take min space where possible. This is not trivial, 
-            //       as the size is dependent on the font... Need to get
-            //       IFontHandle to hint the actual size...
-            return new BuildResult(context.constraints.MaxSize);
+            return new BuildResult(style.font.PreferredSize(data, style, context.constraints));
         }
     }
 

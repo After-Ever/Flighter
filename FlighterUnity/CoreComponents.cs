@@ -58,6 +58,7 @@ namespace FlighterUnity
                         throw new NotSupportedException();
 
                     text.font = fontHandle.font;
+                    text.fontStyle = s.fontStyle.ToUnity();
                     text.fontSize = s.size;
                     text.lineSpacing = s.lineSpacing;
                     text.alignment = s.textAlign.ToUnity();

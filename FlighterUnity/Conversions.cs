@@ -8,6 +8,7 @@ using Flighter.Core;
 using UnityKeyCode = UnityEngine.KeyCode;
 using FlighterKeyCode = Flighter.Input.KeyCode;
 using FlighterMouseButton = Flighter.Input.MouseButton;
+using FontStyle = Flighter.Core.FontStyle;
 
 namespace FlighterUnity
 {
@@ -332,11 +333,21 @@ namespace FlighterUnity
                 { TextAnchor.LowerRight, TextAlign.BottomRight },
             };
 
+        static readonly Dictionary<FontStyle, UnityEngine.FontStyle> fontStyleFlightToUnity
+            = new Dictionary<Flighter.Core.FontStyle, UnityEngine.FontStyle>
+            {
+                { FontStyle.Normal, UnityEngine.FontStyle.Normal },
+                { FontStyle.Bold, UnityEngine.FontStyle.Bold },
+                { FontStyle.Italic, UnityEngine.FontStyle.Italic },
+                { FontStyle.BoldAndItalic, UnityEngine.FontStyle.BoldAndItalic },
+            };
+
         public static FlighterKeyCode ToFlighter(this UnityKeyCode keyCode) => keyUnityToFlighter[keyCode];
         public static UnityKeyCode ToUnity(this FlighterKeyCode keyCode) => keyFlighterToUnity[keyCode];
         public static FlighterMouseButton UnityMouseButtonToFlighter(int mouseButton) => mouseUnityToFlighter[mouseButton];
         public static int ToUnity(this FlighterMouseButton mouseButton) => mouseFlighterToUnity[mouseButton];
         public static TextAlign ToFlighter(this TextAnchor textAnchor) => textAlignUnityToFlighter[textAnchor];
         public static TextAnchor ToUnity(this TextAlign textAlign) => textAlignFlighterToUnity[textAlign];
+        public static UnityEngine.FontStyle ToUnity(this FontStyle fontStyle) => fontStyleFlightToUnity[fontStyle];
     }
 }

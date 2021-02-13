@@ -25,7 +25,10 @@ namespace Flighter.Core
         Overflow
     }
 
-    public interface IFontHandle { }
+    public interface IFontHandle 
+    {
+        Size PreferredSize(string text, TextStyle style, BoxConstraints constraints);
+    }
 
     public struct TextStyle
     {
