@@ -15,8 +15,8 @@ namespace Flighter.Core
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            node.LayoutChild(child, BoxConstraints.Free);
-            return new BuildResult(node.size);
+            var childNode = node.LayoutChild(child, BoxConstraints.Free);
+            return new BuildResult(childNode.size);
         }
     }
 }

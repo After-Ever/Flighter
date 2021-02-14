@@ -16,7 +16,7 @@ namespace Flighter
         readonly ElementNode elementNode;
 
         readonly List<WidgetNodeBuilder> children = new List<WidgetNodeBuilder>();
-        readonly Queue<WidgetNode> inheritedChildren;
+        readonly List<WidgetNode> inheritedChildren;
 
         bool hasBuilt = false;
 
@@ -25,7 +25,7 @@ namespace Flighter
             Widget widget, 
             BuildContext buildContext,
             ElementNode inheritedElementNode = null,
-            Queue<WidgetNode> inheritedChildren = null)
+            List<WidgetNode> inheritedChildren = null)
         {
             this.forest = forest
                 ?? throw new ArgumentNullException("Widget must belong to a tree");
@@ -115,7 +115,7 @@ namespace Flighter
             {
                 // Clear any remaining inherited children.
                 foreach (var c in inheritedChildren)
-                    c.Dispose();
+                    c?.Dispose();
                 inheritedChildren.Clear();
             }
         }
@@ -140,32 +140,43 @@ namespace Flighter
             return node;
         }
 
-        public WidgetNodeBuilder LayoutChild(Widget child, BoxConstraints constraints)
+        public WidgetNodeBuilder LayoutChild(
+            Widget child, 
+            BoxConstraints constraints, 
+            int index = -1)
         {
             var childBuildContext = buildContext.WithNewConstraints(constraints);
-            return AddChildWidget(child, childBuildContext);
+            return AddChildWidget(child, childBuildContext, index);
         }
 
-        WidgetNodeBuilder AddChildWidget(Widget widget, BuildContext context)
+        WidgetNodeBuilder AddChildWidget(Widget widget, BuildContext context, int index = -1)
         {
             if (hasBuilt)
                 throw new HasBuiltException();
 
+            if (index == -1)
+                index = children.Count;
+
             ElementNode childElementNode = null;
-            Queue<WidgetNode> orphans = null;
+            List<WidgetNode> orphans = null;
 
-            if (inheritedChildren?.Count > 0)
+            if (inheritedChildren?.Count >= index)
             {
-                var toReplace = inheritedChildren.Dequeue();
+                var toReplace = inheritedChildren[index];
+                inheritedChildren[index] = null;
 
-                if (widget.CanReplace(toReplace.widget))
+                if (toReplace != null)
                 {
-                    childElementNode = toReplace.TakeElementNode();
-                    orphans = new Queue<WidgetNode>(
-                        toReplace.EmancipateChildren().Select(node => node as WidgetNode));
+                    if (widget.CanReplace(toReplace.widget))
+                    {
+                        childElementNode = toReplace.TakeElementNode();
+                        orphans = toReplace.EmancipateChildren()
+                            .Select(node => node as WidgetNode)
+                            .ToList();
+                    }
+
+                    toReplace.Dispose();
                 }
-                
-                toReplace.Dispose();
             }
 
             var childBuilder = new WidgetNodeBuilder(
@@ -174,7 +185,7 @@ namespace Flighter
                 context, 
                 childElementNode,
                 orphans);
-            children.Add(childBuilder);
+            children.Insert(index, childBuilder);
             return childBuilder;
         }
     }

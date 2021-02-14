@@ -145,7 +145,7 @@ namespace Flighter
                 widget,
                 buildContext,
                 TakeElementNode(),
-                new Queue<WidgetNode>(EmancipateChildren().ConvertAll(treeNode => treeNode as WidgetNode)));
+                EmancipateChildren().ConvertAll(treeNode => treeNode as WidgetNode));
             b.Offset = Offset;
             var node = b.Build(parent);
 

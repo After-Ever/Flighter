@@ -33,10 +33,26 @@ namespace Flighter.Core
 
         public override Widget Build(BuildContext context)
         {
-            if (context.constraints.IsUnconstrained)
-                throw new Exception("Image cannot be unconstrained.");
+            var constraints = context.constraints;
 
-            var maxSize = context.constraints.MaxSize;
+            if (constraints.IsUnconstrained)
+            {
+                if (float.IsInfinity(constraints.maxWidth))
+                {
+                    if (float.IsInfinity(constraints.maxHeight))
+                        throw new Exception("Cannot have both axis unconstrained.");
+
+                    var heightToWidthRatio = imageHandle.size.width / imageHandle.size.height;
+                    constraints.maxWidth = constraints.maxHeight * heightToWidthRatio;
+                }
+                else
+                {
+                    var widthToHeightRatio = imageHandle.size.height / imageHandle.size.width;
+                    constraints.maxHeight = constraints.maxWidth * widthToHeightRatio;
+                }
+            }
+
+            var maxSize = constraints.MaxSize;
             var boxRatio = maxSize.width / maxSize.height;
             var imageRatio = imageHandle.size.width / imageHandle.size.height;
 

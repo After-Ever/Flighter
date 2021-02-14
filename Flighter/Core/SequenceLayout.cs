@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
 
 namespace Flighter.Core
 {
@@ -65,7 +64,21 @@ namespace Flighter.Core
         public readonly MainAxisAlignment mainAxisAlignment;
         public readonly CrossAxisAlignment crossAxisAlignment;
         public readonly MainAxisSize mainAxisSize;
+        public readonly int crossAxisRestrictionIndex;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="children"></param>
+        /// <param name="axis"></param>
+        /// <param name="horizontalDirection"></param>
+        /// <param name="verticalDirection"></param>
+        /// <param name="mainAxisAlignment"></param>
+        /// <param name="crossAxisAlignment"></param>
+        /// <param name="mainAxisSize"></param>
+        /// <param name="crossAxisRestrictionIndex">If set to a value other than -1,
+        /// the widget at that index will be used to determine the max cross
+        /// axis size for the rest of the widgets. Must be a non-Flex widget.</param>
         public SequenceLayout(
             List<Widget> children,
             Axis axis,
@@ -73,7 +86,8 @@ namespace Flighter.Core
             VerticalDirection verticalDirection = VerticalDirection.TopToBottom,
             MainAxisAlignment mainAxisAlignment = MainAxisAlignment.Start,
             CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.Start,
-            MainAxisSize mainAxisSize = MainAxisSize.Max)
+            MainAxisSize mainAxisSize = MainAxisSize.Max,
+            int crossAxisRestrictionIndex = -1)
         {
             this.children = children;
             this.axis = axis;
@@ -82,12 +96,11 @@ namespace Flighter.Core
             this.mainAxisAlignment = mainAxisAlignment;
             this.crossAxisAlignment = crossAxisAlignment;
             this.mainAxisSize = mainAxisSize;
+            this.crossAxisRestrictionIndex = crossAxisRestrictionIndex;
         }
 
         public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
         {
-            if (float.IsPositiveInfinity(MaxOnMain(context)) && mainAxisSize != MainAxisSize.Min)
-                throw new Exception("Main axis must be bound.");
             
             Dictionary<Widget, WidgetNodeBuilder> widgetNodes = new Dictionary<Widget, WidgetNodeBuilder>(new WidgetEquality());
 
@@ -102,31 +115,105 @@ namespace Flighter.Core
                     absoluteChildren.Add(c);
             });
 
+            if (flexChildren.Count != 0)
+            {
+                if (mainAxisSize == MainAxisSize.Min)
+                    throw new Exception("A SequenceLayout with min MainAxisSize cannot have Flex children.");
+
+                if (float.IsInfinity(MaxOnMain(context)))
+                    throw new Exception("Main axis must be bound when " +
+                        "a SequenceLayout has Flex children, and the mainAxisSize is Max");
+            }
+            
+            float totalFlex = 0;
+            flexChildren.ForEach((f) => totalFlex += f.flexValue);
+
             BoxConstraints absoluteConstraints = MakeAbsoluteConstraints(context.constraints);
 
             float totalMainSize = 0;
             float crossAxisSize = 0;
-            absoluteChildren.ForEach((w) =>
+
+            // TODO: The indices of the children become a bit scrambled in the WidgetNode;
+            //  the order of children in the WidgetNode is not necessarily the same as
+            //  the order of the list here.
+            //  This could cause issues if the items in the list change. In particular, 
+            //  State will not be preserved, or could be shuffled...
+            //
+            //  Really, this extends to how we handle replacement in general; should pivot to
+            //  using a key system like flutter. In that case, order wouldn't matter, and instead
+            //  we just search for the right key.
+            //  Yeah, that feels a lot better, and gives a more consistent idea of how replacement
+            //  will work...
+            //
+            //  For now, not going to worry about it B)
+
+            if (crossAxisRestrictionIndex != -1)
             {
-                var n = widgetNodes[w] = node.LayoutChild(w, absoluteConstraints);
+                var crossRestrictingWidget = children[crossAxisRestrictionIndex];
+
+                WidgetNodeBuilder n;
+                if (crossRestrictingWidget is Flex f)
+                {
+                    if (absoluteChildren.Count != 0)
+                        throw new Exception("Cannot use a Flex widget as the cross axis restrictor" +
+                            " when absolute children are present.");
+
+                    var spaceToTakeFactor = totalFlex == 0
+                        ? 0
+                        : f.flexValue / totalFlex;
+
+                    n = node.LayoutChild(
+                            crossRestrictingWidget,
+                            MakeFlexConstraints(absoluteConstraints, MaxOnMain(context) * spaceToTakeFactor));
+                }
+                else
+                    n = node.LayoutChild(crossRestrictingWidget, absoluteConstraints);
+
+                widgetNodes[crossRestrictingWidget] = n;
+
+                if (axis == Axis.Horizontal)
+                    absoluteConstraints.maxHeight = n.size.height;
+                else
+                    absoluteConstraints.maxWidth = n.size.width;
+            }
+
+            foreach (var w in absoluteChildren)
+            {
+                WidgetNodeBuilder n;
+
+                // Need to check if it already was layed out for crossAxisRestriction.
+                if (widgetNodes.ContainsKey(w))
+                    n = widgetNodes[w];
+                else
+                    n = widgetNodes[w] = node.LayoutChild(w, absoluteConstraints);
+                
                 totalMainSize += SizeOnMain(n);
                 crossAxisSize = Math.Max(crossAxisSize, SizeOnCross(n));
-            });
+            };
 
             if (flexChildren.Count > 0)
             {
-                float remainingOnMain = RemainingOnMain(context, totalMainSize);
+                var remainingOnMain = RemainingOnMain(context, totalMainSize);
+                var sizePerFlex = totalFlex == 0
+                    ? 0
+                    : remainingOnMain / totalFlex;
 
-                float totalFlex = 0;
-                flexChildren.ForEach((f) => totalFlex += f.flexValue);
-
-                flexChildren.ForEach((w) =>
+                foreach (var w in flexChildren)
                 {
-                    float mainSize = (w.flexValue / totalFlex) * remainingOnMain;
-                    var n = widgetNodes[w] = node.LayoutChild(w, MakeFlexConstraints(context.constraints, mainSize));
+                    WidgetNodeBuilder n;
+
+                    // Need to check if it already was layed out for crossAxisRestriction.
+                    if (widgetNodes.ContainsKey(w))
+                        n = widgetNodes[w];
+                    else
+                    {
+                        float mainSize = w.flexValue * sizePerFlex;
+                        n = widgetNodes[w] = node.LayoutChild(w, MakeFlexConstraints(absoluteConstraints, mainSize));
+                    }
+
                     totalMainSize += SizeOnMain(n);
                     crossAxisSize = Math.Max(crossAxisSize, SizeOnCross(n));
-                });
+                };
             }
 
             float freeSpaceOnMain = RemainingOnMain(context, totalMainSize);
@@ -349,19 +436,6 @@ namespace Flighter.Core
                     return context.constraints.minWidth;
                 case Axis.Vertical:
                     return context.constraints.minHeight;
-                default:
-                    throw new NotSupportedException();
-            }
-        }
-
-        float MaxOnCross(BuildContext context)
-        {
-            switch (axis)
-            {
-                case Axis.Horizontal:
-                    return context.constraints.maxHeight;
-                case Axis.Vertical:
-                    return context.constraints.maxWidth;
                 default:
                     throw new NotSupportedException();
             }
