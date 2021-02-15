@@ -8,7 +8,8 @@ namespace Flighter.Core
     {
         readonly Widget child;
 
-        public Unconstrained(Widget child)
+        public Unconstrained(Widget child, string key = null)
+            : base(key)
         {
             this.child = child;
         }

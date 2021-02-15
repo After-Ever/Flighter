@@ -4,8 +4,8 @@
     {
         public readonly TickProvider tickProvider;
 
-        public TickSource(Widget child, TickProvider tickProvider)
-            : base(child) 
+        public TickSource(Widget child, TickProvider tickProvider, string key = null)
+            : base(child, key) 
         {
             this.tickProvider = tickProvider;
         }

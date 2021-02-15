@@ -10,7 +10,8 @@ namespace Flighter.Core
         public readonly Widget child;
         public readonly Vector2 offset;
 
-        public Positioned(Widget child, Vector2 offset)
+        public Positioned(Widget child, Vector2 offset, string key = null)
+            : base(key)
         {
             this.child = child;
             this.offset = offset;

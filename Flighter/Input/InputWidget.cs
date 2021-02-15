@@ -22,7 +22,9 @@ namespace Flighter.Input
             bool absorbEvents = true,
             bool absorbWholeEvent = false,
             List<KeyEventFilter> keyEventsToReceive = null,
-            List<MouseEventFilter> mouseEventsToReceive = null)
+            List<MouseEventFilter> mouseEventsToReceive = null,
+            string key = null)
+            : base (key)
         {
             this.child = child;
             this.onlyWhileHovering = onlyWhileHovering;

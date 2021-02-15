@@ -87,7 +87,9 @@ namespace Flighter.Core
             MainAxisAlignment mainAxisAlignment = MainAxisAlignment.Start,
             CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.Start,
             MainAxisSize mainAxisSize = MainAxisSize.Max,
-            int crossAxisRestrictionIndex = -1)
+            int crossAxisRestrictionIndex = -1, 
+            string key = null)
+            : base(key)
         {
             this.children = children;
             this.axis = axis;
@@ -132,20 +134,6 @@ namespace Flighter.Core
 
             float totalMainSize = 0;
             float crossAxisSize = 0;
-
-            // TODO: The indices of the children become a bit scrambled in the WidgetNode;
-            //  the order of children in the WidgetNode is not necessarily the same as
-            //  the order of the list here.
-            //  This could cause issues if the items in the list change. In particular, 
-            //  State will not be preserved, or could be shuffled...
-            //
-            //  Really, this extends to how we handle replacement in general; should pivot to
-            //  using a key system like flutter. In that case, order wouldn't matter, and instead
-            //  we just search for the right key.
-            //  Yeah, that feels a lot better, and gives a more consistent idea of how replacement
-            //  will work...
-            //
-            //  For now, not going to worry about it B)
 
             if (crossAxisRestrictionIndex != -1)
             {
@@ -252,15 +240,9 @@ namespace Flighter.Core
             switch (axis)
             {
                 case Axis.Horizontal:
-                    if (mainAxisSize == MainAxisSize.Max)
-                        return new Size(context.constraints.maxWidth, crossTotal);
-                    else
-                        return new Size(mainTotal, crossTotal);
+                    return new Size(mainTotal, crossTotal);
                 case Axis.Vertical:
-                    if (mainAxisSize == MainAxisSize.Max)
-                        return new Size(crossTotal, context.constraints.maxHeight);
-                    else
-                        return new Size(crossTotal, mainTotal);
+                    return new Size(crossTotal, mainTotal);
                 default:
                     throw new NotSupportedException();
             }

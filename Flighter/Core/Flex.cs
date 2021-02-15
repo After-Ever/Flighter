@@ -9,7 +9,8 @@ namespace Flighter.Core
         public readonly Widget child;
         public readonly float flexValue;
 
-        public Flex(Widget child, float flexValue = 1)
+        public Flex(Widget child, float flexValue = 1, string key = null)
+            : base(key)
         {
             this.child = child ?? throw new ArgumentNullException("Flex must have a child.");
             if (flexValue < 0)

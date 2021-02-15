@@ -9,7 +9,8 @@ namespace Flighter.Core
         public readonly Widget child;
         public readonly BoxConstraints constraints;
 
-        public BoxConstrained(Widget child, BoxConstraints constraints)
+        public BoxConstrained(Widget child, BoxConstraints constraints, string key = null)
+            : base(key)
         {
             this.child = child ?? throw new ArgumentNullException();
             this.constraints = constraints;

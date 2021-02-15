@@ -14,32 +14,52 @@ namespace Flighter
 
     public abstract class Widget
     {
+        public readonly string key;
+
+        public Widget(string key = null)
+        {
+            this.key = key;
+        }
+
         /// <summary>
         /// Can this replace <paramref name="other"/> in the tree.
         /// By default, this returns true if both types are equal.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        public virtual bool CanReplace(Widget other) => GetType() == other.GetType();
+        public bool CanReplace(Widget other)
+            => other != null
+            && GetType() == other.GetType()
+            && key == other.key;
     }
 
     public abstract class StatelessWidget : Widget
     {
+        public StatelessWidget(string key = null)
+            : base(key) { }
+
         public abstract Widget Build(BuildContext context);
     }
 
     public abstract class StatefulWidget : Widget
     {
+        public StatefulWidget(string key = null)
+            : base(key) { }
         public abstract State CreateState();
     }
 
     public abstract class LayoutWidget : Widget
     {
+        public LayoutWidget(string key = null)
+            : base(key) { }
         public abstract BuildResult Layout(BuildContext context, WidgetNodeBuilder node);
     }
 
     public abstract class DisplayWidget : LayoutWidget
     {
+        public DisplayWidget(string key = null)
+            : base(key) { }
+     
         public abstract Element CreateElement();
     }
 
@@ -47,7 +67,8 @@ namespace Flighter
     {
         public readonly Widget child;
 
-        public InheritedWidget(Widget child)
+        public InheritedWidget(Widget child, string key = null)
+            : base (key)
         {
             this.child = child;
         }

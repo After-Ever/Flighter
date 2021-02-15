@@ -15,7 +15,7 @@ namespace Flighter.Core
 
         public override Widget Build(BuildContext context)
             => new BoxConstrained(
-                constraints: new BoxConstraints(maxWidth: size),
+                constraints: new BoxConstraints(maxWidth: size, maxHeight: 0),
                 child: new EmptyBox());
     }
     public class VerticalGap : StatelessWidget
@@ -29,7 +29,7 @@ namespace Flighter.Core
 
         public override Widget Build(BuildContext context)
             => new BoxConstrained(
-                constraints: new BoxConstraints(maxHeight: size),
+                constraints: new BoxConstraints(maxHeight: size, maxWidth: 0),
                 child: new EmptyBox());
     }
 }

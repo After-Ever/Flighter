@@ -30,7 +30,8 @@ namespace Flighter.Core
         public readonly ValueBuilder<T> builder;
         public readonly ValueChangeNotifier<T> notifier;
 
-        public ValueChangeBuilder(ValueBuilder<T> builder, ValueChangeNotifier<T> notifier)
+        public ValueChangeBuilder(ValueBuilder<T> builder, ValueChangeNotifier<T> notifier, string key = null)
+            : base (key)
         {
             this.builder = builder ?? throw new ArgumentNullException();
             this.notifier = notifier ?? throw new ArgumentNullException();

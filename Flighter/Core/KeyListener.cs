@@ -22,8 +22,9 @@ namespace Flighter.Core
             KeyEventCallback onKeyEvent,
             bool absorbEvents = true,
             bool absorbWholeEvent = false,
-            bool onlyWhileHovering = false)
-            : base(child, onlyWhileHovering, absorbEvents, absorbWholeEvent, keyEvents)
+            bool onlyWhileHovering = false, 
+            string key = null)
+            : base(child, onlyWhileHovering, absorbEvents, absorbWholeEvent, keyEvents, key: key)
         {
             this.onKeyEvent = onKeyEvent;
         }

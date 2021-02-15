@@ -25,7 +25,9 @@ namespace Flighter.Core
             ValueBuilder<T> builder, 
             float ratioPerSecond, 
             Lerp<T> lerp,
-            StopCondition<T> stopCondition = null)
+            StopCondition<T> stopCondition = null, 
+            string key = null)
+            : base(key)
         {
             this.value = value;
             this.builder = builder;

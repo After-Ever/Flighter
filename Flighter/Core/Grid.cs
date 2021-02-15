@@ -26,7 +26,9 @@ namespace Flighter.Core
             int crossAxisCount,
             Axis mainFillAxis = Axis.Vertical, 
             HorizontalDirection horizontalFillDirection = HorizontalDirection.LeftToRight, 
-            VerticalDirection verticalFillDirection = VerticalDirection.TopToBottom)
+            VerticalDirection verticalFillDirection = VerticalDirection.TopToBottom, 
+            string key = null)
+            : base(key)
         {
             this.children = children ?? throw new ArgumentNullException(nameof(children));
             this.mainFillAxis = mainFillAxis;

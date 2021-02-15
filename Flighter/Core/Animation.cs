@@ -194,7 +194,8 @@ namespace Flighter.Core
         public readonly AnimationBuilder builder;
         public readonly AnimationController controller;
 
-        public Animation(AnimationBuilder builder, AnimationController controller)
+        public Animation(AnimationBuilder builder, AnimationController controller, string key = null)
+            : base(key)
         {
             this.builder = builder;
             this.controller = controller;

@@ -8,7 +8,8 @@ namespace Flighter.Core
     {
         readonly WidgetBuilder builder;
 
-        public Builder(WidgetBuilder builder)
+        public Builder(WidgetBuilder builder, string key = null)
+            : base(key)
         {
             this.builder = builder;
         }

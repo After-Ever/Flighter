@@ -11,7 +11,8 @@ namespace Flighter.Core
     {
         public readonly Widget child;
 
-        public Clip(Widget child)
+        public Clip(Widget child, string key = null)
+            : base(key)
         {
             this.child = child;
         }

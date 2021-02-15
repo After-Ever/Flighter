@@ -15,8 +15,8 @@ namespace Flighter.Core
     {
         readonly InputUpdateCallback callback;
 
-        public InputPoller(Widget child, InputUpdateCallback callback)
-            : base(child, false)
+        public InputPoller(Widget child, InputUpdateCallback callback, string key = null)
+            : base(child, false, key: key)
         {
             this.callback = callback;
         }

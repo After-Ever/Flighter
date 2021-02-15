@@ -16,13 +16,13 @@ namespace Flighter
         readonly ElementNode elementNode;
 
         readonly List<WidgetNodeBuilder> children = new List<WidgetNodeBuilder>();
-        readonly List<WidgetNode> inheritedChildren;
+        readonly List<WidgetNode> inheritedChildren = new List<WidgetNode>();
 
         bool hasBuilt = false;
 
         public WidgetNodeBuilder(
             WidgetForest forest,
-            Widget widget, 
+            Widget widget,
             BuildContext buildContext,
             ElementNode inheritedElementNode = null,
             List<WidgetNode> inheritedChildren = null)
@@ -113,7 +113,6 @@ namespace Flighter
 
             if (inheritedChildren != null)
             {
-                // Clear any remaining inherited children.
                 foreach (var c in inheritedChildren)
                     c?.Dispose();
                 inheritedChildren.Clear();
@@ -160,23 +159,19 @@ namespace Flighter
             ElementNode childElementNode = null;
             List<WidgetNode> orphans = null;
 
-            if (inheritedChildren?.Count >= index)
+            var toReplace = TakeInheritedMatching(widget);
+            if (toReplace != null)
             {
-                var toReplace = inheritedChildren[index];
-                inheritedChildren[index] = null;
-
-                if (toReplace != null)
+                if (widget.CanReplace(toReplace.widget))
                 {
-                    if (widget.CanReplace(toReplace.widget))
-                    {
-                        childElementNode = toReplace.TakeElementNode();
-                        orphans = toReplace.EmancipateChildren()
-                            .Select(node => node as WidgetNode)
-                            .ToList();
-                    }
-
-                    toReplace.Dispose();
+                    childElementNode = toReplace.TakeElementNode();
+                    orphans = toReplace.EmancipateChildren()
+                        .Select(node => node as WidgetNode)
+                        .ToList();
                 }
+
+                toReplace.Dispose();
+                
             }
 
             var childBuilder = new WidgetNodeBuilder(
@@ -187,6 +182,48 @@ namespace Flighter
                 orphans);
             children.Insert(index, childBuilder);
             return childBuilder;
+        }
+
+        WidgetNode TakeInheritedMatching(Widget widget)
+        {
+            if (inheritedChildren == null)
+                return null;
+
+            for (int i = 0; i < inheritedChildren.Count; ++i)
+            {
+                if (widget.CanReplace(inheritedChildren[i]?.widget))
+                {
+                    var n = inheritedChildren[i];
+                    inheritedChildren[i] = null;
+                    return n;
+                }
+            }
+
+            return null;
+        }
+
+        class WidgetHashKey
+        {
+            readonly Widget w;
+
+            public WidgetHashKey(Widget w)
+            {
+                this.w = w;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is WidgetHashKey node &&
+                       node.w.CanReplace(w);
+            }
+
+            public override int GetHashCode()
+            {
+                int hashCode = -1947384982;
+                hashCode = hashCode * -1521134295 + w.GetType().GetHashCode();
+                hashCode = hashCode * -1521134295 + w.key.GetHashCode();
+                return hashCode;
+            }
         }
     }
 

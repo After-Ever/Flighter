@@ -13,7 +13,8 @@ namespace Flighter.Core
             MainAxisAlignment mainAxisAlignment = MainAxisAlignment.Start,
             CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.Start,
             MainAxisSize mainAxisSize = MainAxisSize.Max,
-            int crossAxisRestrictionIndex = -1)
+            int crossAxisRestrictionIndex = -1, 
+            string key = null)
             : base(
                   children,
                   Axis.Vertical,
@@ -22,7 +23,8 @@ namespace Flighter.Core
                   mainAxisAlignment,
                   crossAxisAlignment,
                   mainAxisSize,
-                  crossAxisRestrictionIndex)
+                  crossAxisRestrictionIndex,
+                  key)
         { }
 
         public override bool Equals(object obj)

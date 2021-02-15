@@ -50,7 +50,8 @@ namespace Flighter.Core
         public readonly Widget child;
         public readonly EdgeInsets edgeInsets;
 
-        public Padding(Widget child, EdgeInsets edgeInsets)
+        public Padding(Widget child, EdgeInsets edgeInsets, string key = null)
+            : base(key)
         {
             this.child = child ?? throw new ArgumentNullException("Padding must have child.");
             this.edgeInsets = edgeInsets;

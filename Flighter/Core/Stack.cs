@@ -8,7 +8,8 @@ namespace Flighter.Core
     {
         public readonly List<Widget> children;
 
-        public Stack(List<Widget> children)
+        public Stack(List<Widget> children, string key = null)
+            : base(key)
         {
             this.children = children;
         }

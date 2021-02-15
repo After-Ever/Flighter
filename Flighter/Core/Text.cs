@@ -11,7 +11,9 @@ namespace Flighter.Core
 
         public Text(
             string data,
-            TextStyle style)
+            TextStyle style, 
+            string key = null)
+            : base(key)
         {
             this.data = data;
             this.style = style;

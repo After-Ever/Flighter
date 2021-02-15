@@ -96,7 +96,8 @@ namespace Flighter.Core
         public readonly Widget child;
         public readonly Alignment alignment;
 
-        public Align(Widget child, Alignment alignment)
+        public Align(Widget child, Alignment alignment, string key = null)
+            : base(key)
         {
             this.child = child;
             this.alignment = alignment;
