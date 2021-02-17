@@ -33,19 +33,19 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
-            var childNode = node.LayoutChild(child, context.constraints);
-            childNode.Offset = offset;
+            var childLayout = layout.LayoutChild(child, context.constraints);
+            childLayout.offset = offset;
 
             // If the offset is negative, we will end up returning a size less than that of the child.
             // This is *mostly* the expectation. Really, the expectation is for children to stay within 
             // the bounds of their parent, and we cannot account for when it goes outside.
-            var size = childNode.size.ToVector2() + offset;
+            var size = childLayout.size.ToVector2() + offset;
             size.X = Math.Max(0, size.X);
             size.Y = Math.Max(0, size.Y);
 
-            return new BuildResult(size.ToSize());
+            return size.ToSize();
         }
     }
 }

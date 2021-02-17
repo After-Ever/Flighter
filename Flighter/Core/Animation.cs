@@ -220,14 +220,14 @@ namespace Flighter.Core
         }
     }
 
-    class AnimationState : State
+    class AnimationState : State<Animation>
     {
         AnimationController subscribedController;
 
         public override void Init()
         {
             
-            subscribedController = GetWidget<Animation>().controller;
+            subscribedController = widget.controller;
             subscribedController.ValueChanged += OnValueChanged;
         }
 
@@ -246,11 +246,7 @@ namespace Flighter.Core
         }
 
         public override Widget Build(BuildContext context)
-        {
-            var w = GetWidget<Animation>();
-
-            return w.builder(w.controller.Value, context);
-        }
+            => widget.builder(widget.controller.Value, context);
 
         void OnValueChanged(float _)
         {

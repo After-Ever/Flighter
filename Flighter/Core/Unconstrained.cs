@@ -14,10 +14,10 @@ namespace Flighter.Core
             this.child = child;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
-            var childNode = node.LayoutChild(child, BoxConstraints.Free);
-            return new BuildResult(childNode.size);
+            var childNode = layout.LayoutChild(child, BoxConstraints.Free);
+            return childNode.size;
         }
     }
 }

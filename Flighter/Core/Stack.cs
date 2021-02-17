@@ -26,7 +26,7 @@ namespace Flighter.Core
             return 1458441378 + EqualityComparer<List<Widget>>.Default.GetHashCode(children);
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
             float maxWidth, maxHeight;
             maxWidth = maxHeight = 0;
@@ -42,7 +42,7 @@ namespace Flighter.Core
                 }
                 else
                 {
-                    var childSize = node.LayoutChild(c, context.constraints).size;
+                    var childSize = layout.LayoutChild(c, context.constraints).size;
                     maxWidth = Math.Max(childSize.width, maxWidth);
                     maxHeight = Math.Max(childSize.height, maxHeight);
                 }
@@ -51,10 +51,10 @@ namespace Flighter.Core
             foreach ((var widget, var index) in deferredSizeWidgets)
             {
                 var constraint = BoxConstraints.Tight(maxWidth, maxHeight);
-                node.LayoutChild(widget, constraint, index);
+                layout.LayoutChild(widget, constraint, index);
             }
 
-            return new BuildResult(maxWidth, maxHeight);
+            return new Size(maxWidth, maxHeight);
         }
     }
 

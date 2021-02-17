@@ -119,10 +119,10 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
-            var childNode = node.LayoutChild(child, context.constraints);
-            var childSize = childNode.size;
+            var childLayout = layout.LayoutChild(child, context.constraints);
+            var childSize = childLayout.size;
 
             var extraSpace = new Vector2();
             if (float.IsPositiveInfinity(context.constraints.maxWidth))
@@ -144,9 +144,8 @@ namespace Flighter.Core
             }
 
             var offset = new Vector2(extraSpace.X * alignment.Horizontal, extraSpace.Y * alignment.Vertical);
-
-            childNode.Offset = offset;
-            return new BuildResult((childSize.ToVector2() + extraSpace).ToSize());
+            childLayout.offset = offset;
+            return (childSize.ToVector2() + extraSpace).ToSize();
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Flighter.Core
             this.child = child;
         }
 
-        public override Element CreateElement() => new ClipElement();
+        public override DisplayBox CreateElement() => new ClipElement();
 
         public override bool Equals(object obj)
         {
@@ -31,14 +31,11 @@ namespace Flighter.Core
             return -1589309467 + EqualityComparer<Widget>.Default.GetHashCode(child);
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
-        {
-            var childNode = node.LayoutChild(child, context.constraints);
-            return new BuildResult(childNode.size);
-        }
+        public override Size Layout(BuildContext context, ILayoutController layout)
+            => layout.LayoutChild(child, context.constraints).size;
     }
 
-    class ClipElement : Element
+    class ClipElement : DisplayBox
     {
         public override string Name => "Clip";
 

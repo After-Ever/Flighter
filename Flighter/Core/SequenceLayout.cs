@@ -101,10 +101,10 @@ namespace Flighter.Core
             this.crossAxisRestrictionIndex = crossAxisRestrictionIndex;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
             
-            Dictionary<Widget, WidgetNodeBuilder> widgetNodes = new Dictionary<Widget, WidgetNodeBuilder>(new WidgetEquality());
+            Dictionary<Widget, IChildLayout> widgetNodes = new Dictionary<Widget, IChildLayout>(new WidgetEquality());
 
             List<Widget> absoluteChildren = new List<Widget>();
             List<Flex> flexChildren = new List<Flex>();
@@ -139,7 +139,7 @@ namespace Flighter.Core
             {
                 var crossRestrictingWidget = children[crossAxisRestrictionIndex];
 
-                WidgetNodeBuilder n;
+                IChildLayout n;
                 if (crossRestrictingWidget is Flex f)
                 {
                     if (absoluteChildren.Count != 0)
@@ -150,12 +150,12 @@ namespace Flighter.Core
                         ? 0
                         : f.flexValue / totalFlex;
 
-                    n = node.LayoutChild(
+                    n = layout.LayoutChild(
                             crossRestrictingWidget,
                             MakeFlexConstraints(absoluteConstraints, MaxOnMain(context) * spaceToTakeFactor));
                 }
                 else
-                    n = node.LayoutChild(crossRestrictingWidget, absoluteConstraints);
+                    n = layout.LayoutChild(crossRestrictingWidget, absoluteConstraints);
 
                 widgetNodes[crossRestrictingWidget] = n;
 
@@ -167,13 +167,13 @@ namespace Flighter.Core
 
             foreach (var w in absoluteChildren)
             {
-                WidgetNodeBuilder n;
+                IChildLayout n;
 
                 // Need to check if it already was layed out for crossAxisRestriction.
                 if (widgetNodes.ContainsKey(w))
                     n = widgetNodes[w];
                 else
-                    n = widgetNodes[w] = node.LayoutChild(w, absoluteConstraints);
+                    n = widgetNodes[w] = layout.LayoutChild(w, absoluteConstraints);
                 
                 totalMainSize += SizeOnMain(n);
                 crossAxisSize = Math.Max(crossAxisSize, SizeOnCross(n));
@@ -188,7 +188,7 @@ namespace Flighter.Core
 
                 foreach (var w in flexChildren)
                 {
-                    WidgetNodeBuilder n;
+                    IChildLayout n;
 
                     // Need to check if it already was layed out for crossAxisRestriction.
                     if (widgetNodes.ContainsKey(w))
@@ -196,7 +196,7 @@ namespace Flighter.Core
                     else
                     {
                         float mainSize = w.flexValue * sizePerFlex;
-                        n = widgetNodes[w] = node.LayoutChild(w, MakeFlexConstraints(absoluteConstraints, mainSize));
+                        n = widgetNodes[w] = layout.LayoutChild(w, MakeFlexConstraints(absoluteConstraints, mainSize));
                     }
 
                     totalMainSize += SizeOnMain(n);
@@ -215,7 +215,7 @@ namespace Flighter.Core
                 runningMainOffset += SizeOnMain(n) + mainSpace;
             });
 
-            return new BuildResult(FinalSize(context, totalMainSize, crossAxisSize));
+            return FinalSize(context, totalMainSize, crossAxisSize);
         }
 
         List<Widget> LayoutOrder()
@@ -317,9 +317,9 @@ namespace Flighter.Core
             }
         }
 
-        void SetOffset(WidgetNodeBuilder node, float offsetOnMain, float totalSizeOnCross)
+        void SetOffset(IChildLayout layout, float offsetOnMain, float totalSizeOnCross)
         {
-            var freeOnCross = totalSizeOnCross - SizeOnCross(node);
+            var freeOnCross = totalSizeOnCross - SizeOnCross(layout);
             float crossOffset;
             switch (crossAxisAlignment)
             {
@@ -349,10 +349,10 @@ namespace Flighter.Core
             switch (axis)
             {
                 case Axis.Horizontal:
-                    node.Offset = new Vector2(offsetOnMain, crossOffset);
+                    layout.offset = new Vector2(offsetOnMain, crossOffset);
                     break;
                 case Axis.Vertical:
-                    node.Offset = new Vector2(crossOffset, offsetOnMain);
+                    layout.offset = new Vector2(crossOffset, offsetOnMain);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -423,27 +423,27 @@ namespace Flighter.Core
             }
         }
 
-        float SizeOnMain(WidgetNodeBuilder node)
+        float SizeOnMain(IChildLayout layout)
         {
             switch (axis)
             {
                 case Axis.Horizontal:
-                    return node.size.width;
+                    return layout.size.width;
                 case Axis.Vertical:
-                    return node.size.height;
+                    return layout.size.height;
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        float SizeOnCross(WidgetNodeBuilder node)
+        float SizeOnCross(IChildLayout layout)
         {
             switch (axis)
             {
                 case Axis.Horizontal:
-                    return node.size.height;
+                    return layout.size.height;
                 case Axis.Vertical:
-                    return node.size.width;
+                    return layout.size.width;
                 default:
                     throw new NotSupportedException();
             }

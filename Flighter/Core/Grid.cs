@@ -64,7 +64,7 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
             if (context.constraints.IsUnconstrained)
                 throw new Exception("Grid must be contained!");
@@ -85,11 +85,11 @@ namespace Flighter.Core
             int onMain = 0, onCross = 0;
             foreach (var c in children)
             {
-                var childNode = node.LayoutChild(c, cellConstraints);
-                childNode.Offset = GetOffset(ref onMain, ref onCross, cellConstraints);
+                var childLayout = layout.LayoutChild(c, cellConstraints);
+                childLayout.offset = GetOffset(ref onMain, ref onCross, cellConstraints);
             }
 
-            return new BuildResult(context.constraints.maxWidth, context.constraints.maxHeight);
+            return new Size(context.constraints.maxWidth, context.constraints.maxHeight);
         }
 
         Vector2 GetOffset(ref int onMain, ref int onCross, BoxConstraints cellConstraints)

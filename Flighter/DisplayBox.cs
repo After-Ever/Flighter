@@ -1,26 +1,24 @@
 ﻿using System;
+using System.Numerics;
 
 namespace Flighter
 {
     /// <summary>
     /// Used to impact the display tree.
     /// </summary>
-    public abstract class Element
+    public abstract class DisplayBox
     {
-        public WidgetNode widgetNode { get; private set; }
-        public W GetWidget<W>() where W : Widget
-        {
-            return widgetNode?.widget as W;
-        }
+        internal Widget widget;
+        internal Size size;
+        internal Vector2 offset;
+
+        public W GetWidget<W>() where W : Widget 
+            => widget as W; 
 
         /// <summary>
         /// Whether the Element has been initialized.
         /// </summary>
         public bool IsInitialized { get; private set; } = false;
-        /// <summary>
-        /// Whether the Element is connected to the element tree.
-        /// </summary>
-        public bool IsConnected { get; private set; } = false;
         
         /// <summary>
         /// The DisplayRect this element will instrument.
@@ -32,18 +30,15 @@ namespace Flighter
         /// </summary>
         public IDisplayRect DisplayRect { get; private set; }
 
-        public virtual string Name => "Element";
+        public virtual string Name => "DisplayBox";
 
         protected ComponentProvider componentProvider;
-
-        ElementNode elementNode;
 
         // The following are for the subclass implementations.
 
         protected abstract void _Init();
         protected abstract void _Update();
         protected virtual void _TearDown() { }
-        protected virtual void _WidgetNodeChanged(WidgetNode oldNode) { }
 
         /// <summary>
         /// Instrument the element. Element not guaranteed to display correctly until
@@ -61,33 +56,6 @@ namespace Flighter
             _Init();
 
             IsInitialized = true;
-            IsConnected = true;
-        }
-
-        internal void Disconnect()
-        {
-            IsConnected = false;
-            // We don't actually disconnect the parent rect, as
-            // at the end of an update cycle the element will either have
-            // been reconnected, or be torn down.
-        }
-
-        internal void Reconnect(IDisplayRect parentRect)
-        {
-            if (!IsInitialized)
-                throw new ElementUninitializedException();
-            if (IsConnected)
-                throw new Exception("Cannot reconnect a connected element.");
-
-            DisplayRect.SetParent(parentRect);
-            IsConnected = true;
-        }
-
-        internal void UpdateWidgetNode(WidgetNode newWidgetNode)
-        {
-            var oldNode = widgetNode;
-            widgetNode = newWidgetNode;
-            _WidgetNodeChanged(oldNode);
         }
         
         /// <summary>
@@ -116,27 +84,17 @@ namespace Flighter
 
             DisplayRect = null;
             IsInitialized = false;
-            IsConnected = false;
-            widgetNode = null;
-        }
 
-        internal void SetElementNode(ElementNode node)
-        {
-            elementNode = node;
-        }
-
-        protected void RequestRebuild()
-        {
-            elementNode?.RequestRebuild();
+            widget = null;
         }
 
         void SizeAndPositionRect()
         {
-            if (widgetNode == null)
+            if (widget == null)
                 return;
 
-            DisplayRect.Size = widgetNode.Size;
-            DisplayRect.Offset = widgetNode.GetElementOffset();
+            DisplayRect.Size = size;
+            DisplayRect.Offset = offset;
         }
     }
 

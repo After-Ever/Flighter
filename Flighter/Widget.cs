@@ -52,7 +52,7 @@ namespace Flighter
     {
         public LayoutWidget(string key = null)
             : base(key) { }
-        public abstract BuildResult Layout(BuildContext context, WidgetNodeBuilder node);
+        public abstract Size Layout(BuildContext context, ILayoutController layoutController);
     }
 
     public abstract class DisplayWidget : LayoutWidget
@@ -60,7 +60,7 @@ namespace Flighter
         public DisplayWidget(string key = null)
             : base(key) { }
      
-        public abstract Element CreateElement();
+        public abstract DisplayBox CreateElement();
     }
 
     public abstract class InheritedWidget : Widget

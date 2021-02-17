@@ -32,10 +32,7 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
-        {
-            var childNode = node.LayoutChild(child, constraints);
-            return new BuildResult(childNode.size);
-        }
+        public override Size Layout(BuildContext context, ILayoutController layout)
+            => layout.LayoutChild(child, constraints).size;
     }
 }

@@ -19,7 +19,7 @@ namespace Flighter.Core
             this.style = style;
         }
         
-        public override Element CreateElement()
+        public override DisplayBox CreateElement()
         {
             return new TextElement();
         }
@@ -40,13 +40,13 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
-            return new BuildResult(style.font.PreferredSize(data, style, context.constraints));
+            return style.font.PreferredSize(data, style, context.constraints);
         }
     }
 
-    public class TextElement : Element
+    public class TextElement : DisplayBox
     {
         public override string Name => "Text";
 

@@ -148,7 +148,7 @@ namespace Flighter.Core
             this.image = image ?? throw new ArgumentNullException();
         }
 
-        public override Element CreateElement() => new _ImageElement();
+        public override DisplayBox CreateElement() => new _ImageElement();
 
         public override bool Equals(object obj)
         {
@@ -162,15 +162,17 @@ namespace Flighter.Core
             return -1125144822 + EqualityComparer<Image>.Default.GetHashCode(image);
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController node)
         {
-            return new BuildResult(context.constraints.MaxSize);
+            return context.constraints.MaxSize;
         }
     }
 
-    class _ImageElement : Element
+    class _ImageElement : DisplayBox
     {
         ImageComponent imageComponent;
+
+        public override string Name => "Image";
 
         protected override void _Init()
         {

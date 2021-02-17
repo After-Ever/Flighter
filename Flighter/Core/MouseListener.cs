@@ -21,11 +21,9 @@ namespace Flighter.Core
             MouseEventCallback onMouseEvent,
             bool absorbEvents = true,
             bool absorbWholeEvent = false,
-            bool onlyWhileHovering = true, 
             string key = null)
             : base(
                   child, 
-                  onlyWhileHovering, 
                   absorbEvents,
                   absorbWholeEvent,
                   mouseEventsToReceive: mouseEvents,

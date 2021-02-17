@@ -4,32 +4,42 @@ using System.Text;
 
 namespace Flighter
 {
+    public abstract class State<T> : State where T : StatefulWidget
+    {
+        protected new T widget => base.widget as T
+            ?? throw new Exception("State<" + nameof(T) + "> got widget of mismatching type!");
+    }
+
     public abstract class State
     {
-        public abstract Widget Build(BuildContext context);
-
-        protected W GetWidget<W>() where W : Widget
-        {
-            return (stateElement?.Builder?.widget) as W
-                ?? stateElement?.GetWidget<W>()
-                ?? throw new Exception("Could not get widget!");
-        }
+        internal Widget widget;
         protected BuildContext context { get; private set; }
 
-        StateElement stateElement;
-
+        Action<State> onSetStateCallback;
         readonly Queue<Action> updates = new Queue<Action>();
 
-        bool isDirty = false;
+        public abstract Widget Build(BuildContext context);
 
-        internal void SetStateElement(StateElement stateElement)
+        internal void _Init(
+            Widget widget,
+            BuildContext context,
+            Action<State> onSetStateCallback)
         {
-            this.stateElement = stateElement;
+            this.widget = widget;
+            this.context = context;
+            this.onSetStateCallback = onSetStateCallback;
+            
+            Init();
         }
 
-        internal void SetBuildContext(BuildContext context)
+        internal void _ReBuilt(
+            Widget widget,
+            BuildContext context)
         {
+            this.widget = widget;
             this.context = context;
+
+            WidgetChanged();
         }
 
         /// <summary>
@@ -42,11 +52,29 @@ namespace Flighter
         /// Called when this state's widget has changed. This will be called before Build.
         /// </summary>
         public virtual void WidgetChanged() { }
+
         /// <summary>
         /// Called when the state's element is removed from the element tree.
         /// </summary>
         public virtual void Dispose() { }
-        
+
+        /// <summary>
+        /// Mark this widget as needing to be rebuilt.
+        /// </summary>
+        /// <param name="action">The state changing action. Will be invoked right before the State is rebuilt.
+        /// One can make changes outside this method, but the changes will not be displayed until the tree happens to rebuild.
+        /// The action will not occur if they state is disposed before it rebuilds.</param>
+        protected void SetState(Action action)
+        {
+            if (onSetStateCallback == null)
+                throw new Exception("Cannot call SetState before Init is called!");
+
+            if (action != null)
+                updates.Enqueue(action);
+            
+            onSetStateCallback(this);
+        }
+
         /// <summary>
         /// Call all the actions passed to <see cref="SetState(Action)"/> since the last time this was called.
         /// </summary>
@@ -56,31 +84,8 @@ namespace Flighter
             var actions = updates.ToArray();
             updates.Clear();
 
-            // Set as not dirty first incase any actions dirty it.
-            isDirty = false;
             foreach (var action in actions)
                 action();
-        }
-
-        /// <summary>
-        /// Mark this widget as needing to be rebuilt.
-        /// </summary>
-        /// <param name="action">The state changing action. Will be invoked right before the State is rebuilt.
-        /// One can make changes outside this method, but the changes will not be displayed until the tree happens to rebuild.</param>
-        protected void SetState(Action action)
-        {
-            if (action != null)
-                updates.Enqueue(action);
-
-            if (!isDirty)
-            {
-                if (stateElement == null)
-                    throw new NullReferenceException("State's element cannot be null when setting state.");
-
-                stateElement.StateSet();
-
-                isDirty = true;
-            }
         }
     }
 }

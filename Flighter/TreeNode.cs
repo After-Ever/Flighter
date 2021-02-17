@@ -4,23 +4,25 @@ using System.Text;
 
 namespace Flighter
 {
-    public class TreeNode
+    public class TreeNode<T>
     {
-        public TreeNode Parent { get; private set; } = null;
-        public IReadOnlyList<TreeNode> Children => children;
-        List<TreeNode> children = new List<TreeNode>();
+        public TreeNode<T> Parent { get; private set; } = null;
+        public IReadOnlyList<TreeNode<T>> Children => children;
+        List<TreeNode<T>> children = new List<TreeNode<T>>();
 
-        public void AddChild(TreeNode child)
+        public T data;
+
+        public TreeNode(T data = default)
+        {
+            this.data = data;
+        }
+
+        public void AddChild(TreeNode<T> child)
         {
             if (child.Parent != null)
                 throw new Exception("Cannot add child with a parent.");
 
-            var index = NewChildIndex(child);
-            if (index == -1)
-                children.Add(child);
-            else
-                children.Insert(index, child);
-
+            children.Add(child);
             child.Parent = this;
         }
 
@@ -32,31 +34,7 @@ namespace Flighter
             if (!(Parent?.children?.Remove(this) ?? false))
                 throw new Exception("Node not in parents chilren list.");
 
-            Parent.ChildWasEmancipated(this);
             Parent = null;
-
-            WasEmancipated();
-        }
-
-        public List<TreeNode> EmancipateChildren()
-        {
-            var l = new List<TreeNode>(children);
-            foreach (var child in l)
-                child.Emancipate();
-
-            return l;
-        }
-
-        /// <summary>
-        /// Find the first ancestor node to satisfy <paramref name="predicate"/>.
-        /// </summary>
-        /// <param name="predicate"></param>
-        /// <param name="includeThis">Whether to include this in the search.</param>
-        public TreeNode FirstAncestorWhere(Predicate<TreeNode> predicate, bool includeThis = true)
-        {
-            if (includeThis && predicate(this))
-                return this;
-            return Parent?.FirstAncestorWhere(predicate);
         }
 
         /// <summary>
@@ -69,9 +47,9 @@ namespace Flighter
         /// called on it.</param>
         /// <returns>false if the search was stopped part way.</returns>
         public bool DFSearch(
-            Action<TreeNode> onNode, 
-            Predicate<TreeNode> takeNode = null,
-            Predicate<TreeNode> stopSearch = null,
+            Action<TreeNode<T>> onNode, 
+            Predicate<TreeNode<T>> takeNode = null,
+            Predicate<TreeNode<T>> stopSearch = null,
             bool includeThis = true)
         {
             if (stopSearch?.Invoke(this) ?? false)
@@ -99,9 +77,9 @@ namespace Flighter
         /// <param name="includeThis"></param>
         /// <returns></returns>
         public bool DFR2LSearch(
-            Action<TreeNode> onNode,
-            Predicate<TreeNode> takeNode = null,
-            Predicate<TreeNode> stopSearch = null,
+            Action<TreeNode<T>> onNode,
+            Predicate<TreeNode<T>> takeNode = null,
+            Predicate<TreeNode<T>> stopSearch = null,
             bool includeThis = true)
         {
             if (stopSearch?.Invoke(this) ?? false)
@@ -119,42 +97,5 @@ namespace Flighter
 
             return true;
         }
-
-        public void SurfaceWhere(
-            ref List<TreeNode> baseList,
-            Predicate<TreeNode> predicate,
-            bool includeThis = true)
-        {
-            if (baseList == null)
-                baseList = new List<TreeNode>();
-
-            if (includeThis && predicate(this))
-            {
-                baseList.Add(this);
-                return;
-            }
-
-            foreach (var c in Children)
-                c.SurfaceWhere(ref baseList, predicate);
-        }
-
-        /// <summary>
-        /// Returns the index where the new child should be inserted,
-        /// or -1 to insert at the end.
-        /// </summary>
-        /// <param name="childToBeAdded"></param>
-        /// <returns></returns>
-        protected virtual int NewChildIndex(TreeNode childToBeAdded) => -1;
-        protected virtual void ChildWasAdded(TreeNode newChild) { }
-        protected virtual void ChildWasEmancipated(TreeNode emancipatedChild) { }
-        protected virtual void WasEmancipated() { }
-
-        // - Search up
-        // - Search down
-        // - Emancipate
-        // - EmancipateChildren
-        // - AddChild
-
-        // - Virtual event methods for all the things.
     }
 }

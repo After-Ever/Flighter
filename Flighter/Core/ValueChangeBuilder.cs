@@ -56,27 +56,22 @@ namespace Flighter.Core
         }
     }
 
-    class ValueChangeBuliderState<T> : State
+    class ValueChangeBuliderState<T> : State<ValueChangeBuilder<T>>
     {
         public override void Init()
         {
-            GetWidget<ValueChangeBuilder<T>>().notifier.ValueChanged += OnValueChanged;
+            widget.notifier.ValueChanged += OnValueChanged;
         }
 
         public override void Dispose()
         {
-            GetWidget<ValueChangeBuilder<T>>().notifier.ValueChanged -= OnValueChanged;
+            widget.notifier.ValueChanged -= OnValueChanged;
         }
 
         public override Widget Build(BuildContext context)
-        {
-            var w = GetWidget<ValueChangeBuilder<T>>();
-            return w.builder(w.notifier.Value, context);
-        }
+            => widget.builder(widget.notifier.Value, context);
 
         void OnValueChanged(T _)
-        {
-            SetState(null);
-        }
+            => SetState(null);
     }
 }

@@ -64,7 +64,7 @@ namespace Flighter.Core
         }
     }
 
-    class LerpChangeSatate<T> : State
+    class LerpChangeSatate<T> : State<LerpChange<T>>
     {
         T curValue;
         bool isLerping;
@@ -73,8 +73,7 @@ namespace Flighter.Core
 
         public override void Init()
         {
-            var w = GetWidget<LerpChange<T>>();
-            curValue = w.value;
+            curValue = widget.value;
 
             lastTickSource = TickSource.Of(context)
                 ?? throw new Exception("LerpChange must inherit from a TickerSource!");
@@ -84,7 +83,7 @@ namespace Flighter.Core
 
         public override void WidgetChanged()
         {
-            var w = GetWidget<LerpChange<T>>();
+            var w = widget;
             
             isLerping = true;
             if (curValue.Equals(w.value) || (w.stopCondition?.Invoke(curValue, w.value) ?? false))
@@ -108,10 +107,7 @@ namespace Flighter.Core
         }
 
         public override Widget Build(BuildContext context)
-        {
-            var w = GetWidget<LerpChange<T>>();
-            return w.builder(curValue, context);
-        }
+            => widget.builder(curValue, context);
 
         void TakeLerpStep(float time, float delta)
         {
@@ -120,7 +116,7 @@ namespace Flighter.Core
             
             SetState(() =>
             {
-                var w = GetWidget<LerpChange<T>>();
+                var w = widget;
 
                 curValue = w.lerp(curValue, w.value, 1 - (float)Math.Pow(1 - w.ratioPerSecond, delta));
 

@@ -73,7 +73,7 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
             var horizontal = edgeInsets.left + edgeInsets.right;
             var vertical = edgeInsets.top + edgeInsets.bottom;
@@ -85,14 +85,14 @@ namespace Flighter.Core
                 maxWidth: constraints.maxWidth - horizontal,
                 maxHeight: constraints.maxHeight - vertical);
 
-            var child = node.LayoutChild(
+            var child = layout.LayoutChild(
                 this.child, 
                 childConstraints);
 
-            child.Offset = new Vector2(edgeInsets.left, edgeInsets.top);
+            child.offset = new Vector2(edgeInsets.left, edgeInsets.top);
             var childSize = child.size;
 
-            return new BuildResult(childSize.width + horizontal, childSize.height + vertical);
+            return new Size(childSize.width + horizontal, childSize.height + vertical);
         }
     }
 }

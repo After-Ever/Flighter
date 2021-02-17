@@ -17,7 +17,7 @@ namespace Flighter.Core
             this.edgeFlex = edgeFlex;
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
             if (context.constraints.IsUnconstrained)
                 throw new Exception("Context must be constrained for FlexPadding.");
@@ -28,10 +28,10 @@ namespace Flighter.Core
             var horizontalPerFlex = context.constraints.maxWidth / totalHorizontalFlex;
             var verticalPerFlex = context.constraints.maxHeight / totalVerticalFlex;
 
-            var childNode = node.LayoutChild(child, new BoxConstraints(0, horizontalPerFlex, 0, verticalPerFlex));
-            childNode.Offset = new Vector2(edgeFlex.left * horizontalPerFlex, edgeFlex.top * verticalPerFlex);
+            var childLayout = layout.LayoutChild(child, new BoxConstraints(0, horizontalPerFlex, 0, verticalPerFlex));
+            childLayout.offset = new Vector2(edgeFlex.left * horizontalPerFlex, edgeFlex.top * verticalPerFlex);
 
-            return new BuildResult(context.constraints.MaxSize);
+            return context.constraints.MaxSize;
         }
     }
 }

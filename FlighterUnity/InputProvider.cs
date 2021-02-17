@@ -10,8 +10,7 @@ namespace FlighterUnity
     public class InputProvider : MonoBehaviour
     {
         InputPoller poller;
-        readonly List<WidgetNode> roots = new List<WidgetNode>();
-        readonly Dictionary<WidgetForest, int> forests = new Dictionary<WidgetForest, int>();
+        readonly List<TreeController> roots = new List<TreeController>();
 
         /// <summary>
         /// Stores the last <see cref="InputEvent"/> this processed.
@@ -42,29 +41,11 @@ namespace FlighterUnity
         /// older roots.
         /// </summary>
         /// <param name="node"></param>
-        public void AddRoot(WidgetNode node)
-        {
-            roots.Add(node);
-            var f = node.forest;
-            if (forests.ContainsKey(f))
-            {
-                forests[f]++;
-            }
-            else
-            {
-                forests[f] = 1;
-            }
-        }
+        public void AddRoot(TreeController treeController)
+            => roots.Add(treeController);
 
-        public void RemoveRoot(WidgetNode node)
-        {
-            if (!roots.Remove(node))
-                return;
-
-            var f = node.forest;
-            if (--forests[f] == 0)
-                forests.Remove(f);
-        }
+        public void RemoveRoot(TreeController treeController)
+            => roots.Remove(treeController);
 
         /// <summary>
         /// Called by Unity each frame.
@@ -75,34 +56,13 @@ namespace FlighterUnity
                 throw new Exception("No poller has been set!");
 
             // Make copies incase the collections change durring iteration.
-            var rootsToUpdate = new List<WidgetNode>(roots);
-            var forestsToUpdate = new List<WidgetForest>(forests.Keys);
-
+            var rootsToUpdate = new List<TreeController>(roots);
             var inputEvent = new InputEvent(poller);
 
             for(int i = rootsToUpdate.Count - 1; i >= 0; --i)
                 rootsToUpdate[i].DistributeInputEvent(inputEvent);
 
-            foreach (var f in forestsToUpdate)
-            {
-                foreach (var w in f.ContextFreeInputWidgets)
-                {
-                    foreach (var k in w.KeyEventsToReceive)
-                    {
-                        if (poller.CheckForKeyEvent(k))
-                            w.OnKeyEvent(k);
-                    }
-
-                    foreach (var m in w.MouseEventsToReceive)
-                    {
-                        if (poller.CheckForMouseEvent(m))
-                            w.OnMouseEvent(m);
-                    }
-                }
-            }
-
             poller.FramePassed();
-
             lastEventProcessed = inputEvent;
         }
     }

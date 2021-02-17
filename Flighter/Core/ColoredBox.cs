@@ -13,7 +13,7 @@ namespace Flighter.Core
             this.color = color;
         }
 
-        public override Element CreateElement()
+        public override DisplayBox CreateElement()
         {
             return new ColoredBoxElement();
         }
@@ -30,14 +30,14 @@ namespace Flighter.Core
             return 790427672 + EqualityComparer<Color>.Default.GetHashCode(color);
         }
 
-        public override BuildResult Layout(BuildContext context, WidgetNodeBuilder node)
+        public override Size Layout(BuildContext context, ILayoutController layout)
         {
             var size = context.constraints.MaxSize;
-            return new BuildResult(size);
+            return size;
         }
     }
 
-    class ColoredBoxElement : Element
+    class ColoredBoxElement : DisplayBox
     {
         public override string Name => "ColoredBox";
 

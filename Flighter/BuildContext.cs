@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Flighter
 {
-    public struct BuildContext
+    public class BuildContext
     {
         public readonly BoxConstraints constraints;
 
@@ -47,6 +47,36 @@ namespace Flighter
         public BuildContext WithNewConstraints(BoxConstraints constraints)
         {
             return new BuildContext(constraints, inheritedWidgets);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var c = obj as BuildContext;
+            if (c == null)
+                return false;
+
+            var sameConstraints = constraints.Equals(c.constraints);
+            var sameInherited = inheritedWidgets == c.inheritedWidgets;
+
+            return sameConstraints && sameInherited;
+          }
+
+        public override int GetHashCode()
+        {
+            int hashCode = 311388849;
+            hashCode = hashCode * -1521134295 + constraints.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<Dictionary<Type, InheritedWidget>>.Default.GetHashCode(inheritedWidgets);
+            return hashCode;
+        }
+
+        public static bool operator ==(BuildContext left, BuildContext right)
+        {
+            return EqualityComparer<BuildContext>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(BuildContext left, BuildContext right)
+        {
+            return !(left == right);
         }
     }
 }

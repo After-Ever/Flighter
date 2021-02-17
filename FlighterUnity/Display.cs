@@ -50,6 +50,7 @@ namespace FlighterUnity
 
             var rect = screenRect.CreateChild() as DisplayRect;
             rect.Size = screenRect.Size;
+            rect.Offset = System.Numerics.Vector2.Zero;
             
             return InstrumentWidget(widget, rect, screenInputProvider);
         }
@@ -85,7 +86,7 @@ namespace FlighterUnity
         {
             (var rect, var input) = CreateRootWorldObject(pixelsPerUnit, size);
             rect.SetParent(transform);
-            rect.localPosition = Vector3.zero;
+            rect.localPosition = Vector2.zero;
             rect.localRotation = Quaternion.identity;
 
             return InstrumentWidget(widget, new DisplayRect(rect, pixelsPerUnit), input);
@@ -141,22 +142,20 @@ namespace FlighterUnity
             var size = rect.Size;
             var constraints = BoxConstraints.Tight(size);
 
-            var root = RootWidget.MakeRootWidgetNode(
+            var root = new TreeController(
                 widget,
                 new BuildContext(constraints),
                 rect,
                 componentProvider);
-
 
             var rootController = rect.transform.gameObject.AddComponent<RootController>();
             rootController.SetRoot(root);
 
             if (inputProvider != null)
             {
-                inputProvider.AddRoot(root.Item1);
-                rootController.TornDown += () => inputProvider.RemoveRoot(root.Item1);
+                inputProvider.AddRoot(root);
+                rootController.TornDown += () => inputProvider.RemoveRoot(root);
             }
-
 
             return new DisplayHandle(rootController);
         }
