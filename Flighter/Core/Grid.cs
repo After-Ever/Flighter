@@ -5,13 +5,16 @@ using System.Numerics;
 namespace Flighter.Core
 {
     /// <summary>
-    /// Lays out a collection in a strict grid.
+    /// Lays out a collection in a strict grid, where every cell will have the same size.
     /// 
-    /// Must have a constrained context.
+    /// If <see cref="matchSizeIndex"/> == -1, then the context must be constarined, and
+    /// the size will be the space divided.
+    /// Otherwise, the size will be the size of the specified child when layed out with the above constraints.
     /// </summary>
     public class Grid : LayoutWidget
     {
         public readonly List<Widget> children;
+        public readonly int matchSizeIndex;
         public readonly Axis mainFillAxis;
         public readonly HorizontalDirection horizontalFillDirection;
         public readonly VerticalDirection verticalFillDirection;
@@ -27,10 +30,12 @@ namespace Flighter.Core
             Axis mainFillAxis = Axis.Vertical, 
             HorizontalDirection horizontalFillDirection = HorizontalDirection.LeftToRight, 
             VerticalDirection verticalFillDirection = VerticalDirection.TopToBottom, 
+            int matchSizeIndex = 0,
             string key = null)
             : base(key)
         {
             this.children = children ?? throw new ArgumentNullException(nameof(children));
+            this.matchSizeIndex = matchSizeIndex;
             this.mainFillAxis = mainFillAxis;
             this.horizontalFillDirection = horizontalFillDirection;
             this.verticalFillDirection = verticalFillDirection;
@@ -41,55 +46,52 @@ namespace Flighter.Core
             this.mainAxisCount = mainAxisCount;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is Grid grid &&
-                   EqualityComparer<List<Widget>>.Default.Equals(children, grid.children) &&
-                   mainFillAxis == grid.mainFillAxis &&
-                   horizontalFillDirection == grid.horizontalFillDirection &&
-                   verticalFillDirection == grid.verticalFillDirection &&
-                   crossAxisCount == grid.crossAxisCount &&
-                   mainAxisCount == grid.mainAxisCount;
-        }
-
-        public override int GetHashCode()
-        {
-            int hashCode = -868255901;
-            hashCode = hashCode * -1521134295 + EqualityComparer<List<Widget>>.Default.GetHashCode(children);
-            hashCode = hashCode * -1521134295 + mainFillAxis.GetHashCode();
-            hashCode = hashCode * -1521134295 + horizontalFillDirection.GetHashCode();
-            hashCode = hashCode * -1521134295 + verticalFillDirection.GetHashCode();
-            hashCode = hashCode * -1521134295 + crossAxisCount.GetHashCode();
-            hashCode = hashCode * -1521134295 + mainAxisCount.GetHashCode();
-            return hashCode;
-        }
-
         public override Size Layout(BuildContext context, ILayoutController layout)
         {
-            if (context.constraints.IsUnconstrained)
-                throw new Exception("Grid must be contained!");
+            if (matchSizeIndex == -1 && context.constraints.IsUnconstrained)
+                throw new Exception("Grid must be contained when no matchSizeIndex is provided!");
 
-            BoxConstraints cellConstraints = new BoxConstraints();
+            BoxConstraints baseConstraints = new BoxConstraints();
             if (mainFillAxis == Axis.Horizontal)
             {
-                cellConstraints.maxWidth = context.constraints.maxWidth / mainAxisCount;
-                cellConstraints.maxHeight = context.constraints.maxHeight / crossAxisCount;
+                baseConstraints.maxWidth = context.constraints.maxWidth / mainAxisCount;
+                baseConstraints.maxHeight = context.constraints.maxHeight / crossAxisCount;
             }
             else
             {
 
-                cellConstraints.maxWidth = context.constraints.maxWidth / crossAxisCount;
-                cellConstraints.maxHeight = context.constraints.maxHeight / mainAxisCount;
+                baseConstraints.maxWidth = context.constraints.maxWidth / crossAxisCount;
+                baseConstraints.maxHeight = context.constraints.maxHeight / mainAxisCount;
             }
 
-            int onMain = 0, onCross = 0;
+            IChildLayout matchChildLayout = null;
+            if (matchSizeIndex != -1)
+            {
+                matchChildLayout = layout.LayoutChild(children[matchSizeIndex], baseConstraints);
+                baseConstraints = BoxConstraints.Tight(matchChildLayout.size);
+            }
+
+            int onMain = 0, onCross = 0, i = -1;
             foreach (var c in children)
             {
-                var childLayout = layout.LayoutChild(c, cellConstraints);
-                childLayout.offset = GetOffset(ref onMain, ref onCross, cellConstraints);
+                var childLayout = ++i == matchSizeIndex
+                    ? matchChildLayout
+                    : layout.LayoutChild(c, baseConstraints);
+                childLayout.offset = GetOffset(ref onMain, ref onCross, baseConstraints);
             }
 
-            return new Size(context.constraints.maxWidth, context.constraints.maxHeight);
+            if (mainFillAxis == Axis.Horizontal)
+            {
+                return new Size(
+                    baseConstraints.maxWidth / mainAxisCount,
+                    baseConstraints.maxHeight / crossAxisCount);
+            }
+            else
+            {
+                return new Size(
+                    baseConstraints.maxWidth / crossAxisCount,
+                    baseConstraints.maxHeight / mainAxisCount);
+            }
         }
 
         Vector2 GetOffset(ref int onMain, ref int onCross, BoxConstraints cellConstraints)

@@ -106,6 +106,11 @@ namespace FlighterUnity
             transform.SetParent(parent?.transform, worldPositionStays: false);
         }
 
+        public void SetSiblingIndex(int index)
+        {
+            transform.SetSiblingIndex(index);
+        }
+
         public void TearDown()
         {
             UnityEngine.Object.Destroy(gameObject);

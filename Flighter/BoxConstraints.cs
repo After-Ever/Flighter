@@ -24,7 +24,11 @@ namespace Flighter
         public static BoxConstraints Tight(float width, float height)
             => new BoxConstraints(width, width, height, height);
         public static BoxConstraints Tight(Size size)
-            => BoxConstraints.Tight(size.width, size.height);
+            => Tight(size.width, size.height);
+        public static BoxConstraints Loose(float width, float height)
+            => new BoxConstraints(minWidth: width, minHeight: height);
+        public static BoxConstraints Loose(Size size)
+            => Loose(size.width, size.height);
 
         public BoxConstraints(
             float minWidth = 0,

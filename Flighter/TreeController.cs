@@ -189,6 +189,7 @@ namespace Flighter
                 db.size = node.data.size;
                 db.offset = displayOffset;
 
+                db.DisplayRect.SetParent(parentRect);
                 db.Update();
 
                 displayOffset = Vector2.Zero;
@@ -231,6 +232,13 @@ namespace Flighter
             {
                 case LayoutWidget lw:
                     {
+                        var lc = new LayoutController(
+                            this,
+                            context,
+                            referenceWidgetNode);
+
+                        var size = lw.Layout(context, lc);
+
                         DisplayBox displayBox = null;
                         if (lw is DisplayWidget dw)
                         {
@@ -239,18 +247,15 @@ namespace Flighter
                                 ?.displayBox
                                 ?? dw.CreateElement();
                         }
+                        else if (lc.childNodes.Count > 1)
+                            displayBox = new LayoutBox();
 
                         var node = new WidgetNode(new WidgetNodeData(
                             widget,
                             context,
                             displayBox));
 
-                        var lc = new LayoutController(
-                            this,
-                            context,
-                            referenceWidgetNode);
-
-                        node.data.size = lw.Layout(context, lc);
+                        node.data.size = size;
                         foreach (var c in lc.childNodes)
                             node.AddChild(c);
 

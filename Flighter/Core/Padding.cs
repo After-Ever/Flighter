@@ -9,6 +9,9 @@ namespace Flighter.Core
     {
         public float left, top, right, bottom;
 
+        public float horizontal => left + right;
+        public float vertical => top + bottom;
+
         /// <summary>
         /// Set all the edges with the same value.
         /// </summary>

@@ -17,6 +17,7 @@ namespace Flighter
 
         IDisplayRect CreateChild();
         void SetParent(IDisplayRect rect);
+        void SetSiblingIndex(int index);
 
         void AddComponent(Component component);
         void RemoveComponent(Component component);
