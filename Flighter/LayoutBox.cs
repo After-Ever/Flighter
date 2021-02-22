@@ -6,7 +6,13 @@ namespace Flighter
 {
     internal class LayoutBox : DisplayBox
     {
-        public override string Name => "Layout";
+        public override string Name => name;
+        readonly string name;
+
+        public LayoutBox(string name)
+        {
+            this.name = name;
+        }
 
         protected override void _Init() { }
 

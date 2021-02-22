@@ -83,14 +83,14 @@ namespace Flighter.Core
             if (mainFillAxis == Axis.Horizontal)
             {
                 return new Size(
-                    baseConstraints.maxWidth / mainAxisCount,
-                    baseConstraints.maxHeight / crossAxisCount);
+                    baseConstraints.maxWidth * mainAxisCount,
+                    baseConstraints.maxHeight * crossAxisCount);
             }
             else
             {
                 return new Size(
-                    baseConstraints.maxWidth / crossAxisCount,
-                    baseConstraints.maxHeight / mainAxisCount);
+                    baseConstraints.maxWidth * crossAxisCount,
+                    baseConstraints.maxHeight * mainAxisCount);
             }
         }
 

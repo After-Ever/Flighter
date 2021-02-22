@@ -32,7 +32,16 @@ namespace Flighter.Core
         }
 
         public override Size Layout(BuildContext context, ILayoutController layout)
-            => layout.LayoutChild(child, context.constraints).size;
+        {
+            var childSize = layout.LayoutChild(child, context.constraints).size;
+
+            float w = Math.Max(childSize.width, context.constraints.minWidth);
+            w = Math.Min(w, context.constraints.maxWidth);
+            float h = Math.Max(childSize.height, context.constraints.minHeight);
+            h = Math.Min(h, context.constraints.maxHeight);
+
+            return new Size(w, h);
+        }
     }
 
     class ClipElement : DisplayBox
