@@ -123,7 +123,13 @@ namespace Flighter.Core
     {
         public float r, g, b, a;
 
-        public Color(float r = 0, float g = 0, float b = 0, float a = 1)
+        public Color(float v, float a = 1)
+        {
+            r = g = b = v;
+            this.a = a;
+        }
+
+        public Color(float r, float g, float b, float a = 1)
         {
             this.r = r;
             this.g = g;

@@ -16,6 +16,7 @@ namespace Flighter
         public static Size ToSize(this Vector2 vector) => new Size(vector.X, vector.Y);
     }
 
+    [Serializable]
     public struct Size
     {
         public static Size Zero => new Size();

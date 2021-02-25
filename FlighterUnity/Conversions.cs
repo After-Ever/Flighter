@@ -334,12 +334,21 @@ namespace FlighterUnity
             };
 
         static readonly Dictionary<FontStyle, UnityEngine.FontStyle> fontStyleFlightToUnity
-            = new Dictionary<Flighter.Core.FontStyle, UnityEngine.FontStyle>
+            = new Dictionary<FontStyle, UnityEngine.FontStyle>
             {
                 { FontStyle.Normal, UnityEngine.FontStyle.Normal },
                 { FontStyle.Bold, UnityEngine.FontStyle.Bold },
                 { FontStyle.Italic, UnityEngine.FontStyle.Italic },
                 { FontStyle.BoldAndItalic, UnityEngine.FontStyle.BoldAndItalic },
+            };
+
+        static readonly Dictionary<UnityEngine.FontStyle, FontStyle> fontStyleUnityToFlighter
+            = new Dictionary<UnityEngine.FontStyle, FontStyle>
+            {
+                { UnityEngine.FontStyle.Normal, FontStyle.Normal },
+                { UnityEngine.FontStyle.Bold, FontStyle.Bold },
+                { UnityEngine.FontStyle.Italic, FontStyle.Italic },
+                { UnityEngine.FontStyle.BoldAndItalic, FontStyle.BoldAndItalic },
             };
 
         public static FlighterKeyCode ToFlighter(this UnityKeyCode keyCode) => keyUnityToFlighter[keyCode];
@@ -349,5 +358,6 @@ namespace FlighterUnity
         public static TextAlign ToFlighter(this TextAnchor textAnchor) => textAlignUnityToFlighter[textAnchor];
         public static TextAnchor ToUnity(this TextAlign textAlign) => textAlignFlighterToUnity[textAlign];
         public static UnityEngine.FontStyle ToUnity(this FontStyle fontStyle) => fontStyleFlightToUnity[fontStyle];
+        public static FontStyle ToFlighter(this UnityEngine.FontStyle fontStyle) => fontStyleUnityToFlighter[fontStyle];
     }
 }

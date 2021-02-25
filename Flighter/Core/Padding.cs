@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Flighter.Core
 {
+    [Serializable]
     public struct EdgeInsets
     {
         public float left, top, right, bottom;
