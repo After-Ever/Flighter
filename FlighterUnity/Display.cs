@@ -1,10 +1,12 @@
 ﻿using Flighter;
+using Flighter.Core;
 using Flighter.Input;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
+using Color = UnityEngine.Color;
 
 namespace FlighterUnity
 {
@@ -37,6 +39,24 @@ namespace FlighterUnity
 
     public static class Display
     {
+        static DisplayRect screenRect;
+        static InputProvider screenInputProvider;
+        static readonly ComponentProvider componentProvider = ComponentProviderMaker.Make();
+        static Ticker ticker;
+        static Ticker Ticker
+        {
+            get
+            {
+                if (ticker == null)
+                {
+                    var g = new GameObject("Ticker");
+                    ticker = g.AddComponent<Ticker>();
+                }
+
+                return ticker;
+            }
+        }
+
         /// <summary>
         /// Instrument <paramref name="widget"/> on the screen.
         /// Multiple calls to this will stack the widgets on one another, in call order
@@ -44,15 +64,15 @@ namespace FlighterUnity
         /// </summary>
         /// <param name="widget"></param>
         /// <returns></returns>
-        public static DisplayHandle OnScreen(Widget widget)
+        public static DisplayHandle OnScreen(Widget widget, bool withTickSource = false)
         {
             InitScreenRect();
 
             var rect = screenRect.CreateChild() as DisplayRect;
             rect.Size = screenRect.Size;
             rect.Offset = System.Numerics.Vector2.Zero;
-            
-            return InstrumentWidget(widget, rect, screenInputProvider);
+
+            return InstrumentWidget(WTickSource(widget, withTickSource), rect, screenInputProvider);
         }
 
         public static DisplayHandle InWorld(
@@ -60,13 +80,14 @@ namespace FlighterUnity
             Size size,
             float pixelsPerUnit,
             Vector3 topLeftPosition,
-            Quaternion rotation)
+            Quaternion rotation,
+            bool withTickSource = false)
         {
             var obj = new GameObject("FlighterDisplayRoot");
             obj.transform.position = topLeftPosition;
             obj.transform.rotation = rotation;
 
-            return OnTransform(widget, size, obj.transform, pixelsPerUnit);
+            return OnTransform(WTickSource(widget, withTickSource), size, obj.transform, pixelsPerUnit);
         }
 
         /// <summary>
@@ -82,21 +103,23 @@ namespace FlighterUnity
             Widget widget, 
             Size size, 
             Transform transform, 
-            float pixelsPerUnit)
+            float pixelsPerUnit,
+            bool withTickSource = false)
         {
             (var rect, var input) = CreateRootWorldObject(pixelsPerUnit, size);
             rect.SetParent(transform);
             rect.localPosition = Vector2.zero;
             rect.localRotation = Quaternion.identity;
 
-            return InstrumentWidget(widget, new DisplayRect(rect, pixelsPerUnit), input);
+            return InstrumentWidget(WTickSource(widget, withTickSource), new DisplayRect(rect, pixelsPerUnit), input);
         }
 
         public static DisplayHandle ToRenderTexture(
             Widget widget, 
             RenderTexture target, 
             Color backgroundColor = new Color(),
-            InputProvider inputProvider = null)
+            InputProvider inputProvider = null,
+            bool withTickSource = false)
         {
             var camObj = new GameObject("FlighterRenderCam");
             var cam = camObj.AddComponent<Camera>();
@@ -118,7 +141,7 @@ namespace FlighterUnity
             rect.SetParent(pt);
 
             var handle = InstrumentWidget(
-                widget, 
+                WTickSource(widget, withTickSource), 
                 new DisplayRect(rect), 
                 inputProvider);
 
@@ -129,10 +152,6 @@ namespace FlighterUnity
 
             return handle;
         }
-
-        static DisplayRect screenRect;
-        static InputProvider screenInputProvider;
-        static readonly ComponentProvider componentProvider = ComponentProviderMaker.Make();
 
         static DisplayHandle InstrumentWidget(
             Widget widget, 
@@ -211,5 +230,12 @@ namespace FlighterUnity
 
             return rect;
         }
+
+        static Widget WTickSource(Widget w, bool with)
+            => with
+            ? new TickSource(
+                tickProvider: Ticker.TickProvider,
+                child: w)
+            : w;
     }
 }
