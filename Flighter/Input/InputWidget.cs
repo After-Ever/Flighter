@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Numerics;
 
 namespace Flighter.Input
 {
@@ -41,6 +42,15 @@ namespace Flighter.Input
 
         public virtual void OnMouseEvent(MouseEventFilter filter) { }
 
-        public virtual void OnUpdate(IInputPoller inputPoller) { }
+        public virtual void OnUpdate(InputEvent inputPoller) { }
+
+        public virtual bool IsHovering(
+            Vector2 point,
+            Vector2 topLeft,
+            Vector2 bottomRight)
+            => point.X >= topLeft.X
+            && point.Y >= topLeft.Y
+            && point.X < bottomRight.X
+            && point.Y < bottomRight.Y;
     }
 }

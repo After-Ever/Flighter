@@ -6,7 +6,7 @@ using Flighter.Input;
 
 namespace Flighter.Core
 {
-    public delegate void InputUpdateCallback(IInputPoller poller);
+    public delegate void InputUpdateCallback(InputEvent poller);
 
     /// <summary>
     /// Widget which has the option to poll input each frame.
@@ -37,9 +37,9 @@ namespace Flighter.Core
             return hashCode;
         }
 
-        public override void OnUpdate(IInputPoller inputPoller)
+        public override void OnUpdate(InputEvent inputEvent)
         {
-            callback?.Invoke(inputPoller);
+            callback?.Invoke(inputEvent);
         }
     }
 }
