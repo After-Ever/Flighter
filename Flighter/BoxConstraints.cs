@@ -45,7 +45,7 @@ namespace Flighter
         }
 
         /// <summary>
-        /// The biggest size which satisfies the constrainst, if they are bounded.
+        /// The biggest size which satisfies the constraint, if they are bounded.
         /// If a dimension is unbounded, the min will be returned.
         /// </summary>
         public Size MaxSize

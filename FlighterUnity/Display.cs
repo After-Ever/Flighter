@@ -23,7 +23,7 @@ namespace FlighterUnity
         }
 
         /// <summary>
-        /// Tearn down this display.
+        /// Tear down this display.
         /// </summary>
         public void TearDown()
         {

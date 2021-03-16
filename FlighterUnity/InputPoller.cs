@@ -30,7 +30,7 @@ namespace FlighterUnity
 
         /// <summary>
         /// Should be called at the end of a frame, right before the next frame of 
-        /// input is avalible. This updates <see cref="PositionDelta"/>.
+        /// input is available. This updates <see cref="PositionDelta"/>.
         /// </summary>
         public void FramePassed()
         {

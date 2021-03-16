@@ -37,7 +37,7 @@ namespace FlighterUnity
         /// <summary>
         /// Add a root.
         /// 
-        /// Newly added roots recieve events, and can absorb them, before
+        /// Newly added roots receive events, and can absorb them, before
         /// older roots.
         /// </summary>
         /// <param name="node"></param>
@@ -55,7 +55,7 @@ namespace FlighterUnity
             if (poller == null)
                 throw new Exception("No poller has been set!");
 
-            // Make copies incase the collections change durring iteration.
+            // Make copies incase the collections change during iteration.
             var rootsToUpdate = new List<TreeController>(roots);
             var inputEvent = new InputEvent(poller);
 

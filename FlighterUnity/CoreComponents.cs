@@ -17,7 +17,7 @@ namespace FlighterUnity
     {
         public static readonly TextStyle defaultStyle = new TextStyle
         {
-            // TODO: This is an imporntant idea! It must be well and clearly documented.
+            // TODO: This is an important idea! It must be well and clearly documented.
             //       Is there a more reliable way to load a default font?
             font = new FontHandle(Resources.Load<Font>("default_font")),
             size = 12,

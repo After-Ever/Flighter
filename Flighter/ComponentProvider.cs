@@ -9,7 +9,7 @@ namespace Flighter
     public abstract class Component { }
 
     /// <summary>
-    /// Provider for platform based imprementations of components.
+    /// Provider for platform based implementations of components.
     /// </summary>
     public class ComponentProvider
     {

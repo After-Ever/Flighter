@@ -7,7 +7,7 @@ namespace Flighter.Core
     /// <summary>
     /// Lays out a collection in a strict grid, where every cell will have the same size.
     /// 
-    /// If <see cref="matchSizeIndex"/> == -1, then the context must be constarined, and
+    /// If <see cref="matchSizeIndex"/> == -1, then the context must be constrained, and
     /// the size will be the space divided.
     /// Otherwise, the size will be the size of the specified child when layed out with the above constraints.
     /// </summary>

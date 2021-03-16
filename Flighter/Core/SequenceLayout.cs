@@ -143,7 +143,7 @@ namespace Flighter.Core
                 if (crossRestrictingWidget is Flex f)
                 {
                     if (absoluteChildren.Count != 0)
-                        throw new Exception("Cannot use a Flex widget as the cross axis restrictor" +
+                        throw new Exception("Cannot use a Flex widget as the cross axis restriction" +
                             " when absolute children are present.");
 
                     var spaceToTakeFactor = totalFlex == 0

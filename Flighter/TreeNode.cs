@@ -32,7 +32,7 @@ namespace Flighter
                 return;
 
             if (!(Parent?.children?.Remove(this) ?? false))
-                throw new Exception("Node not in parents chilren list.");
+                throw new Exception("Node not in parents children list.");
 
             Parent = null;
         }

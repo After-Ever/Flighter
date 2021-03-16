@@ -24,11 +24,11 @@ namespace Flighter.Core
         /// </summary>
         Once,
         /// <summary>
-        /// Once the target is reached, go back to the begining, and stop playing.
+        /// Once the target is reached, go back to the beginning, and stop playing.
         /// </summary>
         OnceAndReset,
         /// <summary>
-        /// Once the target is reached, go back to the begining, and continue playing.
+        /// Once the target is reached, go back to the beginning, and continue playing.
         /// </summary>
         Loop,
         /// <summary>
@@ -114,7 +114,7 @@ namespace Flighter.Core
         }
 
         /// <summary>
-        /// Instantly sets the progress to the begining, wrt playDirection.
+        /// Instantly sets the progress to the beginning, wrt playDirection.
         /// </summary>
         public void Reset()
         {

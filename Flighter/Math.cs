@@ -5,12 +5,6 @@ using System.Numerics;
 
 namespace Flighter
 {
-    public static class MathUtils
-    {
-        public static float Lerp(float a, float b, float f)
-            => (b - a) * f + a;
-    }
-
     public static class VectorUtils
     {
         public static Size ToSize(this Vector2 vector) => new Size(vector.X, vector.Y);

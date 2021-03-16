@@ -44,7 +44,7 @@ namespace Flighter
 
         /// <summary>
         /// Called once when the state has been added to the element tree.
-        /// The State's widget will be avalible at this point, but not before.
+        /// The State's widget will be available at this point, but not before.
         /// </summary>
         public virtual void Init() { }
 

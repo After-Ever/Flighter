@@ -29,4 +29,8 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\AEUtils\AEUtils.csproj" />
+  </ItemGroup>
+
 </Project>

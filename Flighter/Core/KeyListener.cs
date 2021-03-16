@@ -10,7 +10,7 @@ namespace Flighter.Core
 
     /// <summary>
     /// Widget that triggers callbacks when
-    /// specified key events occure.
+    /// specified key events occur.
     /// </summary>
     public class KeyListener : InputWidget
     {
