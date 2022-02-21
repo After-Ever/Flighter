@@ -1,15 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Text;
 
-using Flighter.Core;
 using UnityEngine;
+using Flighter.Core;
 using Color = Flighter.Core.Color;
 using Text = UnityEngine.UI.Text;
 using Image = UnityEngine.UI.Image;
 using UnityEngine.UI;
 using FontStyle = Flighter.Core.FontStyle;
+
+using Resources = UnityEngine.Resources;
 
 namespace FlighterUnity
 {

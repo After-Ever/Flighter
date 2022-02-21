@@ -4,6 +4,25 @@ using System.Text;
 
 namespace Flighter
 {
+    /// <summary>
+    /// Data of a <see cref="TreeNode{T}"/> can subclass this
+    /// to automatically receive access to the node it becomes 
+    /// apart of.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class TreeNodeData<T>
+    {
+        // TODO probably add some events?
+        protected TreeNode<T> node { get; private set; }
+        protected bool inTree { get; private set; } = false;
+
+        internal void SetNode(TreeNode<T> node) 
+        { 
+            this.node = node;
+            inTree = node != null;
+        }
+    }
+
     public class TreeNode<T>
     {
         public TreeNode<T> Parent { get; private set; } = null;
@@ -15,6 +34,9 @@ namespace Flighter
         public TreeNode(T data = default)
         {
             this.data = data;
+
+            if (data != null && data is TreeNodeData<T> tnd)
+                tnd.SetNode(this);
         }
 
         public void AddChild(TreeNode<T> child)
@@ -52,10 +74,10 @@ namespace Flighter
             Predicate<TreeNode<T>> stopSearch = null,
             bool includeThis = true)
         {
-            if (stopSearch?.Invoke(this) ?? false)
+            if (includeThis && (stopSearch?.Invoke(this) ?? false))
                 return false;
 
-            if (takeNode?.Invoke(this) ?? true)
+            if (!includeThis || (takeNode?.Invoke(this) ?? true))
             {
                 if (includeThis)
                     onNode(this);
@@ -82,10 +104,10 @@ namespace Flighter
             Predicate<TreeNode<T>> stopSearch = null,
             bool includeThis = true)
         {
-            if (stopSearch?.Invoke(this) ?? false)
+            if (includeThis && (stopSearch?.Invoke(this) ?? false))
                 return false;
 
-            if (takeNode?.Invoke(this) ?? true)
+            if (!includeThis || (takeNode?.Invoke(this) ?? true))
             {
                 if (includeThis)
                     onNode(this);
@@ -96,6 +118,42 @@ namespace Flighter
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Search the tree using a breadth first search.
+        /// </summary>
+        /// <param name="onNode">Run on each searched node.</param>
+        /// <param name="takeNode">Should this node be considered at all?</param>
+        /// <param name="stopSearch">If this returns true, the search will be stopped.</param>
+        /// <param name="includeThis">Whether to ignore this node. (Used for starting search).</param>
+        /// <returns></returns>
+        public TreeNode<T> BFSearch(
+            Action<TreeNode<T>> onNode,
+            Predicate<TreeNode<T>> takeNode = null,
+            Predicate<TreeNode<T>> stopSearch = null,
+            bool includeThis = true)
+        {
+            Queue<TreeNode<T>> toSearch = new Queue<TreeNode<T>>();
+
+            if (includeThis)
+                toSearch.Enqueue(this);
+            else
+                children.ForEach(c => toSearch.Enqueue(c));
+
+            while (toSearch.Count > 0)
+            {
+                var n = toSearch.Dequeue();
+                if (!(takeNode?.Invoke(this) ?? true))
+                    continue;
+                if (stopSearch?.Invoke(this) ?? false)
+                    break;
+
+                onNode(n);
+                n.children.ForEach(c => toSearch.Enqueue(c));
+            }
+
+            return null;
         }
     }
 }

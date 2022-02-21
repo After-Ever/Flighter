@@ -103,7 +103,6 @@ namespace Flighter.Core
 
         public override Size Layout(BuildContext context, ILayoutController layout)
         {
-            
             Dictionary<Widget, IChildLayout> widgetNodes = new Dictionary<Widget, IChildLayout>(new WidgetEquality());
 
             List<Widget> absoluteChildren = new List<Widget>();

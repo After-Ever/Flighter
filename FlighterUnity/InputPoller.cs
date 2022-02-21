@@ -46,7 +46,20 @@ namespace FlighterUnity
 
         public float ScrollDelta => Input.mouseScrollDelta.y;
         public FlighterVec PositionDelta => Position - lastPosition;
-        public FlighterVec Position => ScreenPosToDisplayRectPos(Input.mousePosition);
+        public FlighterVec Position
+        {
+            get
+            {
+                try
+                {
+                    return ScreenPosToDisplayRectPos(Input.mousePosition);
+                }
+                catch (NoIntersectException)
+                {
+                    return lastPosition;
+                }
+            }
+        }
 
         public bool GetButton(MouseButton button)
         {
@@ -106,9 +119,11 @@ namespace FlighterUnity
 
             var inDirection = Vector3.Dot(rectNormal, pointerRay.direction);
 
+            // TODO More elegant failure! This is a common case.
+
             // Not actually pointing at the rect's plane.
             if (inDirection <= 0)
-                throw new Exception("The screen point does not intersect with the UI");
+                throw new NoIntersectException("The screen point does not intersect with the UI");
 
             var d = Vector3.Dot(rectNormal, rectOrigin - pointerRay.origin) / inDirection;
 
@@ -120,5 +135,11 @@ namespace FlighterUnity
             
             return new FlighterVec(x, y);
         }
+    }
+
+    public class NoIntersectException : Exception
+    {
+        public NoIntersectException(string message)
+            : base(message) { }
     }
 }

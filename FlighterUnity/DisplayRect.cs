@@ -25,12 +25,12 @@ namespace FlighterUnity
         {
             get
             {
-                return (transform.sizeDelta.ToFlighter() * pixelsPerUnit).ToSize();
+                return (transform.sizeDelta.ToFlighter()).ToSize();
             }
             set
             {
-                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, value.width / pixelsPerUnit);
-                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, value.height / pixelsPerUnit);
+                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, value.width);
+                transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, value.height);
             }
         }
 
@@ -38,26 +38,25 @@ namespace FlighterUnity
         {
             get
             {
-                var unityOffset = transform.anchoredPosition * pixelsPerUnit;
+                var unityOffset = transform.anchoredPosition;
                 return new FlighterVec(unityOffset.x, -unityOffset.y);
             }
             set
             {
                 var pixelOffset = new Vector2(value.X, -value.Y);
-                transform.anchoredPosition = pixelOffset / pixelsPerUnit;
+                transform.anchoredPosition = pixelOffset;
             }
         }
 
         readonly GameObject gameObject;
         public readonly RectTransform transform;
-        public readonly float pixelsPerUnit;
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="rect"></param>
         /// <param name="scale">Unity units per flighter unit.</param>
-        public DisplayRect(RectTransform rect, float pixelsPerUnit = 1)
+        public DisplayRect(RectTransform rect)
         {
             if (rect == null)
                 throw new ArgumentNullException();
@@ -66,10 +65,6 @@ namespace FlighterUnity
             transform = rect;
 
             gameObject.layer = FlighterLayer;
-
-            if (pixelsPerUnit == 0)
-                throw new Exception("Scale cannot be zero.");
-            this.pixelsPerUnit = pixelsPerUnit;
         }
 
         public void AddComponent(Component component)
@@ -88,7 +83,7 @@ namespace FlighterUnity
             t.localRotation = Quaternion.identity;
             t.localScale = new Vector3(1, 1, 1);
 
-            return new DisplayRect(t, pixelsPerUnit);
+            return new DisplayRect(t);
         }
 
         public void RemoveComponent(Component component)

@@ -10,7 +10,7 @@ using FontStyle = Flighter.Core.FontStyle;
 
 namespace FlighterUnity
 {
-    [CreateAssetMenu(fileName = "TextStyle", menuName = "Text Style Info")]
+    [CreateAssetMenu(fileName = "TextStyle", menuName = "Theme/Text Style Info")]
     public class TextStyleInfo : ScriptableObject
     {
         public Font font;

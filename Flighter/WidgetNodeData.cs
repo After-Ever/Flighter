@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
-
+using AEUtils;
 using Flighter.Input;
 
 namespace Flighter
 {
-    internal class WidgetNodeData : IChildLayout
+    internal class WidgetNodeData : TreeNodeData<WidgetNodeData>, IChildLayout
     {
         public readonly Widget widget;
         public Size size { get; internal set; }
@@ -27,6 +27,45 @@ namespace Flighter
 
             this.displayBox = displayBox;
             this.state = state;
+        }
+        
+        public Dictionary<State, (Size size, Vector2 offset)> 
+            GetDescendantBoxes(IEnumerable<State> handles)
+        {
+            if (!inTree)
+                throw new Exception("This ChildLayout is not in a tree...");
+
+            var unfound = new HashSet<State>(handles);
+            var found = new Dictionary<State, (Size size, Vector2 offset)>();
+            node.BFSearch(
+                n =>
+                {
+                    var ns = n.data.state;
+                    if (unfound.Contains(ns))
+                    {
+                        var handleSize = n.data.size;
+                        var handleOffset = Vector2.Zero;
+                        var upSearchNode = n;
+                        while (upSearchNode.data != this)
+                        {
+                            if (upSearchNode.data.state != null 
+                            && found.TryGetValue(upSearchNode.data.state, out (Size, Vector2) l))
+                            {
+                                handleOffset += l.Item2;
+                                break;
+                            }
+
+                            handleOffset += upSearchNode.data.offset;
+                            upSearchNode = upSearchNode.Parent;
+                        }
+
+                        unfound.Remove(ns);
+                        found[ns] = (handleSize, handleOffset);
+                    }
+                },
+                stopSearch: _ => unfound.Count == 0);
+
+            return found;
         }
 
         public WidgetNodeData RebuildCopy()

@@ -111,7 +111,7 @@ namespace FlighterUnity
             rect.localPosition = Vector2.zero;
             rect.localRotation = Quaternion.identity;
 
-            return InstrumentWidget(WTickSource(widget, withTickSource), new DisplayRect(rect, pixelsPerUnit), input);
+            return InstrumentWidget(WTickSource(widget, withTickSource), new DisplayRect(rect), input);
         }
 
         public static DisplayHandle ToRenderTexture(

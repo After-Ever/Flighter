@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 namespace Flighter.Core
 {
     public delegate void OnTick(float time, float delta);
-    public delegate Widget TickListenerBuilder(BuildContext context, float time, float delta);
 
     public class TickProvider
     {

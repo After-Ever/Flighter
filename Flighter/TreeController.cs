@@ -93,6 +93,17 @@ namespace Flighter
                     var mousePos = e.inputPoller.MousePoller.Position;
                     var topLeft = node.data.offset;
                     var botRight = node.data.size.ToVector2() + topLeft;
+                    
+                    // Check if root input node.
+                    if (node.data.widget == null)
+                    {
+                        return
+                           mousePos.X >= topLeft.X
+                        && mousePos.Y >= topLeft.Y
+                        && mousePos.X < botRight.X
+                        && mousePos.Y < botRight.Y;
+                    }
+
                     return node.data.widget.IsHovering(mousePos, topLeft, botRight);
                 },
                 stopSearch: _ => e.FullyAbsorbed);

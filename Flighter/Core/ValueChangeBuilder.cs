@@ -3,37 +3,6 @@ using System.Collections.Generic;
 
 namespace Flighter.Core
 {
-    public delegate void ValueChangeCallback<T>(T newValue);
-
-    public interface IReadOnlyValueChangeNotifier<T>
-    {
-        event ValueChangeCallback<T> ValueChanged;
-
-        T Value { get; }
-    }
-
-    public class ValueChangeNotifier<T> : IReadOnlyValueChangeNotifier<T>
-    {
-        public event ValueChangeCallback<T> ValueChanged;
-
-        public T Value
-        {
-            get => value;
-            set
-            {
-                if (this.value?.Equals(value) ?? value == null)
-                    return;
-
-                this.value = value;
-                ValueChanged?.Invoke(value);
-            }
-        }
-
-        T value;
-
-        public static implicit operator T(ValueChangeNotifier<T> notifier) => notifier.value;
-    }
-
     public class ValueChangeBuilder<T> : StatefulWidget
     {
         public readonly ValueBuilder<T> builder;

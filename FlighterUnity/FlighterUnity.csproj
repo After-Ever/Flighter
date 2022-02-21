@@ -15,25 +15,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="UnityEngine">
+      <HintPath>..\Flighter\deps\UnityEngine.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>..\Flighter\deps\UnityEngine.CoreModule.dll</HintPath>
-      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>..\Flighter\deps\UnityEngine.InputLegacyModule.dll</HintPath>
-      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>..\Flighter\deps\UnityEngine.TextRenderingModule.dll</HintPath>
-      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\Flighter\deps\UnityEngine.UI.dll</HintPath>
-      <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
       <HintPath>..\Flighter\deps\UnityEngine.UIModule.dll</HintPath>
-      <Private>false</Private>
     </Reference>
   </ItemGroup>
 
