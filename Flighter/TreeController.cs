@@ -465,6 +465,14 @@ namespace Flighter
                 childNodes.Insert(index, node);
                 return node.data;
             }
+
+            public IDisposableChildLayout LayoutWithoutAttach(
+                Widget child,
+                BoxConstraints constraints)
+            {
+                var childContext = buildContext.WithNewConstraints(constraints);
+                return treeController.BuildWidget(child, childContext).data;
+            }
         }
     }
 }

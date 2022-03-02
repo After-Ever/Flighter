@@ -13,6 +13,14 @@ namespace Flighter
         Dictionary<State, (Size size, Vector2 offset)> GetDescendantBoxes(IEnumerable<State> handles);
     }
 
+    public interface IDisposableChildLayout : IChildLayout 
+    {
+        /// <summary>
+        /// Dispose this state, and any decendants.
+        /// </summary>
+        void DisposeState(); 
+    }
+
     public interface ILayoutController
     {
         IChildLayout LayoutChild(Widget child, BoxConstraints constraints, int index = -1);
