@@ -159,9 +159,9 @@ namespace Flighter.Core
                 widgetNodes[crossRestrictingWidget] = n;
 
                 if (axis == Axis.Horizontal)
-                    absoluteConstraints.maxHeight = n.size.height;
+                    absoluteConstraints = absoluteConstraints.From(maxHeight: n.size.height);
                 else
-                    absoluteConstraints.maxWidth = n.size.width;
+                    absoluteConstraints = absoluteConstraints.From(maxWidth: n.size.width);
             }
 
             foreach (var w in absoluteChildren)

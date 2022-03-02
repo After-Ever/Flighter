@@ -6,19 +6,15 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <Optimize>false</Optimize>
-    <OutputPath></OutputPath>
+    <OutputPath>..\Build</OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>N:\game_development\Flighter\Build\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>..\Build</OutputPath>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/azure_rain/azure_rain/Assets/Libs&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/azure_rain/azure_rain/Assets/Libs" />
-  </Target>
-
   <ItemGroup>
     <Compile Remove="deps\**" />
     <EmbeddedResource Remove="deps\**" />

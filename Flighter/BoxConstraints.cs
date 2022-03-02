@@ -1,10 +1,11 @@
 ﻿using System;
+using AEUtils;
 
 namespace Flighter
 {
     public struct BoxConstraints
     {
-        public float minHeight, maxHeight, minWidth, maxWidth;
+        public readonly float minHeight, maxHeight, minWidth, maxWidth;
 
         /// <summary>
         /// Create a new <see cref="BoxConstraints"/> with no constraints.
@@ -26,7 +27,7 @@ namespace Flighter
         public static BoxConstraints Tight(Size size)
             => Tight(size.width, size.height);
         public static BoxConstraints Loose(float width, float height)
-            => new BoxConstraints(minWidth: width, minHeight: height);
+            => new BoxConstraints(maxWidth: width, maxHeight: height);
         public static BoxConstraints Loose(Size size)
             => Loose(size.width, size.height);
 
@@ -87,6 +88,41 @@ namespace Flighter
                 throw new BoxConstrainstException();
         }
 
+        public static BoxConstraints Lerp(
+            BoxConstraints a, 
+            BoxConstraints b, 
+            float t,
+            bool allowUnconstrained = true)
+        {
+            if (!allowUnconstrained
+             && a.IsUnconstrained
+             || b.IsUnconstrained)
+                throw new BoxConstrainstException("Lerping unconstrained " +
+                    "constaints, but \"allowUnconstrained\" is false.");
+
+            if (allowUnconstrained
+            &&    (float.IsInfinity(a.minWidth) != float.IsInfinity(b.minWidth)
+                || float.IsInfinity(a.minHeight) != float.IsInfinity(b.minHeight)
+                || float.IsInfinity(a.maxWidth) != float.IsInfinity(b.maxWidth)
+                || float.IsInfinity(a.maxHeight) != float.IsInfinity(b.maxHeight)))
+                throw new BoxConstrainstException("If a parameter in 'a' is infinity, the matching " +
+                	"parameter in 'b' must be infinity, and vis versa.");
+
+            return new BoxConstraints(
+                minWidth: float.IsInfinity(a.minWidth)
+                    ? float.PositiveInfinity
+                    : MathUtils.Lerp(a.minWidth, b.minWidth, t),
+                minHeight: float.IsInfinity(a.minHeight)
+                    ? float.PositiveInfinity
+                    : MathUtils.Lerp(a.minHeight, b.minHeight, t),
+                maxWidth: float.IsInfinity(a.maxWidth)
+                    ? float.PositiveInfinity
+                    : MathUtils.Lerp(a.maxWidth, b.maxWidth, t),
+                maxHeight: float.IsInfinity(a.maxHeight)
+                    ? float.PositiveInfinity
+                    : MathUtils.Lerp(a.maxHeight, b.maxHeight, t));
+        }
+
         public override bool Equals(object obj)
         {
             if (!(obj is BoxConstraints))
@@ -96,10 +132,14 @@ namespace Flighter
 
             var constraints = (BoxConstraints)obj;
 
-            return minHeight == constraints.minHeight &&
-                   maxHeight == constraints.maxHeight &&
-                   minWidth == constraints.minWidth &&
-                   maxWidth == constraints.maxWidth;
+            return (float.IsInfinity(minHeight) == float.IsInfinity(constraints.minHeight)) &&
+                   (float.IsInfinity(minWidth)  == float.IsInfinity(constraints.minWidth))  &&
+                   (float.IsInfinity(maxWidth)  == float.IsInfinity(constraints.maxWidth))  &&
+                   (float.IsInfinity(maxHeight) == float.IsInfinity(constraints.maxHeight)) &&
+                   (float.IsInfinity(minHeight) || Math.Abs(minHeight - constraints.minHeight) < float.Epsilon) &&
+                   (float.IsInfinity(minWidth)  || Math.Abs(minWidth  - constraints.minWidth)  < float.Epsilon) &&
+                   (float.IsInfinity(maxWidth)  || Math.Abs(maxWidth  - constraints.maxWidth)  < float.Epsilon) &&
+                   (float.IsInfinity(maxHeight) || Math.Abs(maxHeight - constraints.maxHeight) < float.Epsilon);
         }
 
         public override int GetHashCode()
@@ -118,5 +158,9 @@ namespace Flighter
             + ", Min height:" + minHeight
             + ", Max height:" + maxHeight;
     }
-    public class BoxConstrainstException : Exception { }
+    public class BoxConstrainstException : Exception 
+    {
+        public BoxConstrainstException(string m = default)
+            : base(m) { }
+    }
 }

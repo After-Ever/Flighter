@@ -35,7 +35,6 @@ namespace FlighterUnity
         public override BoxConstraints GetConstraints(
             Vector2 refOffset, 
             Size refSize,
-            float refDistance,
             BoxConstraints parentConstraints)
         {
             if (direction == Direction.Left || direction == Direction.Right)
@@ -65,7 +64,6 @@ namespace FlighterUnity
         public override Vector2 GetOffset(
             Vector2 refOffset,
             Size refSize,
-            float refDistance,
             BoxConstraints parentConstraints,
             Size realizedSize)
         {

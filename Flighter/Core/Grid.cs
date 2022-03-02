@@ -51,18 +51,19 @@ namespace Flighter.Core
             if (matchSizeIndex == -1 && context.constraints.IsUnconstrained)
                 throw new Exception("Grid must be contained when no matchSizeIndex is provided!");
 
-            BoxConstraints baseConstraints = new BoxConstraints();
+            float maxWidth, maxHeight;
             if (mainFillAxis == Axis.Horizontal)
             {
-                baseConstraints.maxWidth = context.constraints.maxWidth / mainAxisCount;
-                baseConstraints.maxHeight = context.constraints.maxHeight / crossAxisCount;
+                maxWidth = context.constraints.maxWidth / mainAxisCount;
+                maxHeight = context.constraints.maxHeight / crossAxisCount;
             }
             else
             {
 
-                baseConstraints.maxWidth = context.constraints.maxWidth / crossAxisCount;
-                baseConstraints.maxHeight = context.constraints.maxHeight / mainAxisCount;
+                maxWidth = context.constraints.maxWidth / crossAxisCount;
+                maxHeight = context.constraints.maxHeight / mainAxisCount;
             }
+            var baseConstraints = new BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight);
 
             IChildLayout matchChildLayout = null;
             if (matchSizeIndex != -1)

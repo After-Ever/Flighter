@@ -210,8 +210,7 @@ namespace Flighter
             if (state != null)
                 stateInTree.Add(state);
 
-            var iw = node.data.widget as InputWidget;
-            if (iw != null)
+            if (node.data.widget is InputWidget iw)
             {
                 var inputNode = new InputNode(new InputNodeData(iw, node.data.size, absoluteOffset));
                 parentInputNode.AddChild(inputNode);

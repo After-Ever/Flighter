@@ -3,13 +3,17 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>false</SignAssembly>
-    <DelaySign>true</DelaySign>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath></OutputPath>
+    <OutputPath>..\Build</OutputPath>
+    <LangVersion>Latest</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>Latest</LangVersion>
+    <OutputPath>..\Build</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Flighter\Flighter.csproj" />
   </ItemGroup>
@@ -34,9 +38,5 @@
       <HintPath>..\Flighter\deps\UnityEngine.UIModule.dll</HintPath>
     </Reference>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/LibraryCollection/&#xD;&#xA;&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).dll&quot;  /n/game_development/azure_rain/azure_rain/Assets/Libs&#xD;&#xA;cp &quot;$(ProjectDir)$(OutDir)$(TargetName).pdb&quot;  /n/game_development/azure_rain/azure_rain/Assets/Libs" />
-  </Target>
 
 </Project>

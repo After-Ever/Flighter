@@ -37,7 +37,6 @@ namespace FlighterUnity
         public abstract BoxConstraints GetConstraints(
             Vector2 refOffset,
             Size refSize,
-            float refDistance,
             BoxConstraints parentConstraints);
 
         /// <summary>
@@ -50,7 +49,6 @@ namespace FlighterUnity
         public abstract Vector2 GetOffset(
             Vector2 refOffset,
             Size refSize,
-            float refDistance,
             BoxConstraints parentConstraints,
             Size realizedSize);
     }
