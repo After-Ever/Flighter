@@ -13,17 +13,26 @@ namespace Flighter
         Dictionary<State, (Size size, Vector2 offset)> GetDescendantBoxes(IEnumerable<State> handles);
     }
 
-    public interface IDisposableChildLayout : IChildLayout 
-    {
-        /// <summary>
-        /// Dispose this state, and any decendants.
-        /// </summary>
-        void DisposeState(); 
-    }
-
     public interface ILayoutController
     {
         IChildLayout LayoutChild(Widget child, BoxConstraints constraints, int index = -1);
+
+        /// <summary>
+        /// Allows building a child without attaching it to the widget tree.
+        /// 
+        /// This DOES use state from the current tree, and so <see cref="State.WidgetChanged"/>
+        /// WILL be called on state in the actual tree. Neither <see cref="State.Dispose"/> nor 
+        /// <see cref="State.Init"/> will be called.
+        /// 
+        /// State should be resistent to these types of opperations, but be sure to be aware!
+        /// </summary>
+        /// <returns>The without attach.</returns>
+        /// <param name="child">Child.</param>
+        /// <param name="sandboxContext">Sandbox context. Should be safe to modify any 
+        /// referenced values.</param>
+        IChildLayout LayoutWithoutAttach(
+            Widget child,
+            BuildContext sandboxContext);
     }
 
     public static class ChildLayoutUtil

@@ -6,7 +6,7 @@ using Flighter.Input;
 
 namespace Flighter
 {
-    internal class WidgetNodeData : TreeNodeData<WidgetNodeData>, IDisposableChildLayout
+    internal class WidgetNodeData : TreeNodeData<WidgetNodeData>, IChildLayout
     {
         public readonly Widget widget;
         public Size size { get; internal set; }
@@ -74,16 +74,5 @@ namespace Flighter
                 context,
                 displayBox,
                 state);
-
-        public void DisposeState()
-        {
-            state?.Dispose();
-            if (inTree)
-            {
-                node.DFSearch(
-                    includeThis: false,
-                    onNode: n => n.data.state?.Dispose());
-            }
-        }
     }
 }

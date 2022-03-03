@@ -44,7 +44,8 @@ namespace Flighter
             // Build the root widget.
             var rootTree = BuildWidget(
                 rootWidget,
-                rootContext);
+                rootContext,
+                stateToRebuild);
 
             widgetTree.AddChild(rootTree);
             UpdateTrees();
@@ -128,9 +129,6 @@ namespace Flighter
             disposed = true;
         }
 
-        void StateNeedsRebuild(State state)
-            => stateToRebuild.Add(state);
-
         void DoStateUpdates()
         {
             if (stateToRebuild.Count > 0)
@@ -138,7 +136,7 @@ namespace Flighter
                 var toRebuild = widgetTree.Children[0];
                 toRebuild.Emancipate();
 
-                widgetTree.AddChild(RebuildWidgetNode(toRebuild));
+                widgetTree.AddChild(RebuildWidgetNode(toRebuild, stateToRebuild));
                 UpdateTrees();
             }
         }
@@ -228,9 +226,10 @@ namespace Flighter
                     parentInputNode);
         }
 
-        WidgetNode BuildWidget(
+        static WidgetNode BuildWidget(
             Widget widget,
             BuildContext context,
+            HashSet<State> stateToRebuild,
             WidgetNode referenceWidgetNode = null)
         {
             if (!widget.CanReplace(referenceWidgetNode?.data?.widget))
@@ -241,8 +240,8 @@ namespace Flighter
                 case LayoutWidget lw:
                     {
                         var lc = new LayoutController(
-                            this,
                             context,
+                            stateToRebuild,
                             referenceWidgetNode);
 
                         var size = lw.Layout(context, lc);
@@ -279,7 +278,7 @@ namespace Flighter
                             state._Init(
                                 widget,
                                 context,
-                                StateNeedsRebuild);
+                                s => stateToRebuild?.Add(s));
                         }
                         else
                         {
@@ -288,7 +287,7 @@ namespace Flighter
                             state = referenceWidgetNode.data.state;
 
                             state.InvokeUpdates();
-                            stateToRebuild.Remove(state);
+                            stateToRebuild?.Remove(state);
                             state._ReBuilt(widget, context);
                         }
 
@@ -301,6 +300,7 @@ namespace Flighter
                             node,
                             state.Build(context),
                             context,
+                            stateToRebuild,
                             referenceWidgetNode);
                         return node;
                     }
@@ -313,6 +313,7 @@ namespace Flighter
                             node,
                             slw.Build(context),
                             context,
+                            stateToRebuild,
                             referenceWidgetNode);
                         return node;
                     }
@@ -327,6 +328,7 @@ namespace Flighter
                             node,
                             iw.child,
                             context,
+                            stateToRebuild,
                             referenceWidgetNode);
                         return node;
                     }
@@ -336,10 +338,11 @@ namespace Flighter
             }
         }
 
-        void SetUpSingleChildNode(
+        static void SetUpSingleChildNode(
             WidgetNode node,
             Widget child,
             BuildContext context,
+            HashSet<State> stateToRebuild,
             WidgetNode referenceWidgetNode)
         {
 
@@ -350,20 +353,23 @@ namespace Flighter
             var childNode = BuildWidget(
                 child,
                 context,
+                stateToRebuild,
                 referenceWidgetNode?.Children?.First());
             node.data.size = childNode.data.size;
             node.AddChild(childNode);
         }
 
-        WidgetNode RebuildWidgetNode(WidgetNode node)
+        static WidgetNode RebuildWidgetNode(
+            WidgetNode node, 
+            HashSet<State> stateToRebuild)
         {
             var newNode = new WidgetNode(node.data.RebuildCopy());
 
             if (newNode.data.widget is LayoutWidget lw)
             {
                 var lc = new LayoutController(
-                            this,
                             node.data.context,
+                            stateToRebuild,
                             node,
                             true);
 
@@ -381,7 +387,7 @@ namespace Flighter
 
             WidgetNode childNode;
             if (newNode.data.state != null 
-                && stateToRebuild.Remove(newNode.data.state))
+                && (stateToRebuild?.Remove(newNode.data.state) ?? false))
             {
                 if (!(newNode.data.widget is StatefulWidget))
                     throw new Exception("Non-statefulWidget has attached state!");
@@ -391,10 +397,11 @@ namespace Flighter
                 childNode = BuildWidget(
                     newNode.data.state.Build(newNode.data.context),
                     newNode.data.context,
+                    stateToRebuild,
                     oldChildNode);
             }
             else
-                childNode = RebuildWidgetNode(oldChildNode);
+                childNode = RebuildWidgetNode(oldChildNode, stateToRebuild);
 
             newNode.data.size = childNode.data.size;
             newNode.AddChild(childNode);
@@ -403,23 +410,23 @@ namespace Flighter
 
         class LayoutController : ILayoutController
         {
-            readonly TreeController treeController;
             readonly BuildContext buildContext;
             readonly List<WidgetNode> referenceChildren;
             readonly bool rebuild;
+
+            readonly HashSet<State> stateToRebuild;
 
             public readonly List<WidgetNode> childNodes
                 = new List<WidgetNode>();
 
             public LayoutController(
-                TreeController treeController,
                 BuildContext buildContext,
+                HashSet<State> stateToRebuild = null,
                 WidgetNode referenceWidgetNode = null,
                 bool rebuild = false)
             {
-                this.treeController = treeController;
                 this.buildContext = buildContext;
-
+                this.stateToRebuild = stateToRebuild;
                 referenceChildren = referenceWidgetNode?.Children?.ToList();
                 this.rebuild = rebuild;
             }
@@ -429,35 +436,20 @@ namespace Flighter
                 BoxConstraints constraints,
                 int index = -1)
             {
-                WidgetNode childRef = null;
-                if (referenceChildren != null)
-                {
-                    for (int i = 0; i < referenceChildren.Count; ++i)
-                    {
-                        var rc = referenceChildren[i];
-                        if (rc == null)
-                            continue;
-
-                        if (child.CanReplace(rc.data.widget))
-                        {
-                            referenceChildren[i] = null;
-                            childRef = rc;
-                            break;
-                        }
-                    }
-                }
+                WidgetNode childRef = GetChildRef(child, true);
 
                 var childContext = buildContext.WithNewConstraints(constraints);
                 WidgetNode node;
 
-                if (rebuild 
+                if (rebuild
                     && childRef != null
                     && childRef.data.context.Equals(childContext))
-                    node = treeController.RebuildWidgetNode(childRef);
+                    node = RebuildWidgetNode(childRef, stateToRebuild);
                 else
-                    node = treeController.BuildWidget(
+                    node = BuildWidget(
                         child,
                         childContext,
+                        stateToRebuild,
                         childRef);
 
                 if (index == -1)
@@ -466,12 +458,35 @@ namespace Flighter
                 return node.data;
             }
 
-            public IDisposableChildLayout LayoutWithoutAttach(
+            public IChildLayout LayoutWithoutAttach(
                 Widget child,
-                BoxConstraints constraints)
+                BuildContext sandboxContext)
+                => BuildWidget(
+                    child, 
+                    sandboxContext, 
+                    null, 
+                    GetChildRef(child, false)).data;
+
+            WidgetNode GetChildRef(Widget child, bool removeRef)
             {
-                var childContext = buildContext.WithNewConstraints(constraints);
-                return treeController.BuildWidget(child, childContext).data;
+                if (referenceChildren == null)
+                    return null;
+
+                for (int i = 0; i < referenceChildren.Count; ++i)
+                {
+                    var rc = referenceChildren[i];
+                    if (rc == null)
+                        continue;
+
+                    if (child.CanReplace(rc.data.widget))
+                    {
+                        if (removeRef)
+                            referenceChildren[i] = null;
+                        return rc;
+                    }
+                }
+
+                return null;
             }
         }
     }

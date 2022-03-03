@@ -9,6 +9,18 @@
     <OutputPath>..\Build</OutputPath>
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <LangVersion>Latest</LangVersion>
+    <CustomCommands>
+      <CustomCommands>
+        <Command>
+          <type>AfterBuild</type>
+          <command>cp ../Build/netstandard2.0/Flighter.dll /home/ben/azure_rain/Assets/Libs/</command>
+        </Command>
+        <Command>
+          <type>AfterBuild</type>
+          <command>cp ../Build/netstandard2.0/Flighter.pdb /home/ben/azure_rain/Assets/Libs/</command>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

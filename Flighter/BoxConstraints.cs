@@ -95,8 +95,8 @@ namespace Flighter
             bool allowUnconstrained = true)
         {
             if (!allowUnconstrained
-             && a.IsUnconstrained
-             || b.IsUnconstrained)
+             && (a.IsUnconstrained
+              || b.IsUnconstrained))
                 throw new BoxConstrainstException("Lerping unconstrained " +
                     "constaints, but \"allowUnconstrained\" is false.");
 

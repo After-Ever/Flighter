@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlighterUnity", "FlighterUn
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AEUtils", "..\AEUtils\AEUtils.csproj", "{93B19A0D-0995-46E8-BD7C-E598D98013CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "..\azure_rain\azure_rain\Assembly-CSharp.csproj", "{1AF2916C-B11B-B52D-F6E4-A6FB69FA9BDD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "..\..\..\..\home\ben\azure_rain\Assembly-CSharp.csproj", "{1AF2916C-B11B-B52D-F6E4-A6FB69FA9BDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

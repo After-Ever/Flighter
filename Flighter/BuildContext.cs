@@ -17,6 +17,26 @@ namespace Flighter
             inheritedWidgets = new Dictionary<Type, InheritedWidget>();
         }
 
+        /// <summary>
+        /// Constructor to allow making a "sandbox" context.
+        /// ie, one with dummy inherited widgets.
+        /// 
+        /// To be used with <see cref="ILayoutController.LayoutWithoutAttach(Widget, BuildContext)"/>.
+        /// </summary>
+        /// <returns>The sandbox.</returns>
+        /// <param name="constraints">Constraints.</param>
+        /// <param name="inherited">Inherited.</param>
+        public static BuildContext Sandbox(
+            BoxConstraints constraints, 
+            IEnumerable<InheritedWidget> inherited)
+        {
+            var d = new Dictionary<Type, InheritedWidget>();
+            foreach (var i in inherited)
+                d.Add(i.GetType(), i);
+
+            return new BuildContext(constraints, d);
+        }
+
         BuildContext(BoxConstraints constraints, Dictionary<Type, InheritedWidget> inheritedWidgets)
         {
             this.constraints = constraints;
