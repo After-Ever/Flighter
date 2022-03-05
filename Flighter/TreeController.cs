@@ -245,6 +245,7 @@ namespace Flighter
                             referenceWidgetNode);
 
                         var size = lw.Layout(context, lc);
+                        var children = lc.GetChildren();
 
                         DisplayBox displayBox = null;
                         if (lw is DisplayWidget dw)
@@ -254,7 +255,7 @@ namespace Flighter
                                 ?.displayBox
                                 ?? dw.CreateElement();
                         }
-                        else if (lc.childNodes.Count > 1)
+                        else if (children.Count > 1)
                             displayBox = new LayoutBox(lw.GetType().Name);
 
                         var node = new WidgetNode(new WidgetNodeData(
@@ -263,7 +264,7 @@ namespace Flighter
                             displayBox));
 
                         node.data.size = size;
-                        foreach (var c in lc.childNodes)
+                        foreach (var c in children)
                             node.AddChild(c);
 
                         return node;
@@ -374,7 +375,7 @@ namespace Flighter
                             true);
 
                 newNode.data.size = lw.Layout(node.data.context, lc);
-                foreach (var c in lc.childNodes)
+                foreach (var c in lc.GetChildren())
                     newNode.AddChild(c);
 
                 return newNode;
@@ -416,8 +417,8 @@ namespace Flighter
 
             readonly HashSet<State> stateToRebuild;
 
-            public readonly List<WidgetNode> childNodes
-                = new List<WidgetNode>();
+            readonly List<(WidgetNode w, int index)> childNodes
+                = new List<(WidgetNode, int)>();
 
             public LayoutController(
                 BuildContext buildContext,
@@ -429,6 +430,24 @@ namespace Flighter
                 this.stateToRebuild = stateToRebuild;
                 referenceChildren = referenceWidgetNode?.Children?.ToList();
                 this.rebuild = rebuild;
+            }
+
+            public List<WidgetNode> GetChildren()
+            {
+                var r = new List<WidgetNode>();
+                var toSort = new List<(WidgetNode w, int index)>();
+                foreach (var c in childNodes)
+                {
+                    if (c.index == -1)
+                        r.Add(c.w);
+                    else
+                        toSort.Add(c);
+                }
+
+                toSort.Sort((a, b) => a.index - b.index);
+                r.AddRange(toSort.Select(c => c.w));
+
+                return r;
             }
 
             public IChildLayout LayoutChild(
@@ -452,9 +471,7 @@ namespace Flighter
                         stateToRebuild,
                         childRef);
 
-                if (index == -1)
-                    index = childNodes.Count;
-                childNodes.Insert(index, node);
+                childNodes.Add((node, index));
                 return node.data;
             }
 

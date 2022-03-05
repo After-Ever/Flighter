@@ -42,7 +42,7 @@ namespace Flighter.Core
                 }
                 else
                 {
-                    var childSize = layout.LayoutChild(c, context.constraints).size;
+                    var childSize = layout.LayoutChild(c, context.constraints, i).size;
                     maxWidth = Math.Max(childSize.width, maxWidth);
                     maxHeight = Math.Max(childSize.height, maxHeight);
                 }

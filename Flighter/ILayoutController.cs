@@ -15,6 +15,17 @@ namespace Flighter
 
     public interface ILayoutController
     {
+        /// <summary>
+        /// Layouts the child.
+        /// </summary>
+        /// <returns>The child.</returns>
+        /// <param name="child">Child.</param>
+        /// <param name="constraints">Constraints.</param>
+        /// <param name="index">Request a specific index in the end list of children.
+        /// Not guaranteed to actually get that index. If two children request the
+        /// same index, their order is indeterminate. If one childs index is
+        /// less than another, it will occure before it. Any children which 
+        /// specify -1 will be ordered the same as they were layed out.</param>
         IChildLayout LayoutChild(Widget child, BoxConstraints constraints, int index = -1);
 
         /// <summary>
