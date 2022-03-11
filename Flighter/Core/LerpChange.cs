@@ -33,7 +33,7 @@ namespace Flighter.Core
             this.builder = builder;
 
             if (ratioPerSecond <= 0 || ratioPerSecond >= 1)
-                throw new ArgumentOutOfRangeException("ratioPerSecond");
+                throw new ArgumentOutOfRangeException($"ratioPerSecond: {ratioPerSecond}");
             this.ratioPerSecond = ratioPerSecond;
             this.lerp = lerp;
             this.stopCondition = stopCondition;

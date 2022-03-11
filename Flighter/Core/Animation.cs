@@ -51,7 +51,7 @@ namespace Flighter.Core
 
         public float Value => curve?.Invoke(progress) ?? progress;
 
-        public float progress;
+        public float progress = 0;
         /// <summary>
         /// Units <see cref="progress"/> will increase per second.
         /// Must be positive. Use <see cref="Reverse"/> to go backwards.
@@ -69,8 +69,8 @@ namespace Flighter.Core
         public AnimationBehavior behavior;
         public Curve curve;
 
-        public bool isPlaying { get; private set; }
-        public AnimationDirection playDirection { get; private set; } = AnimationDirection.Forward;
+        public bool isPlaying { get; private set; } = false;
+        public AnimationDirection playDirection { get; set; } = AnimationDirection.Forward;
 
         readonly TickProvider tickProvider;
         float speed;
@@ -79,12 +79,17 @@ namespace Flighter.Core
             TickProvider tickProvider,
             float speed = 1,
             AnimationBehavior behavior = AnimationBehavior.Once,
+            AnimationDirection direction = AnimationDirection.Forward,
             Curve curve = null)
         {
             this.tickProvider = tickProvider;
             this.Speed = speed;
             this.behavior = behavior;
             this.curve = curve;
+            this.playDirection = direction;
+
+            if (playDirection == AnimationDirection.Reverse)
+                progress = 1;
         }
 
         public void Play()
@@ -134,15 +139,13 @@ namespace Flighter.Core
             {
                 progress += speed * delta;
                 target = 1;
-                if (progress >= target)
-                    targetReached = true;
+                targetReached = progress >= target;
             }
             else
             {
                 progress -= speed * delta;
                 target = 0;
-                if (progress <= target)
-                    targetReached = true;
+                targetReached = progress <= target;
             }
 
 
