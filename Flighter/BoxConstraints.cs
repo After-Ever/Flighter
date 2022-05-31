@@ -85,7 +85,7 @@ namespace Flighter
         {
             if (minHeight < 0 || maxHeight < minHeight ||
                 minWidth < 0 || maxWidth < minWidth)
-                throw new BoxConstrainstException();
+                throw new BoxConstrainstException(this.ToString());
         }
 
         public static BoxConstraints Lerp(

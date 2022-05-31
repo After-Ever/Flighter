@@ -14,7 +14,7 @@ namespace FlighterUnity
         void Clear();
     }
 
-    public class ComponentProviderMaker
+    public static class ComponentProviderMaker
     {
         public static ComponentProvider Make()
             => new ComponentProvider(new Dictionary<Type, Type>

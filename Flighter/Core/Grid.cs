@@ -1,137 +1,161 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace Flighter.Core
 {
-    /// <summary>
-    /// Lays out a collection in a strict grid, where every cell will have the same size.
-    /// 
-    /// If <see cref="matchSizeIndex"/> == -1, then the context must be constrained, and
-    /// the size will be the space divided.
-    /// Otherwise, the size will be the size of the specified child when layed out with the above constraints.
-    /// </summary>
     public class Grid : LayoutWidget
     {
-        public readonly List<Widget> children;
-        public readonly int matchSizeIndex;
-        public readonly Axis mainFillAxis;
-        public readonly HorizontalDirection horizontalFillDirection;
-        public readonly VerticalDirection verticalFillDirection;
-        /// <summary>
-        /// The number of slots on the axis perpendicular to <see cref="mainFillDirection"/>.
-        /// </summary>
-        public readonly int crossAxisCount;
-        public readonly int mainAxisCount;
+        public readonly Widget[,] widgets;
+        public readonly Alignment alignment;
+        public readonly bool emptyAsFlex;
 
         public Grid(
-            List<Widget> children,
-            int crossAxisCount,
-            Axis mainFillAxis = Axis.Vertical, 
-            HorizontalDirection horizontalFillDirection = HorizontalDirection.LeftToRight, 
-            VerticalDirection verticalFillDirection = VerticalDirection.TopToBottom, 
-            int matchSizeIndex = 0,
-            string key = null)
-            : base(key)
+            Widget[,] widgets, 
+            Alignment alignment = default, 
+            bool emptyAsFlex = false)
         {
-            this.children = children ?? throw new ArgumentNullException(nameof(children));
-            this.matchSizeIndex = matchSizeIndex;
-            this.mainFillAxis = mainFillAxis;
-            this.horizontalFillDirection = horizontalFillDirection;
-            this.verticalFillDirection = verticalFillDirection;
-            this.crossAxisCount = crossAxisCount;
-
-            var mainAxisCount = children.Count / crossAxisCount;
-            mainAxisCount += (children.Count % crossAxisCount) > 0 ? 1 : 0;
-            this.mainAxisCount = mainAxisCount;
+            this.widgets = widgets ?? throw new ArgumentNullException(nameof(widgets));
+            this.alignment = alignment;
+            this.emptyAsFlex = emptyAsFlex;
         }
 
-        public override Size Layout(BuildContext context, ILayoutController layout)
+        public override Size Layout(BuildContext context, ILayoutController layoutController)
         {
-            if (matchSizeIndex == -1 && context.constraints.IsUnconstrained)
-                throw new Exception("Grid must be contained when no matchSizeIndex is provided!");
-
-            float maxWidth, maxHeight;
-            if (mainFillAxis == Axis.Horizontal)
+            var columns = widgets.GetLength(0);
+            var rows = widgets.GetLength(1);
+            var absoluteBc = BoxConstraints.Free;
+            var children = new IChildLayout[columns, rows];
+            var flex = new List<(int c, int r, Flex child)>();
+            var columnFlexTotals = new float[columns];
+            var columnWidths = new float[columns];
+            var rowFlexTotals = new float[rows];
+            var rowHeights = new float[rows];
+            // Layout the absolute children
+            for (var c = 0; c < columns; ++c)
             {
-                maxWidth = context.constraints.maxWidth / mainAxisCount;
-                maxHeight = context.constraints.maxHeight / crossAxisCount;
-            }
-            else
-            {
+                for (var r = 0; r < rows; ++r)
+                {
+                    var w = widgets[c, r];
+                    if (w == null)
+                    {
+                        if (emptyAsFlex)
+                            w = new Spacer();
+                        else
+                            continue;
+                    }
 
-                maxWidth = context.constraints.maxWidth / crossAxisCount;
-                maxHeight = context.constraints.maxHeight / mainAxisCount;
-            }
-            var baseConstraints = new BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight);
+                    // Collect flex children, and track row and column totals
+                    if (w is Flex f)
+                    {
+                        flex.Add((c, r, f));
+                        columnFlexTotals[c] += f.flexValue;
+                        rowFlexTotals[r] += f.flexValue;
+                        continue;
+                    }
 
-            IChildLayout matchChildLayout = null;
-            if (matchSizeIndex != -1)
-            {
-                matchChildLayout = layout.LayoutChild(children[matchSizeIndex], baseConstraints);
-                baseConstraints = BoxConstraints.Tight(matchChildLayout.size);
-            }
-
-            int onMain = 0, onCross = 0, i = -1;
-            foreach (var c in children)
-            {
-                var childLayout = ++i == matchSizeIndex
-                    ? matchChildLayout
-                    : layout.LayoutChild(c, baseConstraints);
-                childLayout.offset = GetOffset(ref onMain, ref onCross, baseConstraints);
-            }
-
-            if (mainFillAxis == Axis.Horizontal)
-            {
-                return new Size(
-                    baseConstraints.maxWidth * mainAxisCount,
-                    baseConstraints.maxHeight * crossAxisCount);
-            }
-            else
-            {
-                return new Size(
-                    baseConstraints.maxWidth * crossAxisCount,
-                    baseConstraints.maxHeight * mainAxisCount);
-            }
-        }
-
-        Vector2 GetOffset(ref int onMain, ref int onCross, BoxConstraints cellConstraints)
-        {
-            float x, y;
-
-            if (mainFillAxis == Axis.Horizontal)
-            {
-                if (horizontalFillDirection == HorizontalDirection.LeftToRight)
-                    x = cellConstraints.maxWidth * onMain;
-                else
-                    x = cellConstraints.maxWidth * (mainAxisCount - onMain - 1);
-
-                if (verticalFillDirection == VerticalDirection.TopToBottom)
-                    y = cellConstraints.maxHeight * onCross;
-                else
-                    y = cellConstraints.maxWidth * (crossAxisCount - onCross - 1);
-            }
-            else
-            {
-
-                if (horizontalFillDirection == HorizontalDirection.LeftToRight)
-                    x = cellConstraints.maxWidth * onCross;
-                else
-                    x = cellConstraints.maxWidth * (mainAxisCount - onCross - 1);
-
-                if (verticalFillDirection == VerticalDirection.TopToBottom)
-                    y = cellConstraints.maxHeight * onMain;
-                else
-                    y = cellConstraints.maxWidth * (crossAxisCount - onMain - 1);
+                    children[c, r] = layoutController.LayoutChild(w, absoluteBc);
+                    columnWidths[c] = Math.Max(columnWidths[c], children[c, r].size.width);
+                    rowHeights[r] = Math.Max(rowHeights[r], children[c, r].size.height);
+                }
             }
 
-            if (++onCross == crossAxisCount)
+            var absoluteWidth = columnWidths.Sum();
+            var absoluteHeight = rowHeights.Sum();
+            var bc = context.constraints;
+            if (absoluteWidth > bc.maxWidth || absoluteHeight > bc.maxHeight)
+                throw new Exception("Contents of grid exceed constraints.");
+            if (flex.Count > 0)
             {
-                onCross = 0;
-                ++onMain;
+                if (bc.IsUnconstrained)
+                    throw new Exception("Grid must be constrained when containing flex children.");
+
+                var remainingWidth = bc.maxWidth - absoluteWidth;
+                var remainingHeight = bc.maxHeight - absoluteHeight;
+                var totalColumnFlex = columnFlexTotals.Sum();
+                var totalRowFlex = rowFlexTotals.Sum();
+
+                IEnumerable<int> FlexItems(float[] flexValues)
+                {
+                    for (int i = 0; i < flexValues.Length; ++i)
+                    {
+                        if (flexValues[i] != 0)
+                            yield return i;
+                    }
+                }
+                // The amount currently taken up by columns/rows with flex children.
+                float usedWidth = 0;
+                float usedHeight = 0;
+                foreach (var i in FlexItems(columnFlexTotals))
+                    usedWidth += columnWidths[i];
+                foreach (var i in FlexItems(rowFlexTotals))
+                    usedHeight += rowHeights[i];
+
+                var targetColumnWidths = new List<(int column, float width)>();
+                var targetRowHeights = new List<(int row, float height)>();
+                foreach (var i in FlexItems(columnFlexTotals))
+                    targetColumnWidths.Add((i,
+                        (remainingWidth + usedWidth) * (columnFlexTotals[i] / totalColumnFlex)));
+                foreach (var i in FlexItems(rowFlexTotals))
+                    targetRowHeights.Add((i,
+                        (remainingHeight + usedHeight) * (rowFlexTotals[i] / totalRowFlex)));
+
+                void Sort(List<(int, float)> l, float[] s)
+                    => l.Sort((a, b) => (a.Item2 - s[a.Item1]) < (b.Item2 - s[b.Item1]) ? -1 : 1);
+                Sort(targetColumnWidths, columnWidths);
+                Sort(targetRowHeights, rowHeights);
+
+                void Distribute(List<(int, float)> targets, float[] currentSizes, ref float remaining)
+                {
+                    while (remaining > 0 && targets.Count > 0)
+                    {
+                        // Pop the last item.
+                        (int i, float target) = targets[targets.Count - 1];
+                        targets.RemoveAt(targets.Count - 1);
+
+                        var r = target - currentSizes[i];
+                        if (r <= 0)
+                            break;
+                        var t = Math.Min(remaining, r);
+                        remaining -= t;
+                        currentSizes[i] += t;
+                    }
+                }
+                Distribute(targetColumnWidths, columnWidths, ref remainingWidth);
+                Distribute(targetRowHeights, rowHeights, ref remainingHeight);
+
+                foreach (var (c, r, child) in flex)
+                {
+                    var con = BoxConstraints.Loose(columnWidths[c], rowHeights[r]);
+                    children[c, r] = layoutController.LayoutChild(child, con);
+                }
             }
 
-            return new Vector2(x, y);
+            var cOS = Vector2.Zero;
+            for (int c = 0; c < columns; ++c)
+            {
+                var rOS = cOS;
+                for (int r = 0; r < rows; ++r)
+                {
+                    var child = children[c, r];
+                    if (child != null)
+                    {
+                        var extraSpace =
+                            new Vector2(columnWidths[c], rowHeights[r])
+                            - child.size.ToVector2();
+                        child.offset = rOS + alignment.AsPoint() * extraSpace;
+                    }
+
+                    rOS += Vector2.UnitY * rowHeights[r];
+                }
+
+                cOS += Vector2.UnitX * columnWidths[c];
+            }
+
+            return new Size(
+                columnWidths.Sum(),
+                rowHeights.Sum());
         }
     }
 }

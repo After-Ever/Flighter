@@ -16,7 +16,7 @@ namespace Flighter.Core
         public OneShotAnimation(
             AnimationBuilder builder,
             float length,
-            Action onComlete = null, 
+            Action onComplete = null, 
             AnimationBehavior behavior = AnimationBehavior.Once, 
             AnimationDirection direction = AnimationDirection.Forward,
             Curve curve = null)
@@ -24,6 +24,7 @@ namespace Flighter.Core
             this.builder = builder 
                 ?? throw new ArgumentNullException(nameof(builder));
             this.length = length;
+            this.onComplete = onComplete;
             this.behavior = behavior;
             this.direction = direction;
             this.curve = curve;

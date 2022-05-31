@@ -61,6 +61,8 @@ namespace FlighterUnity
         /// Instrument <paramref name="widget"/> on the screen.
         /// Multiple calls to this will stack the widgets on one another, in call order
         /// (recent ontop of older).
+        /// 
+        /// If the scene is unloaded, the display will be destroyed.
         /// </summary>
         /// <param name="widget"></param>
         /// <returns></returns>
@@ -153,7 +155,7 @@ namespace FlighterUnity
             return handle;
         }
 
-        static DisplayHandle InstrumentWidget(
+        internal static DisplayHandle InstrumentWidget(
             Widget widget, 
             DisplayRect rect, 
             InputProvider inputProvider = null)
@@ -181,7 +183,7 @@ namespace FlighterUnity
 
         static void InitScreenRect()
         {
-            if (screenRect != null)
+            if (screenRect?.transform != null)
                 return;
 
             var obj = new GameObject("FlighterScreenDisplayRoot");
@@ -191,7 +193,6 @@ namespace FlighterUnity
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
             screenInputProvider = obj.AddComponent<InputProvider>();
-            screenInputProvider.SetPoller(new InputPoller());
 
             screenRect = new DisplayRect(rect);
         }

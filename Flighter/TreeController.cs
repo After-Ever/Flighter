@@ -232,6 +232,9 @@ namespace Flighter
             HashSet<State> stateToRebuild,
             WidgetNode referenceWidgetNode = null)
         {
+            if (widget == null)
+                throw new Exception("Widget cannot be null!!");
+
             if (!widget.CanReplace(referenceWidgetNode?.data?.widget))
                 referenceWidgetNode = null;
 

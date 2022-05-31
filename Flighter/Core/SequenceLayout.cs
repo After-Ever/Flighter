@@ -123,7 +123,7 @@ namespace Flighter.Core
 
                 if (float.IsInfinity(MaxOnMain(context)))
                     throw new Exception("Main axis must be bound when " +
-                        "a SequenceLayout has Flex children, and the mainAxisSize is Max");
+                        "a SequenceLayout has Flex children.");
             }
             
             float totalFlex = 0;
@@ -364,11 +364,9 @@ namespace Flighter.Core
             {
                 case Axis.Horizontal:
                     return new BoxConstraints(
-                        minHeight: constraints.minHeight,
                         maxHeight: constraints.maxHeight);
                 case Axis.Vertical:
                     return new BoxConstraints(
-                        minWidth: constraints.minWidth,
                         maxWidth: constraints.maxWidth);
                 default:
                     throw new NotSupportedException();

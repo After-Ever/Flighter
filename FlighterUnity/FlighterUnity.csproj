@@ -8,6 +8,18 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\Build</OutputPath>
     <LangVersion>Latest</LangVersion>
+    <CustomCommands>
+      <CustomCommands>
+        <Command>
+          <type>AfterBuild</type>
+          <command>cp ${TargetDir}/${ProjectName}.dll /home/ben/azure_rain/Assets/Libs/</command>
+        </Command>
+        <Command>
+          <type>AfterBuild</type>
+          <command>cp ${TargetDir}/${ProjectName}.pdb /home/ben/azure_rain/Assets/Libs/</command>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

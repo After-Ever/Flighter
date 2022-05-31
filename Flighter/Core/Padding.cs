@@ -48,6 +48,13 @@ namespace Flighter.Core
                 right: MathUtils.Lerp(a.right, b.right, f),
                 top: MathUtils.Lerp(a.top, b.top, f),
                 bottom: MathUtils.Lerp(a.bottom, b.bottom, f));
+
+        public static EdgeInsets operator +(EdgeInsets a, EdgeInsets b)
+            => new EdgeInsets(
+                left: a.left + b.left,
+                right: a.right + b.right,
+                top: a.top + b.top,
+                bottom: a.bottom + b.bottom);
     }
 
     public class Padding : LayoutWidget

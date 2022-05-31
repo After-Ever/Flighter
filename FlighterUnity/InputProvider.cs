@@ -9,7 +9,7 @@ namespace FlighterUnity
 {
     public class InputProvider : MonoBehaviour
     {
-        InputPoller poller;
+        InputPoller poller = new InputPoller();
         readonly List<TreeController> roots = new List<TreeController>();
 
         /// <summary>
@@ -26,12 +26,8 @@ namespace FlighterUnity
 
         public void SetPoller(InputPoller poller)
         {
-            if (poller == null)
-                throw new ArgumentNullException("Poller cannot be null");
-            if (this.poller != null)
-                throw new Exception("Cannot set the input poller more than once.");
-
-            this.poller = poller;
+            this.poller = poller 
+                ?? throw new ArgumentNullException("Poller cannot be null");
         }
 
         /// <summary>

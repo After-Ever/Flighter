@@ -13,11 +13,11 @@
       <CustomCommands>
         <Command>
           <type>AfterBuild</type>
-          <command>cp ../Build/netstandard2.0/Flighter.dll /home/ben/azure_rain/Assets/Libs/</command>
+          <command>cp ${TargetDir}/${ProjectName}.dll /home/ben/azure_rain/Assets/Libs/</command>
         </Command>
         <Command>
           <type>AfterBuild</type>
-          <command>cp ../Build/netstandard2.0/Flighter.pdb /home/ben/azure_rain/Assets/Libs/</command>
+          <command>cp ${TargetDir}/${ProjectName}.pdb /home/ben/azure_rain/Assets/Libs/</command>
         </Command>
       </CustomCommands>
     </CustomCommands>
@@ -40,5 +40,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\AEUtils\AEUtils.csproj" />
   </ItemGroup>
-
 </Project>
