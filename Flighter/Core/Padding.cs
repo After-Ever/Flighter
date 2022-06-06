@@ -42,6 +42,31 @@ namespace Flighter.Core
             this.right = right;
         }
 
+
+        public EdgeInsets From(
+            float? left = null,
+            float? top = null,
+            float? right = null,
+            float? bottom = null)
+        {
+            return new EdgeInsets(
+                left ?? this.left,
+                top ?? this.top,
+                right ?? this.right,
+                bottom ?? this.bottom);
+        }
+
+        /// <summary>
+        /// Construct a new <see cref="EdgeInsets"/> by specifying a size per axis.
+        /// 
+        /// Total padding in each axis will be double the specified size.
+        /// </summary>
+        /// <returns>The axis.</returns>
+        /// <param name="horizontal">Horizontal.</param>
+        /// <param name="vertical">Vertical.</param>
+        public static EdgeInsets Axis(float horizontal = 0, float vertical = 0)
+            => new EdgeInsets(left: horizontal, right: horizontal, top: vertical, bottom: vertical);
+
         public static EdgeInsets Lerp(EdgeInsets a, EdgeInsets b, float f)
             => new EdgeInsets(
                 left: MathUtils.Lerp(a.left, b.left, f),

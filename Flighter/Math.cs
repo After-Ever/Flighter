@@ -11,7 +11,7 @@ namespace Flighter
     }
 
     [Serializable]
-    public struct Size
+    public struct Size : IEquatable<Size>
     {
         public static Size Zero => new Size();
 
@@ -33,14 +33,13 @@ namespace Flighter
 
         public override bool Equals(object obj)
         {
-            if (!(obj is Size))
-            {
-                return false;
-            }
+            return obj is Size && Equals((Size)obj);
+        }
 
-            var size = (Size)obj;
-            return width == size.width &&
-                   height == size.height;
+        public bool Equals(Size other)
+        {
+            return width == other.width &&
+                   height == other.height;
         }
 
         public override int GetHashCode()
@@ -49,6 +48,16 @@ namespace Flighter
             hashCode = hashCode * -1521134295 + width.GetHashCode();
             hashCode = hashCode * -1521134295 + height.GetHashCode();
             return hashCode;
+        }
+
+        public static bool operator ==(Size size1, Size size2)
+        {
+            return size1.Equals(size2);
+        }
+
+        public static bool operator !=(Size size1, Size size2)
+        {
+            return !(size1 == size2);
         }
     }
 }

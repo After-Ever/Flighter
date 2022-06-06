@@ -137,6 +137,13 @@ namespace Flighter.Core
             this.a = a;
         }
 
+        public Color From(float? r = null, float? g = null, float? b = null, float? a = null)
+            => new Color(
+                r: r ?? this.r,
+                g: g ?? this.g,
+                b: b ?? this.b,
+                a: a ?? this.a);
+
         public override bool Equals(object obj)
         {
             if (!(obj is Color))

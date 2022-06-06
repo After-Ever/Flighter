@@ -44,7 +44,6 @@ namespace Flighter
         /// Instrument the element. Element not guaranteed to display correctly until
         /// after <see cref="Update()"/> is called.
         /// </summary>
-        /// <param name="rectTransform"></param>
         internal void Init(IDisplayRect displayRect, ComponentProvider componentProvider)
         {
             if (IsInitialized) return;

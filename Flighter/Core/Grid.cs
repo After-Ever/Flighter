@@ -73,6 +73,8 @@ namespace Flighter.Core
 
                 var remainingWidth = bc.maxWidth - absoluteWidth;
                 var remainingHeight = bc.maxHeight - absoluteHeight;
+                // TODO If a column/row only has one flex, it has much less inluence
+                //      than one with many... Should use average? Yeah!
                 var totalColumnFlex = columnFlexTotals.Sum();
                 var totalRowFlex = rowFlexTotals.Sum();
 

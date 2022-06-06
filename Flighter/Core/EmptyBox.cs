@@ -9,9 +9,16 @@ namespace Flighter.Core
     /// </summary>
     public class EmptyBox : LayoutWidget
     {
+        public readonly bool noSpace;
+
+        public EmptyBox(bool noSpace = false)
+        {
+            this.noSpace = noSpace;
+        }
+
         public override Size Layout(BuildContext context, ILayoutController node)
         {
-            return context.constraints.MaxSize;
+            return noSpace ? Size.Zero : context.constraints.MaxSize;
         }
 
         public override bool Equals(object obj) => obj is EmptyBox;
