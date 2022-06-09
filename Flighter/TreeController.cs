@@ -258,8 +258,6 @@ namespace Flighter
                                 ?.displayBox
                                 ?? dw.CreateElement();
                         }
-                        else if (children.Count > 1)
-                            displayBox = new LayoutBox(lw.GetType().Name);
 
                         var node = new WidgetNode(new WidgetNodeData(
                             widget,
