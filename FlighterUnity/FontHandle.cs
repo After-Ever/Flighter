@@ -37,7 +37,8 @@ namespace FlighterUnity
                 generationExtents = constraints.MaxSize.ToVector2().ToUnity(),
                 //generateOutOfBounds = constraints.IsUnconstrained,
                 updateBounds = true,
-                scaleFactor = 1
+                scaleFactor = 1,
+                richText = true
             };
 
             textGenerator.Populate(text, textGeneratorSettings);
