@@ -5,7 +5,7 @@ namespace Flighter
 {
     public struct BoxConstraints
     {
-        public readonly float minHeight, maxHeight, minWidth, maxWidth;
+        public float minHeight, maxHeight, minWidth, maxWidth;
 
         /// <summary>
         /// Create a new <see cref="BoxConstraints"/> with no constraints.
