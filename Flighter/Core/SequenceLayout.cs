@@ -272,11 +272,6 @@ namespace Flighter.Core
                 default:
                     throw new NotSupportedException();
             }
-            
-            // Above, it is assumed the direction is LTR, or TTB. This will correct that.
-            if ((axis == Axis.Horizontal && horizontalDirection == HorizontalDirection.RightToLeft) ||
-                (axis == Axis.Vertical && verticalDirection == VerticalDirection.BottomToTop))
-                value = freeSpaceOnMain - value;
 
             return value;
         }
