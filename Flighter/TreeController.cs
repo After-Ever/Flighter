@@ -230,7 +230,8 @@ namespace Flighter
             Widget widget,
             BuildContext context,
             HashSet<State> stateToRebuild,
-            WidgetNode referenceWidgetNode = null)
+            WidgetNode referenceWidgetNode = null,
+            bool sandbox = false)
         {
             if (widget == null)
                 throw new Exception("Widget cannot be null!!");
@@ -245,13 +246,14 @@ namespace Flighter
                         var lc = new LayoutController(
                             context,
                             stateToRebuild,
-                            referenceWidgetNode);
+                            referenceWidgetNode,
+                            isSandbox: sandbox);
 
                         var size = lw.Layout(context, lc);
                         var children = lc.GetChildren();
 
                         DisplayBox displayBox = null;
-                        if (lw is DisplayWidget dw)
+                        if (!sandbox && lw is DisplayWidget dw)
                         {
                             displayBox = referenceWidgetNode
                                 ?.data
@@ -303,7 +305,14 @@ namespace Flighter
                             state.Build(context),
                             context,
                             stateToRebuild,
-                            referenceWidgetNode);
+                            referenceWidgetNode,
+                            sandbox);
+
+                        if (sandbox && referenceWidgetNode == null)
+                        {
+                            state.Dispose();
+                        }
+
                         return node;
                     }
                 case StatelessWidget slw:
@@ -316,7 +325,8 @@ namespace Flighter
                             slw.Build(context),
                             context,
                             stateToRebuild,
-                            referenceWidgetNode);
+                            referenceWidgetNode,
+                            sandbox);
                         return node;
                     }
                 case InheritedWidget iw:
@@ -331,7 +341,8 @@ namespace Flighter
                             iw.child,
                             context,
                             stateToRebuild,
-                            referenceWidgetNode);
+                            referenceWidgetNode,
+                            sandbox);
                         return node;
                     }
                 default:
@@ -345,7 +356,8 @@ namespace Flighter
             Widget child,
             BuildContext context,
             HashSet<State> stateToRebuild,
-            WidgetNode referenceWidgetNode)
+            WidgetNode referenceWidgetNode,
+            bool sandbox = false)
         {
 
             if (referenceWidgetNode != null
@@ -356,11 +368,14 @@ namespace Flighter
                 child,
                 context,
                 stateToRebuild,
-                referenceWidgetNode?.Children?.First());
+                referenceWidgetNode?.Children?.First(),
+                sandbox);
             node.data.size = childNode.data.size;
             node.AddChild(childNode);
         }
 
+
+        // TODO How where and why is this used?
         static WidgetNode RebuildWidgetNode(
             WidgetNode node, 
             HashSet<State> stateToRebuild)
@@ -415,6 +430,7 @@ namespace Flighter
             readonly BuildContext buildContext;
             readonly List<WidgetNode> referenceChildren;
             readonly bool rebuild;
+            readonly bool isSandbox;
 
             readonly HashSet<State> stateToRebuild;
 
@@ -425,12 +441,14 @@ namespace Flighter
                 BuildContext buildContext,
                 HashSet<State> stateToRebuild = null,
                 WidgetNode referenceWidgetNode = null,
-                bool rebuild = false)
+                bool rebuild = false,
+                bool isSandbox = false)
             {
                 this.buildContext = buildContext;
                 this.stateToRebuild = stateToRebuild;
                 referenceChildren = referenceWidgetNode?.Children?.ToList();
                 this.rebuild = rebuild;
+                this.isSandbox = isSandbox;
             }
 
             public List<WidgetNode> GetChildren()
@@ -470,7 +488,8 @@ namespace Flighter
                         child,
                         childContext,
                         stateToRebuild,
-                        childRef);
+                        childRef,
+                        isSandbox);
 
                 childNodes.Add((node, index));
                 return node.data;
@@ -479,11 +498,16 @@ namespace Flighter
             public IChildLayout LayoutWithoutAttach(
                 Widget child,
                 BuildContext sandboxContext)
-                => BuildWidget(
-                    child, 
-                    sandboxContext, 
-                    null, 
-                    GetChildRef(child, false)).data;
+            {
+                var node = BuildWidget(
+                    child,
+                    sandboxContext,
+                    null,
+                    GetChildRef(child, false),
+                    true);
+
+                return node.data;
+            }
 
             WidgetNode GetChildRef(Widget child, bool removeRef)
             {
