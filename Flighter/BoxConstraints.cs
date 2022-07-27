@@ -60,6 +60,8 @@ namespace Flighter
             }
         }
 
+        public Size MinSize => new Size(minWidth, minHeight);
+
         /// <summary>
         /// Create a new BoxConstraints based on this one, changing only those values which are provided.
         /// </summary>
@@ -76,6 +78,7 @@ namespace Flighter
                 maxHeight: maxHeight ?? this.maxHeight);
 
         public bool IsUnconstrained => float.IsPositiveInfinity(maxHeight) || float.IsPositiveInfinity(maxWidth);
+
 
         /// <summary>
         /// Checks the guarantees of the constraints, and throws if
