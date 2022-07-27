@@ -290,9 +290,12 @@ namespace Flighter
                                 throw new Exception("Stateful widgets node data does not contain state.");
                             state = referenceWidgetNode.data.state;
 
-                            state.InvokeUpdates();
-                            stateToRebuild?.Remove(state);
-                            state._ReBuilt(widget, context);
+                            if (!sandbox)
+                            {
+                                state.InvokeUpdates();
+                                stateToRebuild?.Remove(state);
+                                state._ReBuilt(widget, context);
+                            }
                         }
 
                         var node = new WidgetNode(new WidgetNodeData(

@@ -14,6 +14,12 @@ namespace Flighter
     {
         internal Widget widget;
         protected BuildContext context { get; private set; }
+        // TODO Smelly...
+        internal BuildContext _context
+        {
+            get => context;
+            set => context = value;
+        }
 
         Action<State> onSetStateCallback;
         readonly Queue<Action> updates = new Queue<Action>();

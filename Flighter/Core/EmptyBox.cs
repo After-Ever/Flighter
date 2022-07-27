@@ -18,7 +18,7 @@ namespace Flighter.Core
 
         public override Size Layout(BuildContext context, ILayoutController node)
         {
-            return noSpace ? Size.Zero : context.constraints.MaxSize;
+            return noSpace ? context.constraints.MinSize : context.constraints.MaxSize;
         }
 
         public override bool Equals(object obj) => obj is EmptyBox;
